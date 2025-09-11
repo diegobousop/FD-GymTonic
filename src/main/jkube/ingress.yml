@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gym-tonic-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /gym-tonic
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /gym-tonic
+            pathType: Prefix
+            backend:
+              service:
+                name: gym-tonic
+                port:
+                  number: 8080

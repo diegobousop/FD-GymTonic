@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtGeneratorImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FD Spring MVC Gym-Tonic App</a> &gt; <a href="index.source.html" class="el_package">es.udc.fi.dc.fd.rest.common</a> &gt; <span class="el_source">JwtGeneratorImpl.java</span></div><h1>JwtGeneratorImpl.java</h1><pre class="source lang-java linenums">package es.udc.fi.dc.fd.rest.common;
+
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+/**
+ * The Class JwtGeneratorImpl.
+ */
+@Component
+<span class="fc" id="L17">public class JwtGeneratorImpl implements JwtGenerator {</span>
+
+    /** The sign key. */
+    @Value(&quot;${project.jwt.signKey}&quot;)
+    private String signKey;
+
+    /** The expiration minutes. */
+    @Value(&quot;${project.jwt.expirationMinutes}&quot;)
+    private long expirationMinutes;
+
+    /**
+     * Generate.
+     *
+     * @param info the info
+     * @return the string
+     */
+    @Override
+    public String generate(JwtInfo info) {
+
+<span class="fc" id="L36">        Claims claims = Jwts.claims();</span>
+
+<span class="fc" id="L38">        claims.setSubject(info.getUserName())</span>
+<span class="fc" id="L39">                .setExpiration(new Date(System.currentTimeMillis() + expirationMinutes * 60 * 1000));</span>
+<span class="fc" id="L40">        claims.put(&quot;userId&quot;, info.getUserId());</span>
+<span class="fc" id="L41">        claims.put(&quot;role&quot;, info.getRole());</span>
+        
+<span class="fc" id="L43">        return Jwts.builder().setClaims(claims).signWith(Keys.hmacShaKeyFor(signKey.getBytes()), SignatureAlgorithm.HS512).compact();</span>
+
+    }
+
+    /**
+     * Gets the info.
+     *
+     * @param token the token
+     * @return the info
+     */
+    @Override
+    public JwtInfo getInfo(String token) {
+        
+<span class="fc" id="L56">        Claims claims = Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(signKey.getBytes())).build().parseClaimsJws(token).getBody();</span>
+
+<span class="fc" id="L58">        return new JwtInfo(((Integer) claims.get(&quot;userId&quot;)).longValue(), claims.getSubject(),</span>
+<span class="fc" id="L59">                (String) claims.get(&quot;role&quot;));</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

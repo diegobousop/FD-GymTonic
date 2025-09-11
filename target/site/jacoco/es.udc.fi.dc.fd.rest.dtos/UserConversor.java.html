@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserConversor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FD Spring MVC Gym-Tonic App</a> &gt; <a href="index.source.html" class="el_package">es.udc.fi.dc.fd.rest.dtos</a> &gt; <span class="el_source">UserConversor.java</span></div><h1>UserConversor.java</h1><pre class="source lang-java linenums">package es.udc.fi.dc.fd.rest.dtos;
+
+import es.udc.fi.dc.fd.model.entities.Users;
+
+/**
+ * The Class UserConversor.
+ */
+public class UserConversor {
+
+	/**
+	 * Instantiates a new user conversor.
+	 */
+	private UserConversor() {
+	}
+
+	/**
+	 * To user dto.
+	 *
+	 * @param user the user
+	 * @return the user dto
+	 */
+	public static final UserDto toUserDto(Users user) {
+<span class="fc" id="L23">		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(),</span>
+<span class="fc" id="L24">				user.getRole().toString());</span>
+	}
+
+	/**
+	 * To user.
+	 *
+	 * @param userDto the user dto
+	 * @return the user
+	 */
+	public static final Users toUser(UserDto userDto) {
+
+<span class="nc" id="L35">		return new Users(userDto.getUserName(), userDto.getPassword(), userDto.getFirstName(), userDto.getLastName(),</span>
+<span class="nc" id="L36">				userDto.getEmail());</span>
+	}
+
+	/**
+	 * To authenticated user dto.
+	 *
+	 * @param serviceToken the service token
+	 * @param user         the user
+	 * @return the authenticated user dto
+	 */
+	public static final AuthenticatedUserDto toAuthenticatedUserDto(String serviceToken, Users user) {
+
+<span class="fc" id="L48">		return new AuthenticatedUserDto(serviceToken, toUserDto(user));</span>
+
+	}
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

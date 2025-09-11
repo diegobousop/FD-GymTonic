@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/gym-tonic/static/css/main.f68dbf17.css",
+    "main.js": "/gym-tonic/static/js/main.c5092b6f.js",
+    "index.html": "/gym-tonic/index.html",
+    "main.f68dbf17.css.map": "/gym-tonic/static/css/main.f68dbf17.css.map",
+    "main.c5092b6f.js.map": "/gym-tonic/static/js/main.c5092b6f.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f68dbf17.css",
+    "static/js/main.c5092b6f.js"
+  ]
+}

@@ -1,0 +1,26 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,FieldErrorDto,23,0,0,0,10,0,5,0,5,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,JwtFilter,10,65,2,2,5,15,2,3,0,3
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,CommonControllerAdvice,104,3,0,0,14,1,5,1,5,1
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,ErrorsDto,26,0,0,0,12,0,6,0,6,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,JwtInfo,12,21,0,0,6,8,3,4,3,4
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,SecurityConfig,0,140,0,0,0,23,0,8,0,8
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.common,JwtGeneratorImpl,0,73,0,0,0,10,0,3,0,3
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.services,UserServiceImpl,58,51,5,3,13,11,6,4,2,4
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.services,PermissionCheckerImpl,18,15,3,1,4,4,3,2,1,2
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.services.exceptions,IncorrectLoginException,15,0,0,0,6,0,3,0,3,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.services.exceptions,PermissionException,3,0,0,0,1,0,1,0,1,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.services.exceptions,IncorrectPasswordException,3,0,0,0,1,0,1,0,1,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.entities,Users.RoleType,0,9,0,0,0,2,0,1,0,1
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.entities,Users,16,51,0,0,8,21,4,11,4,11
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd,Application,5,29,0,0,2,9,1,4,1,4
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.common.exceptions,InstanceNotFoundException,5,0,0,0,2,0,1,0,1,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.common.exceptions,InstanceException,15,0,0,0,6,0,3,0,3,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.common.exceptions,DuplicateInstanceException,5,0,0,0,2,0,1,0,1,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.controllers,ExampleController,6,3,0,0,1,1,1,1,1,1
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.controllers,UserController,101,33,4,0,19,5,8,3,6,3
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,AuthenticatedUserDto,3,23,0,0,2,10,1,5,1,5
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,LoginParamsDto,0,18,0,0,0,8,0,5,0,5
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,UserConversor,14,24,0,0,2,3,1,2,1,2
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,ChangePasswordParamsDto,17,0,0,0,8,0,5,0,5,0
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,UserDto,36,49,1,1,15,15,9,8,8,8
