@@ -17,11 +17,10 @@ public class Exercise {
     public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
 
     public Exercise() {}
-
-    public Exercise(String exerciseName, String exerciseDescription, grupoMuscular grupoMuscular) {
+    public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo){
         this.exerciseName = exerciseName;
-        this.exerciseDescription = exerciseDescription;
-        this.grupoMuscular = grupoMuscular;
+        this.exerciseDescription = exerciseDescripcion;
+        this.grupoMuscular = grupo;
     }
 
     @Id
