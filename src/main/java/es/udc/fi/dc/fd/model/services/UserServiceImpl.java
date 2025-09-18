@@ -40,14 +40,14 @@ public class UserServiceImpl implements UserService {
 	 * @throws DuplicateInstanceException the duplicate instance exception
 	 */
 	@Override
-	public void signUp(Users user) throws DuplicateInstanceException {
+	public void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException {
 
 		if (userDao.existsByUserName(user.getUserName())) {
 			throw new DuplicateInstanceException("project.entities.user", user.getUserName());
 		}
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		user.setRole(Users.RoleType.USER);
+		user.setRole(roleType);
 
 		userDao.save(user);
 
@@ -108,9 +108,9 @@ public class UserServiceImpl implements UserService {
 
 		Users user = permissionChecker.checkUser(id);
 
-		user.setFirstName(firstName);
-		user.setLastName(lastName);
-		user.setEmail(email);
+		if (!firstName.isEmpty()) user.setFirstName(firstName);
+		if (!lastName.isEmpty()) user.setLastName(lastName);
+		if (!email.isEmpty()) user.setEmail(email);
 
 		return user;
 
