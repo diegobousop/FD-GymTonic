@@ -49,7 +49,7 @@ public class UserServiceTest {
 
 		Users user = createUser("user");
 
-		userService.signUp(user);
+		userService.signUp(user, Users.RoleType.USER);
 
 		Users loggedInUser = userService.loginFromId(user.getId());
 
