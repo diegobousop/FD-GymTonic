@@ -10,7 +10,7 @@ CREATE TABLE Users (
     firstName VARCHAR(60) NOT NULL,
     lastName VARCHAR(60) NOT NULL, 
     email VARCHAR(60) NOT NULL,
-    role TINYINT NOT NULL
+    role TINYINT NOT NULL /*0 User, 1 Trainer. 2 Admin*/
 );
 
 CREATE TABLE Exercise (

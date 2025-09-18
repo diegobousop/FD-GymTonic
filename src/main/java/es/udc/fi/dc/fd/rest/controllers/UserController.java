@@ -116,7 +116,7 @@ public class UserController {
 
 		Users user = toUser(userDto);
 
-		userService.signUp(user);
+		userService.signUp(user, Users.RoleType.USER);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId())
 				.toUri();

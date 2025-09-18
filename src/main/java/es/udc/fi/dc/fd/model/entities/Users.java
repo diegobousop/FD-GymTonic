@@ -16,7 +16,8 @@ public class Users {
 	 */
 	public enum RoleType {
 		/** The user. */
-		USER
+		USER,
+		TRAINER
 	}
 
 	/** The id. */
@@ -62,7 +63,6 @@ public class Users {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
-
 	}
 
 	/**
