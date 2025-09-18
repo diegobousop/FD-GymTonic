@@ -17,7 +17,7 @@ FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd,Application,5,29,0,0,2,9,1,4,1,4
 FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.common.exceptions,InstanceNotFoundException,5,0,0,0,2,0,1,0,1,0
 FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.common.exceptions,InstanceException,15,0,0,0,6,0,3,0,3,0
 FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.model.common.exceptions,DuplicateInstanceException,5,0,0,0,2,0,1,0,1,0
-FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.controllers,ExampleController,6,3,0,0,1,1,1,1,1,1
+FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.controllers,ExampleController,5,3,0,0,1,1,1,1,1,1
 FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.controllers,UserController,101,33,4,0,19,5,8,3,6,3
 FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,AuthenticatedUserDto,3,23,0,0,2,10,1,5,1,5
 FD Spring MVC Gym-Tonic App,es.udc.fi.dc.fd.rest.dtos,LoginParamsDto,0,18,0,0,0,8,0,5,0,5

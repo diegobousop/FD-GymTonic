@@ -1,28 +1,28 @@
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\Application.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\common\exceptions\DuplicateInstanceException.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\common\exceptions\InstanceException.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\common\exceptions\InstanceNotFoundException.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\entities\UserDao.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\entities\Users.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\exceptions\IncorrectLoginException.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\exceptions\IncorrectPasswordException.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\exceptions\PermissionException.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\PermissionChecker.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\PermissionCheckerImpl.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\UserService.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\model\services\UserServiceImpl.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\CommonControllerAdvice.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\ErrorsDto.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\FieldErrorDto.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtFilter.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtGenerator.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtGeneratorImpl.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtInfo.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\common\SecurityConfig.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\controllers\ExampleController.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\controllers\UserController.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\AuthenticatedUserDto.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\ChangePasswordParamsDto.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\LoginParamsDto.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\UserConversor.java
-C:\Users\Usuario\gym-tonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\UserDto.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\Application.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\common\exceptions\DuplicateInstanceException.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\common\exceptions\InstanceException.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\common\exceptions\InstanceNotFoundException.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\entities\UserDao.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\entities\Users.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\exceptions\IncorrectLoginException.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\exceptions\IncorrectPasswordException.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\exceptions\PermissionException.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\PermissionChecker.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\PermissionCheckerImpl.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\UserService.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\model\services\UserServiceImpl.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\CommonControllerAdvice.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\ErrorsDto.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\FieldErrorDto.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtFilter.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtGenerator.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtGeneratorImpl.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\JwtInfo.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\common\SecurityConfig.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\controllers\ExampleController.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\controllers\UserController.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\AuthenticatedUserDto.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\ChangePasswordParamsDto.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\LoginParamsDto.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\UserConversor.java
+C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\src\main\java\es\udc\fi\dc\fd\rest\dtos\UserDto.java

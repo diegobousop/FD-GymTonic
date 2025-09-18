@@ -32,38 +32,19 @@ const Home = () => {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="App ">
+      <header className="App-header bg-[#000000] border-b-red-500 border-b-2">
         <img
-          src={process.env.PUBLIC_URL + "/assets/logo.svg"}
+          src={process.env.PUBLIC_URL + "/assets/GymTonicLogo.png"}
           className="App-logo"
           alt="logo"
         />
         <h1 className="App-title">{message}</h1>
       </header>
-      <p className="App-intro">
-        To get started, edit <code>src/App.js</code> and save to reload.
-      </p>
-      <p>
-        <Link to="test">App route</Link>
-      </p>
-      <form action="" onSubmit={onSubmit}>
-        <p>
-          <label htmlFor="some-text">Input some text: </label>
-          <input
-            name="some-text"
-            id="some-text"
-            value={someText}
-            onChange={(ev) => setSomeText(ev.currentTarget.value)}
-          />
-        </p>
-        <button>Calculate</button>
-      </form>
-      {answer && (
-        <p>
-          The answer is: <strong>{answer}</strong>
-        </p>
-      )}
+      <div className="flex-1 h-full bg-[#515151]">
+              <p className="text-white text-xl font-semibold">Welcome to GymTonic Frontend</p>
+      </div>
+  
     </div>
   );
 };
