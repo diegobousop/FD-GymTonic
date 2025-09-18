@@ -21,6 +21,16 @@ public class Routine {
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
 
+    public Routine() {}
+
+    public Routine(String name, List<Exercise> exercises, Users creator, Long duration,
+            LocalDateTime modificationDate) {
+        this.name = name;
+        this.exercises = exercises;
+        this.creator = creator;
+        this.duration = duration;
+        this.modificationDate = modificationDate;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

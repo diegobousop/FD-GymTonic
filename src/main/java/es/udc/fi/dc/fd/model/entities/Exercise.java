@@ -16,6 +16,14 @@ public class Exercise {
 
     public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
 
+    public Exercise() {}
+
+    public Exercise(String exerciseName, String exerciseDescription, grupoMuscular grupoMuscular) {
+        this.exerciseName = exerciseName;
+        this.exerciseDescription = exerciseDescription;
+        this.grupoMuscular = grupoMuscular;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     public Long getId(){
