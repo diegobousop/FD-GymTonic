@@ -1,30 +1,27 @@
-package es.udc.fi.dc.fd.model.entities;
+package es.udc.fi.dc.fd.rest.dtos;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-@Entity
-public class Routine {
+import es.udc.fi.dc.fd.model.entities.Users;
+
+public class RoutineDto {
     private Long id;
     private String name;
-    private List<Exercise> exercises;
+    private List<ExerciseDto> exercises;
     private Users creator;
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
 
-    public Routine() {
+    public RoutineDto() {
     }
 
-    public Routine(String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate) {
+    public RoutineDto(Long id, String name, List<ExerciseDto> exercises, Users creator, Long duration,
+            LocalDateTime modificationDate) {
+        this.id = id;
         this.name = name;
         this.exercises = exercises;
         this.creator = creator;
@@ -32,64 +29,60 @@ public class Routine {
         this.modificationDate = modificationDate;
     }
 
-    public Routine(Long id,String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate) {
+    public RoutineDto(Long id, String name, List<ExerciseDto> exercises,  Long duration,
+            LocalDateTime modificationDate) {
+        this.id = id;
         this.name = name;
         this.exercises = exercises;
-        this.creator = creator;
         this.duration = duration;
         this.modificationDate = modificationDate;
     }
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long getId(){
+
+    @NotNull
+    public Long getId() {
         return id;
     }
-
-    public void setId(Long id){
+    public void setId(Long id) {
         this.id = id;
     }
-    
+
+    @NotNull
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
-    @ManyToMany
-    @JoinTable(name = "Routine_Exercise",
-    joinColumns = @JoinColumn(name = "routine_id"),
-    inverseJoinColumns = @JoinColumn(name = "exercise_id"))
-    public List<Exercise> getExercises() {
+    
+    @NotNull
+    public List<ExerciseDto> getExercises() {
         return exercises;
     }
-
-    public void setExercises(List<Exercise> exercises) {
+    public void setExercises(List<ExerciseDto> exercises) {
         this.exercises = exercises;
     }
-    @ManyToOne
-    @JoinColumn(name = "creator")
+
+    @NotNull
     public Users getCreator() {
         return creator;
     }
-
     public void setCreator(Users creator) {
         this.creator = creator;
     }
 
+    @NotNull
+    @Positive
     public Long getDuration() {
         return duration;
     }
-
     public void setDuration(Long duration) {
         this.duration = duration;
     }
 
+    @NotNull
     public LocalDateTime getModificationDate() {
         return modificationDate;
     }
-
     public void setModificationDate(LocalDateTime modificationDate) {
         this.modificationDate = modificationDate;
     }
