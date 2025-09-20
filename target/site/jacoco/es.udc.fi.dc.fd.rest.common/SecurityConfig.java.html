@@ -47,12 +47,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 <span class="fc" id="L47">                .requestMatchers(antMatcher(&quot;/api/users/signUp&quot;)).permitAll()</span>
 <span class="fc" id="L48">                .requestMatchers(antMatcher(&quot;/api/users/login&quot;)).permitAll()</span>
 <span class="fc" id="L49">                .requestMatchers(antMatcher(&quot;/api/users/loginFromServiceToken&quot;)).permitAll()</span>
-<span class="fc" id="L50">                .anyRequest().authenticated()</span>
+<span class="fc" id="L50">                .requestMatchers(antMatcher(&quot;/api/admin/addExercise&quot;)).permitAll()</span>
+<span class="fc" id="L51">                .anyRequest().authenticated()</span>
             )
-<span class="fc" id="L52">            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);</span>
+<span class="fc" id="L53">            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);</span>
         // @formatter:on
 
-<span class="fc" id="L55">        return http.build();</span>
+<span class="fc" id="L56">        return http.build();</span>
     }
 
     /**
@@ -65,7 +66,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
             throws Exception {
-<span class="fc" id="L68">        return authenticationConfiguration.getAuthenticationManager();</span>
+<span class="fc" id="L69">        return authenticationConfiguration.getAuthenticationManager();</span>
     }
     
     /**
@@ -76,17 +77,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-<span class="fc" id="L79">        CorsConfiguration config = new CorsConfiguration();</span>
-<span class="fc" id="L80">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L80">        CorsConfiguration config = new CorsConfiguration();</span>
+<span class="fc" id="L81">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
 
-<span class="fc" id="L82">        config.setAllowCredentials(true);</span>
-<span class="fc" id="L83">        config.addAllowedOrigin(&quot;*&quot;);</span>
-<span class="fc" id="L84">        config.addAllowedHeader(&quot;*&quot;);</span>
-<span class="fc" id="L85">        config.addAllowedMethod(&quot;*&quot;);</span>
+<span class="fc" id="L83">        config.setAllowCredentials(true);</span>
+<span class="fc" id="L84">        config.addAllowedOrigin(&quot;*&quot;);</span>
+<span class="fc" id="L85">        config.addAllowedHeader(&quot;*&quot;);</span>
+<span class="fc" id="L86">        config.addAllowedMethod(&quot;*&quot;);</span>
 
-<span class="fc" id="L87">        source.registerCorsConfiguration(&quot;/**&quot;, config);</span>
+<span class="fc" id="L88">        source.registerCorsConfiguration(&quot;/**&quot;, config);</span>
 
-<span class="fc" id="L89">        return source;</span>
+<span class="fc" id="L90">        return source;</span>
 
     }
 

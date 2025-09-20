@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: es.udc.fi.dc.fd.model.services.UserServiceTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.32 s -- in es.udc.fi.dc.fd.model.services.UserServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.10 s -- in es.udc.fi.dc.fd.model.services.UserServiceTest

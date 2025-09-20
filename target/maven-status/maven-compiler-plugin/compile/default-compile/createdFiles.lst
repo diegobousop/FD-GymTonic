@@ -1,11 +1,16 @@
 es\udc\fi\dc\fd\model\services\exceptions\PermissionException.class
+es\udc\fi\dc\fd\model\services\ExerciseService.class
+es\udc\fi\dc\fd\rest\dtos\ExerciseDto.class
 es\udc\fi\dc\fd\model\common\exceptions\DuplicateInstanceException.class
+es\udc\fi\dc\fd\model\services\ExerciseServiceImpl.class
 es\udc\fi\dc\fd\rest\dtos\AuthenticatedUserDto.class
 es\udc\fi\dc\fd\model\common\exceptions\InstanceException.class
+es\udc\fi\dc\fd\model\entities\Exercise.class
 es\udc\fi\dc\fd\model\services\PermissionCheckerImpl.class
 es\udc\fi\dc\fd\model\entities\Users.class
 es\udc\fi\dc\fd\rest\dtos\ChangePasswordParamsDto.class
 es\udc\fi\dc\fd\model\entities\UserDao.class
+es\udc\fi\dc\fd\rest\dtos\ExerciseConversor.class
 es\udc\fi\dc\fd\rest\dtos\UserDto$AllValidations.class
 es\udc\fi\dc\fd\model\entities\Users$RoleType.class
 es\udc\fi\dc\fd\rest\dtos\UserDto$UpdateValidations.class
@@ -14,6 +19,7 @@ es\udc\fi\dc\fd\model\services\PermissionChecker.class
 es\udc\fi\dc\fd\rest\common\JwtInfo.class
 es\udc\fi\dc\fd\rest\common\JwtFilter.class
 es\udc\fi\dc\fd\rest\common\SecurityConfig.class
+es\udc\fi\dc\fd\rest\controllers\AdminController.class
 es\udc\fi\dc\fd\rest\common\FieldErrorDto.class
 es\udc\fi\dc\fd\rest\controllers\UserController.class
 es\udc\fi\dc\fd\model\common\exceptions\InstanceNotFoundException.class
@@ -22,9 +28,12 @@ es\udc\fi\dc\fd\rest\controllers\ExampleController.class
 es\udc\fi\dc\fd\rest\dtos\UserConversor.class
 es\udc\fi\dc\fd\model\services\UserService.class
 es\udc\fi\dc\fd\rest\common\JwtGenerator.class
+es\udc\fi\dc\fd\model\entities\ExerciseDao.class
 es\udc\fi\dc\fd\model\services\exceptions\IncorrectPasswordException.class
 es\udc\fi\dc\fd\rest\common\CommonControllerAdvice.class
 es\udc\fi\dc\fd\rest\common\ErrorsDto.class
+es\udc\fi\dc\fd\model\entities\Routine.class
+es\udc\fi\dc\fd\model\entities\Exercise$grupoMuscular.class
 es\udc\fi\dc\fd\rest\common\JwtGeneratorImpl.class
 es\udc\fi\dc\fd\model\services\exceptions\IncorrectLoginException.class
 es\udc\fi\dc\fd\Application.class

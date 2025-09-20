@@ -40,14 +40,14 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 	 * @throws DuplicateInstanceException the duplicate instance exception
 	 */
 	@Override
-	public void signUp(Users user) throws DuplicateInstanceException {
+	public void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException {
 
 <span class="pc bpc" id="L45" title="1 of 2 branches missed.">		if (userDao.existsByUserName(user.getUserName())) {</span>
 <span class="nc" id="L46">			throw new DuplicateInstanceException(&quot;project.entities.user&quot;, user.getUserName());</span>
 		}
 
 <span class="fc" id="L49">		user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
-<span class="fc" id="L50">		user.setRole(Users.RoleType.USER);</span>
+<span class="fc" id="L50">		user.setRole(roleType);</span>
 
 <span class="fc" id="L52">		userDao.save(user);</span>
 
@@ -108,9 +108,9 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 
 <span class="nc" id="L109">		Users user = permissionChecker.checkUser(id);</span>
 
-<span class="nc" id="L111">		user.setFirstName(firstName);</span>
-<span class="nc" id="L112">		user.setLastName(lastName);</span>
-<span class="nc" id="L113">		user.setEmail(email);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">		if (!firstName.isEmpty()) user.setFirstName(firstName);</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">		if (!lastName.isEmpty()) user.setLastName(lastName);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">		if (!email.isEmpty()) user.setEmail(email);</span>
 
 <span class="nc" id="L115">		return user;</span>
 

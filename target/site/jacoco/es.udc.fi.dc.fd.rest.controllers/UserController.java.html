@@ -116,7 +116,7 @@ import es.udc.fi.dc.fd.rest.dtos.UserDto;
 
 <span class="nc" id="L117">		Users user = toUser(userDto);</span>
 
-<span class="nc" id="L119">		userService.signUp(user);</span>
+<span class="nc" id="L119">		userService.signUp(user, Users.RoleType.USER);</span>
 
 <span class="nc" id="L121">		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(&quot;/{id}&quot;).buildAndExpand(user.getId())</span>
 <span class="nc" id="L122">				.toUri();</span>

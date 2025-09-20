@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1758204461815" clover="3.2.0">
-  <project timestamp="1758204461816" name="All files">
-    <metrics statements="139" coveredstatements="14" conditionals="63" coveredconditionals="2" methods="53" coveredmethods="6" elements="255" coveredelements="22" complexity="0" loc="139" ncloc="139" packages="5" files="12" classes="12"/>
+<coverage generated="1758363210095" clover="3.2.0">
+  <project timestamp="1758363210096" name="All files">
+    <metrics statements="138" coveredstatements="2" conditionals="61" coveredconditionals="0" methods="52" coveredmethods="0" elements="251" coveredelements="2" complexity="0" loc="138" ncloc="138" packages="5" files="12" classes="12"/>
     <package name="src">
       <metrics statements="33" coveredstatements="0" conditionals="21" coveredconditionals="0" methods="15" coveredmethods="0"/>
       <file name="index.js" path="C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\frontend\src\index.js">
@@ -157,7 +157,7 @@
       </file>
     </package>
     <package name="src.modules.app.components">
-      <metrics statements="21" coveredstatements="13" conditionals="2" coveredconditionals="2" methods="11" coveredmethods="6"/>
+      <metrics statements="20" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="10" coveredmethods="0"/>
       <file name="App.js" path="C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\frontend\src\modules\app\components\App.js">
         <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="7" count="0" type="stmt"/>
@@ -169,22 +169,21 @@
         <line num="9" count="0" type="stmt"/>
       </file>
       <file name="Home.js" path="C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\frontend\src\modules\app\components\Home.js">
-        <metrics statements="15" coveredstatements="13" conditionals="2" coveredconditionals="2" methods="8" coveredmethods="6"/>
-        <line num="7" count="1" type="stmt"/>
-        <line num="10" count="28" type="stmt"/>
+        <metrics statements="14" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="7" coveredmethods="0"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
-        <line num="17" count="4" type="stmt"/>
-        <line num="18" count="4" type="stmt"/>
-        <line num="19" count="4" type="stmt"/>
-        <line num="21" count="4" type="stmt"/>
-        <line num="22" count="1" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
         <line num="23" count="0" type="stmt"/>
         <line num="25" count="0" type="stmt"/>
-        <line num="29" count="4" type="stmt"/>
-        <line num="30" count="1" type="stmt"/>
-        <line num="31" count="1" type="stmt"/>
-        <line num="34" count="4" type="stmt"/>
-        <line num="57" count="1" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="34" count="0" type="stmt"/>
       </file>
       <file name="Test.js" path="C:\Users\diego\Desktop\CUARTO INFORMATICA\FD\2025\practica-fd\gymtonic\frontend\src\modules\app\components\Test.js">
         <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>

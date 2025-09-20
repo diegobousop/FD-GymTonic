@@ -16,7 +16,8 @@ public class Users {
 	 */
 <span class="fc" id="L17">	public enum RoleType {</span>
 		/** The user. */
-<span class="fc" id="L19">		USER</span>
+<span class="fc" id="L19">		USER,</span>
+<span class="fc" id="L20">		TRAINER</span>
 	}
 
 	/** The id. */
@@ -43,8 +44,8 @@ public class Users {
 	/**
 	 * Instantiates a new user.
 	 */
-<span class="fc" id="L46">	public Users() {</span>
-<span class="fc" id="L47">	}</span>
+<span class="fc" id="L47">	public Users() {</span>
+<span class="fc" id="L48">	}</span>
 
 	/**
 	 * Instantiates a new user.
@@ -55,14 +56,13 @@ public class Users {
 	 * @param lastName  the last name
 	 * @param email     the email
 	 */
-<span class="fc" id="L58">	public Users(String userName, String password, String firstName, String lastName, String email) {</span>
+<span class="fc" id="L59">	public Users(String userName, String password, String firstName, String lastName, String email) {</span>
 
-<span class="fc" id="L60">		this.userName = userName;</span>
-<span class="fc" id="L61">		this.password = password;</span>
-<span class="fc" id="L62">		this.firstName = firstName;</span>
-<span class="fc" id="L63">		this.lastName = lastName;</span>
-<span class="fc" id="L64">		this.email = email;</span>
-
+<span class="fc" id="L61">		this.userName = userName;</span>
+<span class="fc" id="L62">		this.password = password;</span>
+<span class="fc" id="L63">		this.firstName = firstName;</span>
+<span class="fc" id="L64">		this.lastName = lastName;</span>
+<span class="fc" id="L65">		this.email = email;</span>
 <span class="fc" id="L66">	}</span>
 
 	/**
