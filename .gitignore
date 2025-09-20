@@ -1,3 +1,13 @@
 **/build/
 **/node_modules/
 **/coverage
+
+.classpath
+.idea
+.project
+.settings
+target
+
+data/*
+frontend/public/assets/*
+frontend/.env
