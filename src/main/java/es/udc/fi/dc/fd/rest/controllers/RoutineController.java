@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.rest.controllers;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +28,7 @@ public class RoutineController {
 
     
     @PostMapping("/createRoutine")
-    public RoutineDto createRoutine(@RequestAttribute Long userId, @RequestBody RoutineParamsDto params ) 
+    public RoutineDto createRoutine(@RequestAttribute Long userId, @Validated @RequestBody RoutineParamsDto params ) 
         throws DuplicateInstanceException, InstanceNotFoundException{
         return RoutineConversor.toRoutineDto(routineService.createRoutine(userId,params.getName(), params.getExercises(), params.getDuration()));
     }
