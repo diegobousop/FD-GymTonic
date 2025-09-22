@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -101,6 +103,23 @@ public class RoutineServiceTest {
             assertEquals(true, retrievedRoutine.get().getExercises().contains(routine.getExercises().get(0)));
             assertEquals(true, retrievedRoutine.get().getExercises().contains(routine.getExercises().get(1)));
         }    
+    }
+
+    @Test
+    public void viewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine1 = createRoutine("routine1", creator);
+        Routine routine2 = createRoutine("routine2", creator);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO));
+        Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.PECHO));
+        routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90);
+        routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise3.getId());}}, (long) 90);
+            
+        assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines());
+
     }
 
 }

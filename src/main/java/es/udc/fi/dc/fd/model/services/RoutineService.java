@@ -8,4 +8,6 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 
 public interface RoutineService {
     Routine createRoutine(Long creatorId, String name, List<Long> exercises,Long duration) throws DuplicateInstanceException, InstanceNotFoundException;
+    
+    List<Routine> viewAllRoutines();
 }

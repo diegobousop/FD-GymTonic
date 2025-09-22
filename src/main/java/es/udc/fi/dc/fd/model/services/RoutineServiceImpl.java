@@ -51,5 +51,10 @@ public class RoutineServiceImpl implements RoutineService {
         routineDao.save(routine);
         return routine;
     }
+
+    @Override
+    public List<Routine> viewAllRoutines(){
+        return routineDao.findAll();
+    }
     
 }

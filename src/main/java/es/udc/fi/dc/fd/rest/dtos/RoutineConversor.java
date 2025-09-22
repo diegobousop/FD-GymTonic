@@ -1,5 +1,8 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import es.udc.fi.dc.fd.model.entities.Routine;
 
 public class RoutineConversor {
@@ -16,4 +19,9 @@ public class RoutineConversor {
          ExerciseConversor.toExercises(routineDto.getExercises()), routineDto.getCreator(), routineDto.getDuration(), routineDto.getModificationDate()); 
         return routine;
     }
+
+    public static List<RoutineDto> toRoutineDtos(List<Routine> routines){
+        return routines.stream().map(c -> toRoutineDto(c)).collect(Collectors.toList());
+    }
+    
 }
