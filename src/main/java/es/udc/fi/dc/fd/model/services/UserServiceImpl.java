@@ -108,9 +108,9 @@ public class UserServiceImpl implements UserService {
 
 		Users user = permissionChecker.checkUser(id);
 
-		if (!firstName.isEmpty()) user.setFirstName(firstName);
-		if (!lastName.isEmpty()) user.setLastName(lastName);
-		if (!email.isEmpty()) user.setEmail(email);
+		user.setFirstName(firstName);
+		user.setLastName(lastName);
+		user.setEmail(email);
 
 		return user;
 
