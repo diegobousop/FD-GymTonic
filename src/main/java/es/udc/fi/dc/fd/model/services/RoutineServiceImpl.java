@@ -19,6 +19,8 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
+
 @Service
 @Transactional
 public class RoutineServiceImpl implements RoutineService {
@@ -55,6 +57,57 @@ public class RoutineServiceImpl implements RoutineService {
     @Override
     public List<Routine> viewAllRoutines(){
         return routineDao.findAll();
+    }
+
+    @Override
+    public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration) throws InstanceNotFoundException, PermissionException {
+        Users creator = permissionChecker.checkUser(creatorId);
+        
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+        
+        Routine routine = optionalRoutine.get();
+        
+        if (!routine.getCreator().getId().equals(creator.getId())) {
+            throw new PermissionException();
+        }
+        
+        List<Exercise> foundExercises = new ArrayList<>();
+        for (Long exerciseId : exercises) {
+            Optional<Exercise> exercise = exerciseDao.findById(exerciseId);
+            if (exercise.isEmpty()) {
+                throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+            }
+            foundExercises.add(exercise.get());
+        }
+        
+        routine.setName(name);
+        routine.setExercises(foundExercises);
+        routine.setDuration(duration);
+        routine.setModificationDate(LocalDateTime.now().withNano(0));
+        
+        routineDao.save(routine);
+        return routine;
+    }
+
+    @Override
+    public void deleteRoutine(Long creatorId, Long routineId) throws InstanceNotFoundException, PermissionException {
+        Users creator = permissionChecker.checkUser(creatorId);
+        
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+        
+        Routine routine = optionalRoutine.get();
+        
+        if (!routine.getCreator().getId().equals(creator.getId())) {
+            throw new PermissionException();
+        }
+        
+        routineDao.delete(routine);
     }
     
 }
