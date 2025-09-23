@@ -8,6 +8,7 @@ import IntroPage from "../pages/intro-page";
 import LoginPage from "../pages/login-page";
 import RegisterPage from "../pages/register-page";
 import HomePage from "../pages/home-page";
+import { CreateRoutine } from "../../routine";
 
 const Body = () => {
   return (
@@ -18,6 +19,7 @@ const Body = () => {
         <Route path="/start" element={<IntroPage  />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/routines/createRoutine" element={<CreateRoutine />} />
     </Routes>
   );
 };

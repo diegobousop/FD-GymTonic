@@ -1,0 +1,96 @@
+import {useState} from "react";
+import backend from "../../../backend";
+import SendButton from "../../app/components/common/send-button";
+import TextInput from "../../app/components/common/text-input";
+
+
+const CreateRoutine = () => {
+
+    const [name, setName] = useState("");
+    const [duration, setDuration] = useState("");
+    const [exercises, setExercises] = useState("");
+    const [success, setSuccess] = useState(false);
+    const [backendErrors, setBackendErrors] = useState(null);
+
+    let form;
+
+    const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Parsear los ejercicios desde el input de texto
+    const parsedExercises = exercises
+        .split(",") // separar por coma
+        .map((id) => Number(id.trim())) // limpiar espacios y convertir a número
+        .filter((id) => !isNaN(id) && id > 0); // filtrar IDs no válidos
+
+
+    if (form.checkValidity() && !isNaN(duration) ) {
+        // Si no hay ejercicios, los dejamos vacíos
+        const finalExercises = parsedExercises.length > 0 ? parsedExercises : [];
+        try {
+            await backend.routineService.createRoutine(
+                name.trim(),
+                finalExercises, 
+                Number(duration),
+                (routine) => {
+                    setSuccess(true)
+                },
+                (err) => {
+                // Callback de error
+                setSuccess(false);
+                setBackendErrors(err || "Error inesperado");
+                }
+
+            );
+            setSuccess(true)
+            setBackendErrors(null)
+
+        } catch (ex) {
+        setSuccess(false);
+        setBackendErrors(ex.message || "Error inesperado");
+        }
+    } else {
+        form.classList.add("was-validated");
+    }
+    };
+
+    return (
+        <div className="container mt-5">
+            <h2>Creación de Rutina</h2>
+                <form ref={node => form = node} className="needs-validation" noValidate onSubmit={handleSubmit}>
+                    <TextInput
+                    name="RoutineName"
+                    label="Nombre:"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    />
+
+                    <TextInput
+                    name="RoutineDuration"
+                    label="Duración:"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    maxLength="3"
+                    type="number"
+                    />
+
+                    <TextInput
+                    name="RoutineExercises"
+                    label="Ejercicios (IDs):"
+                    value={exercises}
+                    onChange={(e) => setExercises(e.target.value)}
+                    maxLength="20"
+                    />
+
+                    <SendButton onClick={handleSubmit}></SendButton>
+                </form>    
+                {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
+                {success && <div className="text-green-500 text-xs mt-2">Rutina {name} creada Existosamente</div>}
+
+        </div>      
+
+    );
+
+}
+
+export default CreateRoutine;
