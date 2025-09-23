@@ -96,8 +96,7 @@
 			</activation>
 			<properties>
 				<!--  Data source properties -->
-				<dataSource.url>jdbc:h2:mem:gym_tonic</dataSource.url>
-				<testDataSource.url>jdbc:h2:mem:gym_tonicTest</testDataSource.url>
+				<dataSource.url>jdbc:h2:file:./data/gym_tonic</dataSource.url>
 				<dataSource.user>sa</dataSource.user>
 				<dataSource.password></dataSource.password>
 			</properties>

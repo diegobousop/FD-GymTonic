@@ -3,11 +3,11 @@ logging:
     org:
       hibernate:
         SQL: debug
-spring:
+spring: 
   datasource:
-    url: jdbc:h2:mem:gym_tonic
+    url: jdbc:h2:file:./data/gym_tonic
     username: sa
-    password: 
+    password:
     max-active: 4
     max-idle: 2
     max-wait: 10000
@@ -15,6 +15,9 @@ spring:
     remove-abandoned-timeout: 60
     log-abandoned: true
     validation-query: SELECT 1
+  sql:
+    init:
+      mode: always
   devtools:
     restart:
       trigger-file: reload
@@ -24,7 +27,7 @@ spring:
     default-property-inclusion: NON_NULL
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       show-sql: true
       format-sql: true
       use-sql-comments: true

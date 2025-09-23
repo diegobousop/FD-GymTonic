@@ -1,13 +1,15 @@
 {
   "files": {
-    "main.css": "/gym-tonic/static/css/main.609214c8.css",
-    "main.js": "/gym-tonic/static/js/main.76651091.js",
+    "main.css": "/gym-tonic/static/css/main.3abe637a.css",
+    "main.js": "/gym-tonic/static/js/main.85c109ed.js",
+    "static/media/KabelLTStd-Heavy.otf": "/gym-tonic/static/media/KabelLTStd-Heavy.0aac8a38f7642fec15d4.otf",
+    "static/media/KabelLTStd-Book.otf": "/gym-tonic/static/media/KabelLTStd-Book.eb20ee09b4f6dd76d434.otf",
     "index.html": "/gym-tonic/index.html",
-    "main.609214c8.css.map": "/gym-tonic/static/css/main.609214c8.css.map",
-    "main.76651091.js.map": "/gym-tonic/static/js/main.76651091.js.map"
+    "main.3abe637a.css.map": "/gym-tonic/static/css/main.3abe637a.css.map",
+    "main.85c109ed.js.map": "/gym-tonic/static/js/main.85c109ed.js.map"
   },
   "entrypoints": [
-    "static/css/main.609214c8.css",
-    "static/js/main.76651091.js"
+    "static/css/main.3abe637a.css",
+    "static/js/main.85c109ed.js"
   ]
 }

@@ -11,3 +11,4 @@ target
 data/*
 frontend/public/assets/*
 frontend/.env
+frontend/node_modules/
