@@ -2,6 +2,7 @@
 **/node_modules/
 **/coverage
 
+
 .classpath
 .idea
 .project
@@ -9,6 +10,4 @@
 target
 
 data/*
-
 frontend/.env
-frontend/node_modules/
