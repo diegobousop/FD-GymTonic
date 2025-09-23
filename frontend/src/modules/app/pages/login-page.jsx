@@ -16,16 +16,12 @@ const LoginPage = () => {
 
 
   useEffect(() => {
-    // guarda el valor anterior para restaurarlo
     const prevOverflow = document.body.style.overflow;
     const prevOverscroll = document.body.style.overscrollBehavior;
-
-    // evitar scroll y el "rubber-band" en móviles
     document.body.style.overflow = 'hidden';
     document.body.style.overscrollBehavior = 'none';
 
     return () => {
-      // restaurar al desmontar
       document.body.style.overflow = prevOverflow;
       document.body.style.overscrollBehavior = prevOverscroll;
     };
@@ -35,8 +31,6 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrors(null)
-
-    // llama al servicio de login del frontend
     try {
       await login(
         username,
@@ -45,7 +39,6 @@ const LoginPage = () => {
           window.location.href = "/gym-tonic/#/home";
         },
         (err) => {
-          // onErrors callback: err suele ser un objeto o mensaje
           setErrors(err || 'Error en autenticación')
         }
       )

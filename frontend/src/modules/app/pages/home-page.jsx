@@ -5,10 +5,7 @@ const HomePage = () => {
   return (
     <div>
       <NavBar />
-      
-      
       HomePage
-      
     </div>
   )
 }

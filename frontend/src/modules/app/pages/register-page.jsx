@@ -21,16 +21,13 @@ const RegisterPage = () => {
 
 
     useEffect(() => {
-        // guarda el valor anterior para restaurarlo
         const prevOverflow = document.body.style.overflow;
         const prevOverscroll = document.body.style.overscrollBehavior;
     
-        // evitar scroll y el "rubber-band" en móviles
         document.body.style.overflow = 'hidden';
         document.body.style.overscrollBehavior = 'none';
     
         return () => {
-          // restaurar al desmontar
           document.body.style.overflow = prevOverflow;
           document.body.style.overscrollBehavior = prevOverscroll;
         };
@@ -114,7 +111,6 @@ const RegisterPage = () => {
               
               <div className="col-span-1" />
             </div>
-            
              {errors && <div className="text-red-500 text-xs mt-2">{errors.globalError}</div>}
           </form>
         </div>

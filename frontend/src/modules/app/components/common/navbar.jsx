@@ -2,6 +2,9 @@ import React from 'react'
 
 import SearchBar from './searchbar'
 
+import { GENERAL_ICONS } from '../../../../config/constants'
+
+
 const Navbar = () => {
 
 
@@ -9,7 +12,7 @@ const Navbar = () => {
     <div className="flex flex-row items-center justify-start h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
 
         <img
-          src={process.env.PUBLIC_URL + "/assets/GymTonicLogo.png"}
+          src={GENERAL_ICONS.APP_LOGO}
           alt="logo"
           className="h-12 ml-4"
         />
@@ -22,11 +25,7 @@ const Navbar = () => {
 
             <div className="flex flex-row items-center justify-between gap-2 mr-2">
                 <SearchBar />
-                <img
-                  src={process.env.PUBLIC_URL + "/assets/user1.png"}
-                  alt="user1"
-                  className=""
-                />
+                <img src={GENERAL_ICONS.DEFAULT_AVATAR} alt="user avatar" className="h-[48px] w-[48px]" />
             </div>
 
         </div>

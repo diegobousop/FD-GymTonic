@@ -7,5 +7,7 @@ export const config = {
 export const GENERAL_ICONS = { 
     WATCH_PASSWORD_CLOSED: "https://ik.imagekit.io/940wz34p7/password-eye.png?updatedAt=1758579156001",
     WATCH_PASSWORD_OPEN: "https://ik.imagekit.io/940wz34p7/password-eye-open.png?updatedAt=1758579426429",
-    LEFT_ARROW: "https://ik.imagekit.io/940wz34p7/right-arrow.png?updatedAt=1758578611770"
+    LEFT_ARROW: "https://ik.imagekit.io/940wz34p7/right-arrow.png?updatedAt=1758578611770",
+    DEFAULT_AVATAR: "https://ik.imagekit.io/940wz34p7/icon1.png?updatedAt=1758634852371",
+    APP_LOGO: "https://ik.imagekit.io/940wz34p7/GymTonicLogo.png?updatedAt=1758634703534"
 }
