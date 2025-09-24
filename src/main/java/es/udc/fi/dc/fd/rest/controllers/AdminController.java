@@ -6,9 +6,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.services.ExerciseService;
+import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
+import es.udc.fi.dc.fd.model.services.Block;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -18,8 +26,15 @@ public class AdminController {
     private ExerciseService exerciseService;
 
     @PostMapping("/addExercise")
-    public Long addProduct(@RequestBody ExerciseDto exercise){
+    public Long addProduct(@RequestBody ExerciseDto exercise) throws DuplicateInstanceException{
  
         return exerciseService.addExercise(ExerciseConversor.toExercise(exercise));
     }
+
+    @GetMapping("/getExercises")
+    public BlockDto<ExerciseDto> getExercises(@RequestParam(defaultValue = "0") int page){
+        Block<Exercise> returned = exerciseService.getExercices(page, 5);
+        
+        return new BlockDto<>(ExerciseConversor.toExerciseDtos(returned.getItems()), returned.getExistMoreItems());
+    }    
 }
