@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { GENERAL_ICONS } from '../../../../config/constants'
 
-// Props added: value, onChange, name. Backwards-compatible: if value/onChange not provided,
-// the component manages its own internal state.
+
 const TextInput = ({
   label = 'Nombre de Usuario',
   maxLength = 100,
@@ -15,15 +14,13 @@ const TextInput = ({
   const [internalValue, setInternalValue] = useState(initialValue)
   const [showPassword, setShowPassword] = useState(false)
 
-  // if parent provides value prop, use it (controlled); otherwise use internal state
+
   const value = typeof controlledValue !== 'undefined' ? controlledValue : internalValue
 
   useEffect(() => {
-    // keep internalValue in sync if initialValue changes
     setInternalValue(initialValue)
   }, [initialValue])
 
-  // si es un input de tipo password, alternamos entre 'password' y 'text'
   const inputType = type === 'password' ? (showPassword ? 'text' : 'password') : type
 
   const handleChange = (e) => {
@@ -34,7 +31,6 @@ const TextInput = ({
 
   return (
     <div className="mt-5 w-[288px]">
-      {/* etiqueta y contador; ocultar contador si es password */}
       <div className="flex items-center justify-between mb-1 text-xs text-[#c6c6c6]">
         <p className="m-0">{label}</p>
         {type !== 'password' && <span>{(value || '').length}/{maxLength}</span>}

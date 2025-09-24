@@ -6,6 +6,8 @@ import SendButton from '../components/common/send-button'
 
 import { signUp } from '../../../backend/userService';
 
+import { GENERAL_ICONS } from '../../../config/constants'
+
 const imageUrl = 'https://ik.imagekit.io/940wz34p7/tioRunning-background.png?updatedAt=1758618074898'
 
 
@@ -73,13 +75,13 @@ const RegisterPage = () => {
         <div className="flex flex-row items-center justify-between h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
           <Link to="/start" className="mr-4"> 
             <img
-              src={process.env.PUBLIC_URL + "/assets/GymTonicLogo.png"}
+              src={GENERAL_ICONS.APP_LOGO}
               alt="logo"
-              className="h-12 ml-10"
+              className="h-12 ml-20"
             />
           </Link>
 
-          <Link to="/login" className="mr-4">
+          <Link to="/login" className="mr-14">
                   <div className="border-4 border-[#ff0000] px-[40px] py-[10px]">
                       <h1 className="text-white font-bold text-2xl">ACCESO</h1>
                   </div>
