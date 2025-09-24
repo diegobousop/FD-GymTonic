@@ -8,7 +8,8 @@ import PropTypes from 'prop-types'
 
 const PAGE_TITLES = {
   home: 'Inicio',
-  profile: 'Perfil'
+  profile: 'Perfil',
+  createroutine:'Crear Rutina'
 }
 
 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : ''

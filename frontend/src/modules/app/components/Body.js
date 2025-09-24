@@ -21,7 +21,7 @@ const Body = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/routines/createRoutine" element={<CreateRoutine />} />
+        <Route path="/routines/create-routine" element={<CreateRoutine />} />
     </Routes>
   );
 };

@@ -12,6 +12,7 @@ const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
   const [homePressed, setHomePressed] = useState(false)
   const [profilePressed, setProfilePressed] = useState(false)
+  const [createRoutinePressed, setCreateRoutinePressed] = useState(false)
 
   const isActive = (page) => activePage === page
 
@@ -47,6 +48,19 @@ const SideMenu = ({ activePage, setActivePage }) => {
         >
           <ProfileIcon className={`absolute left-4 w-[30px] h-auto ${isActive('profile') ? 'text-[#ff0000]' : 'text-white'}`} />
           <h1 className={`text-[16px] ${isActive('profile') ? 'text-[#ff0000]' : 'text-white'}`}>Ver perfil</h1>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => go('create-routine', '/routines/create-routine')}
+          onPointerDown={() => setCreateRoutinePressed(true)}
+          onPointerUp={() => setCreateRoutinePressed(false)}
+          style={{ transform: profilePressed ? 'translateY(1px) scale(0.970)' : undefined }}
+          className={`flex w-full items-center justify-center py-3 px-3 mt-5 relative transform transition-all duration-150
+             active:translate-y-[1px] active:scale-[0.970]  ${isActive('profile') ? 'bg-[#241515]' : 'bg-transparent hover:bg-[#241515]'}`}
+        >
+          <ProfileIcon className={`absolute left-4 w-[30px] h-auto ${isActive('create-routine') ? 'text-[#ff0000]' : 'text-white'}`} />
+          <h1 className={`text-[16px] ${isActive('create-routine') ? 'text-[#ff0000]' : 'text-white'}`}>Crear Rutina</h1>
         </button>
 
 
