@@ -14,6 +14,7 @@ import RegisterPage from "../pages/register-page";
 import HomePage from "../pages/home-page";
 import ProfilePage from "../pages/profile-page";
 import { CreateRoutine } from "../../routine";
+import UserEdit from "../pages/user-edit";
 
 const Body = () => {
 
@@ -27,6 +28,7 @@ const Body = () => {
     if (path.startsWith('/profile')) { setActivePage('profile'); return }
     if (path.startsWith('/create-routine')) { setActivePage('create-routine'); return }
     if (path.startsWith('/test')) { setActivePage('test'); return }
+    if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate');  }
   }, [location.pathname])
 
   return (
@@ -48,6 +50,7 @@ const Body = () => {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/test" element={<Test />} />
               <Route path="/routines/create-routine" element={<CreateRoutine />} />
+              <Route path="/profileUpdate" element={<UserEdit />} />
           </Routes>
         </div>
       </div>

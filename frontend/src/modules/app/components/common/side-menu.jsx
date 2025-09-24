@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { SVG_ICONS } from '../../../../config/constants'
@@ -8,16 +8,27 @@ const { HomeIcon, ProfileIcon } = SVG_ICONS
 
 
 
+
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
   const [homePressed, setHomePressed] = useState(false)
   const [profilePressed, setProfilePressed] = useState(false)
   const [createRoutinePressed, setCreateRoutinePressed] = useState(false)
+  const [profileUpdatePressed, setProfileUpdatePressed] = useState(false)
+
+  // Leer la última página activa de localStorage al montar
+  useEffect(() => {
+    const lastPage = localStorage.getItem('sideMenuActivePage')
+    if (lastPage && setActivePage) {
+      setActivePage(lastPage)
+    }
+  }, [setActivePage])
 
   const isActive = (page) => activePage === page
 
   const go = (page, path) => {
     if (setActivePage) setActivePage(page)
+    localStorage.setItem('sideMenuActivePage', page)
     if (path) navigate(path)
   }
 
@@ -51,17 +62,31 @@ const SideMenu = ({ activePage, setActivePage }) => {
           <h1 className={`text-[16px] ${isActive('profile') ? 'text-[#ff0000]' : 'text-white'}`}>Ver perfil</h1>
         </button>
 
+
         <button
           type="button"
           onClick={() => go('create-routine', '/routines/create-routine')}
           onPointerDown={() => setCreateRoutinePressed(true)}
           onPointerUp={() => setCreateRoutinePressed(false)}
-          style={{ transform: profilePressed ? 'translateY(1px) scale(0.970)' : undefined }}
+          style={{ transform: createRoutinePressed ? 'translateY(1px) scale(0.970)' : undefined }}
           className={`flex w-full items-center justify-center py-3 px-3 mt-5 relative transform transition-all duration-150
-             active:translate-y-[1px] active:scale-[0.970]  ${isActive('profile') ? 'bg-[#241515]' : 'bg-transparent hover:bg-[#241515]'}`}
+             active:translate-y-[1px] active:scale-[0.970]  ${isActive('create-routine') ? 'bg-[#241515]' : 'bg-transparent hover:bg-[#241515]'}`}
         >
           <ProfileIcon className={`absolute left-4 w-[30px] h-auto ${isActive('create-routine') ? 'text-[#ff0000]' : 'text-white'}`} />
           <h1 className={`text-[16px] ${isActive('create-routine') ? 'text-[#ff0000]' : 'text-white'}`}>Crear Rutina</h1>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => go('user-edit', '/profileUpdate')}
+          onPointerDown={() => setProfileUpdatePressed(true)}
+          onPointerUp={() => setProfileUpdatePressed(false)}
+          style={{ transform: profileUpdatePressed ? 'translateY(1px) scale(0.970)' : undefined }}
+          className={`flex w-full items-center justify-center py-3 px-3 mt-5 relative transform transition-all duration-150
+             active:translate-y-[1px] active:scale-[0.970]  ${isActive('user-edit') ? 'bg-[#241515]' : 'bg-transparent hover:bg-[#241515]'}`}
+        >
+          <ProfileIcon className={`absolute left-4 w-[30px] h-auto ${isActive('user-edit') ? 'text-[#ff0000]' : 'text-white'}`} />
+          <h1 className={`text-[16px] ${isActive('user-edit') ? 'text-[#ff0000]' : 'text-white'}`}>Editar usuario</h1>
         </button>
 
 
