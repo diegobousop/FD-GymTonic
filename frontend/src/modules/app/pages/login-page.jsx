@@ -6,6 +6,9 @@ import SendButton from '../components/common/send-button'
 
 import { login } from '../../../backend/userService';
 
+import { GENERAL_ICONS } from '../../../config/constants'
+
+
 const imageUrl = 'https://ik.imagekit.io/940wz34p7/tioMazao.png?updatedAt=1758576677345'
 
 const LoginPage = () => {
@@ -51,15 +54,15 @@ const LoginPage = () => {
   return (
     <div >
         <div className="flex flex-row items-center justify-between h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
-          <Link to="/start" className="mr-4"> 
+          <Link to="/start"> 
             <img
-              src={process.env.PUBLIC_URL + "/assets/GymTonicLogo.png"}
+              src={GENERAL_ICONS.APP_LOGO}
               alt="logo"
-              className="h-12 ml-10"
+              className="h-12 ml-20"
             />
           </Link>
 
-          <Link to="/register" className="mr-4">
+          <Link to="/register" className="mr-14">
                   <div className="border-4 border-[#ff0000] px-[40px] py-[10px]">
                       <h1 className="text-white font-bold text-2xl">REGISTRARSE</h1>
                   </div>
@@ -88,7 +91,7 @@ const LoginPage = () => {
 
             {errors && <div className="text-red-500 text-xs mt-2">{errors.globalError}</div>}
 
-            <SendButton onClick={handleLogin} />
+            <SendButton type="submit" />
           </form>
         </div>
       </div>
