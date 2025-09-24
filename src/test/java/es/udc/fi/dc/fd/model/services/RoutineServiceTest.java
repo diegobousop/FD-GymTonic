@@ -27,6 +27,7 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -122,6 +123,80 @@ public class RoutineServiceTest {
             
         assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines());
 
+    }
+
+    @Test
+    public void testModifyRoutineSuccess() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = createRoutine("routine1", creator);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO));
+        routine = routineService.createRoutine(creator.getId(), routine.getName(),
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 60);
+
+        Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.ESPALDA));
+
+        Routine modified = routineService.modifyRoutine(
+            routine.getId(),
+            creator.getId(),
+            "routine-updated",
+            new ArrayList<Long>(){{add(exercise2.getId()); add(exercise3.getId());}},
+            (long) 75
+        );
+
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        if (retrieved.isPresent()) {
+            assertEquals("routine-updated", retrieved.get().getName());
+            assertEquals((Long)75L, retrieved.get().getDuration());
+            assertEquals(2, retrieved.get().getExercises().size());
+            assertEquals(true, retrieved.get().getExercises().contains(modified.getExercises().get(0)));
+            assertEquals(true, retrieved.get().getExercises().contains(modified.getExercises().get(1)));
+            assertEquals(modified.getModificationDate(), retrieved.get().getModificationDate());
+        }
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testModifyRoutineNotFound() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        routineService.modifyRoutine(999999L, creator.getId(), "any", new ArrayList<Long>(), 30L);
+    }
+
+    @Test(expected = PermissionException.class)
+    public void testModifyRoutinePermissionDenied() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users otherUser = userService.login("trainer1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L);
+        routineService.modifyRoutine(routine.getId(), otherUser.getId(), "new-name", new ArrayList<Long>(), 50L);
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testModifyRoutineWithInvalidExercise() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L);
+        routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L);
+    }
+
+    @Test
+    public void testDeleteRoutineSuccess() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L);
+        routineService.deleteRoutine(creator.getId(), routine.getId());
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        assertEquals(false, retrieved.isPresent());
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testDeleteRoutineNotFound() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        routineService.deleteRoutine(creator.getId(), 999999L);
+    }
+
+    @Test(expected = PermissionException.class)
+    public void testDeleteRoutinePermissionDenied() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users otherUser = userService.login("user1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "to-delete-2", new ArrayList<Long>(), 35L);
+        routineService.deleteRoutine(otherUser.getId(), routine.getId());
     }
 
 }
