@@ -18,7 +18,8 @@ import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
 
 @Service
@@ -33,12 +34,16 @@ public class RoutineServiceImpl implements RoutineService {
     private ExerciseDao exerciseDao;
     
     @Override
-    public Routine createRoutine( Long creatorId, String name, List<Long> exercises,Long duration) throws DuplicateInstanceException, InstanceNotFoundException {
+    public Routine createRoutine( Long creatorId, String name, List<Long> exercises,Long duration) throws DuplicateInstanceException,
+        InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException {
         Users creator = permissionChecker.checkUser(creatorId);
 
 		if (routineDao.existsByNameAndCreator(name, creator)) {
 			throw new DuplicateInstanceException("project.entities.routine", name);
 		}
+
+        if(name.isBlank()) throw new InvalidRoutineNameException(name);
+        if(duration<=0) throw new InvalidRoutineDurationException(duration);
 
         List<Exercise> found = new ArrayList<>();
         for (Long exerciseId : exercises) {

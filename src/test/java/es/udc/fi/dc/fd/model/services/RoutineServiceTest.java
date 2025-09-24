@@ -25,6 +25,8 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -69,7 +71,7 @@ public class RoutineServiceTest {
 	}
 
     @Test
-    public void testCreateEmptyRoutine() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException{
+    public void testCreateEmptyRoutine() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
         routine = routineService.createRoutine(creator.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration());
@@ -85,7 +87,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testCreateRoutineWithExercises() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException{
+    public void testCreateRoutineWithExercises() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
@@ -106,7 +108,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void viewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException{
+    public void viewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);

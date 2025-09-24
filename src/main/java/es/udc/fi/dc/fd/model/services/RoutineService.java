@@ -5,10 +5,14 @@ import java.util.List;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Routine;
+
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
 
 public interface RoutineService {
-    Routine createRoutine(Long creatorId, String name, List<Long> exercises,Long duration) throws DuplicateInstanceException, InstanceNotFoundException;
+    Routine createRoutine(Long creatorId, String name, List<Long> exercises,Long duration) throws DuplicateInstanceException, InstanceNotFoundException, 
+    InvalidRoutineNameException, InvalidRoutineDurationException;
     
     List<Routine> viewAllRoutines();
 
