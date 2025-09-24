@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: es.udc.fi.dc.fd.rest.UserControllerTest
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.928 s -- in es.udc.fi.dc.fd.rest.UserControllerTest
