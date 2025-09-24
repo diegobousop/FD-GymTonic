@@ -60,54 +60,38 @@ const CreateRoutine = () => {
     };
 
     return (
+            <div className="flex flex-col mt-10 justify-center items-center">
+                <h2 className="text-white">Creación de Rutina</h2>
+                <form ref={node => form = node} className="needs-validation" noValidate onSubmit={handleSubmit}>
+                    <TextInput
+                        name="RoutineName"
+                        label="Nombre:"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        />
 
-        <div>
-              <NavBar activePage={activePage} />
-              <div className="flex flex-row h-screen">
-                <SideMenu activePage={activePage} setActivePage={setActivePage} />
-                <main className="flex-1 p-8">
-                  {/* Área principal en la que va el contenido de la funcionalidad */}
-        
-                
-                    <div className="flex flex-col mt-10 justify-center items-center">
-                        
-                        
-                        <h2 className="text-white">Creación de Rutina</h2>
-                        <form ref={node => form = node} className="needs-validation" noValidate onSubmit={handleSubmit}>
-                                <TextInput
-                                name="RoutineName"
-                                label="Nombre:"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                />
+                    <TextInput
+                        name="RoutineDuration"
+                        label="Duración:"
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        maxLength="3"
+                        type="number"
+                        />
 
-                                <TextInput
-                                name="RoutineDuration"
-                                label="Duración:"
-                                value={duration}
-                                onChange={(e) => setDuration(e.target.value)}
-                                maxLength="3"
-                                type="number"
-                                />
-
-                                <TextInput
-                                name="RoutineExercises"
-                                label="Ejercicios (IDs):"
-                                value={exercises}
-                                onChange={(e) => setExercises(e.target.value)}
-                                maxLength="20"
-                                />
+                    <TextInput
+                        name="RoutineExercises"
+                        label="Ejercicios (IDs):"
+                        value={exercises}
+                        onChange={(e) => setExercises(e.target.value)}
+                        maxLength="20"
+                        />
 
                                 <SendButton onClick={handleSubmit}></SendButton>
-                        </form>    
-                            {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
-                            {success && <div className="text-green-500 text-xs mt-2">Rutina {name} creada Existosamente</div>}
-
-                    </div>      
-                </main>
-              </div>
-            </div>
-        
+                </form>    
+                        {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
+                        {success && <div className="text-green-500 text-xs mt-2">Rutina {name} creada Existosamente</div>}
+            </div>       
 
     );
 

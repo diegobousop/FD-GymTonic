@@ -21,6 +21,7 @@ const SideMenu = ({ activePage, setActivePage }) => {
     if (path) navigate(path)
   }
 
+
   return (
     <div className="flex flex-col w-[252px] border-r border-[#ff0000] h-full items-center px-8">
         
