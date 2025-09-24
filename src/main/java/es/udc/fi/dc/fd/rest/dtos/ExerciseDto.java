@@ -37,7 +37,7 @@ public class ExerciseDto {
     }
 
     @NotBlank
-    @NotNull
+    @NotNull 
     public grupoMuscular getGrupoMuscular() {
         return grupoMuscular;
     }
