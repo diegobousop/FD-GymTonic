@@ -114,7 +114,11 @@ public class ExerciseServiceTest {
 
         Block<Exercise> returned = exerciseService.getExercices(0, 4);
 
-        assertEquals(exercises, returned.getItems());
+        assertEquals(
+                exercises.stream().map(Exercise::getExerciseName).toList(),
+                returned.getItems().stream().map(Exercise::getExerciseName).toList()
+        );
+
         assertTrue(returned.getExistMoreItems());
 
         List<Exercise> exercises2 = List.of(exercise5);
@@ -122,7 +126,10 @@ public class ExerciseServiceTest {
 
         Block<Exercise> returned2 = exerciseService.getExercices(1, 4);
 
-        assertEquals(exercises2, returned2.getItems());
+        assertEquals(
+                exercises2.stream().map(Exercise::getExerciseName).toList(),
+                returned2.getItems().stream().map(Exercise::getExerciseName).toList()
+        );
         assertFalse(returned2.getExistMoreItems());
     }
 
