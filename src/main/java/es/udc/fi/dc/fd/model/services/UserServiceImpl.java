@@ -133,9 +133,10 @@ public class UserServiceImpl implements UserService {
 
 		if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
 			throw new IncorrectPasswordException();
-		} else {
-			user.setPassword(passwordEncoder.encode(newPassword));
 		}
+		
+		user.setPassword(passwordEncoder.encode(newPassword));
+		userDao.save(user);
 
 	}
 
