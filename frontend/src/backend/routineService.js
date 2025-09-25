@@ -11,3 +11,13 @@ export const createRoutine = (name, exercises, duration, onSuccess, onErrors) =>
     onErrors 
   );
 };
+
+
+export const viewAllRoutines = (onSuccess, onErrors) =>
+  appFetch(
+    "/routines/viewAllRoutines",
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
