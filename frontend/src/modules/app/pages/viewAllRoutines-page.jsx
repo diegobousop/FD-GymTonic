@@ -28,6 +28,11 @@ const ViewAllRoutines = () => {
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
+  
+  console.log("rutinas: " + routines);
+  if (!loading && !error && routines.length === 0) {
+    return <p className="text-red-100 mt-10 ml-10">Todavía no hay rutinas disponibles</p>;
+  }
 
   return (
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10">
