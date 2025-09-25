@@ -1,7 +1,9 @@
 package es.udc.fi.dc.fd.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
@@ -151,5 +153,51 @@ public class RoutineControllerTest {
 			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)))
 			.andExpect(status().is4xxClientError());
 
+    }
+
+    @Test
+    public void testViewAllRoutines() throws Exception{
+
+		AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+
+        RoutineParamsDto params = new RoutineParamsDto();
+        params.setName("Full-Body");
+        params.setDuration(120L);
+        params.setExercises(new ArrayList<>());
+
+		ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/routines/createRoutine").header("Authorization", "Bearer " + user.getServiceToken())
+			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)));
+
+        params.setName("Push");
+        params.setDuration(50L);
+        params.setExercises(new ArrayList<>());
+
+        mockMvc.perform(post("/api/routines/createRoutine").header("Authorization", "Bearer " + user.getServiceToken())
+			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)));
+
+        mockMvc.perform(get("/api/routines/viewAllRoutines")
+        .header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].name").value("Full-Body"))
+        .andExpect(jsonPath("$[0].duration").value("120"))
+        .andExpect(jsonPath("$[1].name").value("Push"))
+        .andExpect(jsonPath("$[1].duration").value("50"));
+
+    }
+
+    @Test
+    public void testViewAllRoutinesWithoutRoutines() throws Exception{
+
+		AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+
+        mockMvc.perform(get("/api/routines/viewAllRoutines")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0)); 
     }
 }
