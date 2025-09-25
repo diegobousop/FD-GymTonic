@@ -10,6 +10,8 @@ const TextInput = ({
   value: controlledValue,
   onChange,
   name,
+  errors,
+  errorMessage = '',
 }) => {
   const [internalValue, setInternalValue] = useState(initialValue)
   const [showPassword, setShowPassword] = useState(false)
@@ -43,7 +45,10 @@ const TextInput = ({
           value={value || ''}
           onChange={handleChange}
           maxLength={maxLength}
-          className="bg-[#262626] w-full h-[48px] text-[#f4f4f4] text-xs px-4 pr-10 focus:outline-none border-b focus:border focus:border-[#ff0000]"
+          className={
+            "bg-[#262626] w-full h-[48px] text-[#f4f4f4] text-xs px-4 pr-10 focus:outline-none border-b mb-2 " +
+            (errors ? 'border border-[#ff0000] focus:border-[#ff0000]' : 'border-transparent focus:border focus:border-[#ff0000]')
+          }
         />
 
         {type === 'password' && (
@@ -51,9 +56,9 @@ const TextInput = ({
             src={showPassword ? GENERAL_ICONS.WATCH_PASSWORD_OPEN : GENERAL_ICONS.WATCH_PASSWORD_CLOSED}
             alt={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             className={
-              `absolute right-5 top-1/2 transform -translate-y-1/2 cursor-pointer transition-all duration-500 ` +
+              `absolute right-5 top-6 transform -translate-y-1/2 cursor-pointer transition-all duration-500 ` +
               (showPassword
-                ? 'w-[15px] h-[11px] '
+                ? 'w-[15px] h-[11px]'
                 : 'w-[15px] h-[15px]')
             }
             onClick={() => setShowPassword(!showPassword)}
@@ -62,6 +67,11 @@ const TextInput = ({
             tabIndex={0}
           />
         )}
+      </div>
+      <div className="flex items-center justify-between mb-1 text-xs text-[#c6c6c6]">
+        <p className={`text-[#ff0000] ${!errorMessage ? 'invisible' : ''}`}>
+          {errorMessage || '\u00A0'}
+        </p>
       </div>
     </div>
   )
