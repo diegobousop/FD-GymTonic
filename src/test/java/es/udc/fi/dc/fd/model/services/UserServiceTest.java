@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import jakarta.transaction.Transactional;
 
@@ -14,6 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 
 /**
  * The Class UserServiceTest.
@@ -57,4 +60,25 @@ public class UserServiceTest {
 		assertEquals(Users.RoleType.USER, user.getRole());
 
 	}
+
+	@Test
+	public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
+
+		Users user = createUser("userChange");
+		userService.signUp(user, Users.RoleType.USER);
+
+		Users loggedInUser = userService.loginFromId(user.getId());
+		assertEquals(user, loggedInUser);
+
+		String newPassword = "Changed";
+		userService.changePassword(user.getId(), "password", newPassword);
+
+		assertThrows(IncorrectLoginException.class, () -> {
+			userService.login(user.getUserName(), "password");
+		});
+
+		Users loggedInWithNew = userService.login(user.getUserName(), newPassword);
+		assertEquals(user, loggedInWithNew);
+	}
+
 }

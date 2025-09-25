@@ -23,6 +23,7 @@ import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
+import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 
 /**
@@ -101,4 +102,43 @@ public class UserControllerTest {
 				.andExpect(status().isOk());
 
 	}
+
+	@Test
+	public void testPostChangePassword_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("userChangeCtrl", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		ChangePasswordParamsDto changePasswordParams = new ChangePasswordParamsDto();
+		changePasswordParams.setOldPassword(PASSWORD);
+		changePasswordParams.setNewPassword("NewPass123");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/" + userId + "/changePassword")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(changePasswordParams)))
+				.andExpect(status().isNoContent());
+
+		LoginParamsDto oldLogin = new LoginParamsDto();
+		oldLogin.setUserName(user.getUserDto().getUserName());
+		oldLogin.setPassword(PASSWORD);
+
+		mockMvc.perform(post("/api/users/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(oldLogin)))
+				.andExpect(status().isNotFound());
+
+		LoginParamsDto newLogin = new LoginParamsDto();
+		newLogin.setUserName(user.getUserDto().getUserName());
+		newLogin.setPassword("NewPass123");
+
+		mockMvc.perform(post("/api/users/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(newLogin)))
+				.andExpect(status().isOk());
+	}
+
 }
