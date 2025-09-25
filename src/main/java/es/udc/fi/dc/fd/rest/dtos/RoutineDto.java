@@ -6,20 +6,19 @@ import java.util.List;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-import es.udc.fi.dc.fd.model.entities.Users;
 
 public class RoutineDto {
     private Long id;
     private String name;
     private List<ExerciseDto> exercises;
-    private Users creator;
+    private String creator;
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
 
     public RoutineDto() {
     }
 
-    public RoutineDto(Long id, String name, List<ExerciseDto> exercises, Users creator, Long duration,
+    public RoutineDto(Long id, String name, List<ExerciseDto> exercises, String creator, Long duration,
             LocalDateTime modificationDate) {
         this.id = id;
         this.name = name;
@@ -63,10 +62,10 @@ public class RoutineDto {
     }
 
     @NotNull
-    public Users getCreator() {
+    public String getCreator() {
         return creator;
     }
-    public void setCreator(Users creator) {
+    public void setCreator(String creator) {
         this.creator = creator;
     }
 

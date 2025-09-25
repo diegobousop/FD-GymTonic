@@ -108,6 +108,35 @@ public class RoutineServiceTest {
         }    
     }
 
+    @Test(expected = InvalidRoutineNameException.class)
+    public void createInvalidNameRoutine() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = createRoutine("", creator);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        routineService.createRoutine(creator.getId(), routine.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+    }
+
+
+    @Test(expected = InvalidRoutineDurationException.class)
+    public void createInvalidDurationRoutine1() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = createRoutine("X", creator);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+
+        routineService.createRoutine(creator.getId(), routine.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, null);
+    }
+
+    @Test(expected = InvalidRoutineDurationException.class)
+    public void createInvalidDurationRoutine2() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = createRoutine("X", creator);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        routineService.createRoutine(creator.getId(), routine.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 0L);
+    }
+
     @Test
     public void viewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");

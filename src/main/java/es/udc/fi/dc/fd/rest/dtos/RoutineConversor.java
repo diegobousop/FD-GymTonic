@@ -9,16 +9,11 @@ public class RoutineConversor {
 
     public static RoutineDto toRoutineDto(Routine routine) {
         RoutineDto routineDto = new RoutineDto(routine.getId(), routine.getName(),
-                ExerciseConversor.toExerciseDtos(routine.getExercises()), routine.getCreator(), routine.getDuration(),
+                ExerciseConversor.toExerciseDtos(routine.getExercises()), routine.getCreator().getUserName(), routine.getDuration(),
                 routine.getModificationDate());
         return routineDto;
     }
 
-    public static Routine toRoutine(RoutineDto routineDto) {
-        Routine routine = new Routine(routineDto.getId(), routineDto.getName(),
-         ExerciseConversor.toExercises(routineDto.getExercises()), routineDto.getCreator(), routineDto.getDuration(), routineDto.getModificationDate()); 
-        return routine;
-    }
 
     public static List<RoutineDto> toRoutineDtos(List<Routine> routines){
         return routines.stream().map(c -> toRoutineDto(c)).collect(Collectors.toList());

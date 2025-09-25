@@ -62,9 +62,9 @@ public class RoutineController {
     @ExceptionHandler(InvalidRoutineDurationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ErrorsDto handleInvalidRoutineDurationException(InvalidRoutineNameException exception, Locale locale){
+    public ErrorsDto handleInvalidRoutineDurationException(InvalidRoutineDurationException exception, Locale locale){
         String errorMessage = messageSource.getMessage(INVALID_ROUTINE_DURATION_EXCEPTION_CODE,
-        new Object[] {exception.getName()}, INVALID_ROUTINE_DURATION_EXCEPTION_CODE, locale);
+        new Object[] {exception.getDuration()}, INVALID_ROUTINE_DURATION_EXCEPTION_CODE, locale);
     
         return new ErrorsDto(errorMessage);
     }

@@ -43,7 +43,7 @@ public class RoutineServiceImpl implements RoutineService {
 		}
 
         if(name.isBlank()) throw new InvalidRoutineNameException(name);
-        if(duration<=0) throw new InvalidRoutineDurationException(duration);
+        if(duration == null || duration<=0 ) throw new InvalidRoutineDurationException(duration);
 
         List<Exercise> found = new ArrayList<>();
         for (Long exerciseId : exercises) {
