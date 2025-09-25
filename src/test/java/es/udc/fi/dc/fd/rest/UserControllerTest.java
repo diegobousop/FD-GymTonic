@@ -1,8 +1,11 @@
 package es.udc.fi.dc.fd.rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,6 +142,68 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(newLogin)))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testUpdateProfile_Ok() throws Exception {
+		// Crear usuario autenticado
+		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		// Crear DTO de usuario con datos actualizados
+		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
+				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
+
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(put("/api/users/{id}", userId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsBytes(userDto)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.firstName").value(userDto.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(userDto.getLastName()))
+				.andExpect(jsonPath("$.email").value(userDto.getEmail()));
+	}
+
+	@Test
+	public void testUpdateProfile_PermissionException() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		Long differentUserId = userId + 1;
+
+		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
+				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(put("/api/users/{id}", differentUserId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsBytes(userDto)))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	public void testUpdateProfile_ValidationError() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
+				"","email-invalido",user.getUserDto().getRole());
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(put("/api/users/{id}", userId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsBytes(userDto)))
+				.andExpect(status().isBadRequest());
 	}
 
 }

@@ -1,11 +1,13 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertThrows;
 
 import jakarta.transaction.Transactional;
 
+import jakarta.validation.constraints.Null;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,24 +63,50 @@ public class UserServiceTest {
 
 	}
 
-	@Test
-	public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
 
-		Users user = createUser("userChange");
+	/**
+	 * Test updating the profile.
+	 *
+	 * @throws InstanceNotFoundException  the instance not found exception
+	 */
+	@Test
+	public void testUpdateProfile() throws DuplicateInstanceException, InstanceNotFoundException {
+
+		Users user = createUser("user");
+
 		userService.signUp(user, Users.RoleType.USER);
 
-		Users loggedInUser = userService.loginFromId(user.getId());
-		assertEquals(user, loggedInUser);
+		assertEquals("firstName",user.getFirstName());
+		assertEquals( "lastName",user.getLastName());
+		assertEquals("user@user.com",user.getEmail());
 
-		String newPassword = "Changed";
-		userService.changePassword(user.getId(), "password", newPassword);
+		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com");
 
-		assertThrows(IncorrectLoginException.class, () -> {
-			userService.login(user.getUserName(), "password");
-		});
+		assertEquals("prueba",user.getFirstName());
+		assertEquals( "pruebez",user.getLastName());
+		assertEquals("prueba@pruebez.com",user.getEmail());
 
-		Users loggedInWithNew = userService.login(user.getUserName(), newPassword);
-		assertEquals(user, loggedInWithNew);
+		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com"));
 	}
+
+    @Test
+    public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
+
+        Users user = createUser("userChange");
+        userService.signUp(user, Users.RoleType.USER);
+
+        Users loggedInUser = userService.loginFromId(user.getId());
+        assertEquals(user, loggedInUser);
+
+        String newPassword = "Changed";
+        userService.changePassword(user.getId(), "password", newPassword);
+
+        Assertions.assertThrows(IncorrectLoginException.class, () -> {
+            userService.login(user.getUserName(), "password");
+        });
+
+        Users loggedInWithNew = userService.login(user.getUserName(), newPassword);
+        assertEquals(user, loggedInWithNew);
+    }
 
 }
