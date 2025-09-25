@@ -75,7 +75,8 @@ public class RoutineServiceImpl implements RoutineService {
         
         Routine routine = optionalRoutine.get();
         
-        if (!routine.getCreator().getId().equals(creator.getId())) {
+        // Admin can modify any routine, others can only modify their own
+        if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
             throw new PermissionException();
         }
         
@@ -108,7 +109,7 @@ public class RoutineServiceImpl implements RoutineService {
         
         Routine routine = optionalRoutine.get();
         
-        if (!routine.getCreator().getId().equals(creator.getId())) {
+        if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
             throw new PermissionException();
         }
         

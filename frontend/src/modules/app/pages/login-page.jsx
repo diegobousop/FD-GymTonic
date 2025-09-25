@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import TextInput from '../components/common/text-input'
 import SendButton from '../components/common/send-button'
 
 import { login } from '../../../backend/userService';
+import { UserContext } from '../components/common/user-provider';
 
 import { GENERAL_ICONS } from '../../../config/constants'
 
@@ -12,6 +13,7 @@ import { GENERAL_ICONS } from '../../../config/constants'
 const imageUrl = 'https://ik.imagekit.io/940wz34p7/tioMazao.png?updatedAt=1758576677345'
 
 const LoginPage = () => {
+  const { setUser } = useContext(UserContext);
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errors, setErrors] = React.useState(null)
@@ -38,7 +40,14 @@ const LoginPage = () => {
       await login(
         username,
         password,
-        (user) => {
+        (authenticatedUser) => {
+          const userToSet = {
+            ...authenticatedUser?.user,
+            avatar: authenticatedUser?.user?.avatar || 'https://ik.imagekit.io/940wz34p7/1.png?updatedAt=1758552818447'
+          };
+          setUser(userToSet);
+          localStorage.setItem("user", JSON.stringify(userToSet));
+          
           window.location.href = "/gym-tonic/#/home";
         },
         (err) => {

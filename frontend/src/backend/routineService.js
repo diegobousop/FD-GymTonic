@@ -21,3 +21,19 @@ export const viewAllRoutines = (onSuccess, onErrors) =>
     onErrors
   );
 
+export const deleteRoutine = (routineId, onSuccess, onErrors) =>
+  appFetch(
+    `/routines/deleteRoutine/${routineId}`,
+    fetchConfig("DELETE"),
+    onSuccess,
+    onErrors
+  );
+
+export const modifyRoutine = (routineId, name, exercises, duration, onSuccess, onErrors) =>
+  appFetch(
+    `/routines/modifyRoutine/${routineId}`,
+    fetchConfig("PUT", { name, exercises, duration }),
+    onSuccess,
+    onErrors
+  );
+
