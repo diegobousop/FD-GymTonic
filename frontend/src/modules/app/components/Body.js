@@ -17,6 +17,7 @@ import { CreateRoutine } from "../../routine";
 import UserEdit from "../pages/user-edit";
 import ChangePasswordPage from "../pages/changePassword-page"; 
 import ProtectedPath from './common/protected-path';
+import RoutineDetails from "../pages/routineDetails-page";
 
 const Body = () => {
 
@@ -54,6 +55,7 @@ const Body = () => {
               <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
               <Route path="/test" element={<ProtectedPath path={<Test />} />} />
               <Route path="/routines/create-routine" element={<ProtectedPath path={<CreateRoutine />} />} />
+              <Route path="/routines/:id" element={<RoutineDetails />} />
               <Route path="/profileUpdate" element={<ProtectedPath path={<UserEdit />} />} />
               <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
           </Routes>

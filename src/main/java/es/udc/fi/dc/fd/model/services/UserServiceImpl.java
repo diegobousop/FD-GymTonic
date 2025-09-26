@@ -140,4 +140,9 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	@Override
+	public Users getUserById(Long id) throws InstanceNotFoundException {
+		if (!userDao.existsById(id)) throw new InstanceNotFoundException("project.entities.user", id);
+		return userDao.findById(id).get();
+	}
 }

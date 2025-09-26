@@ -12,16 +12,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
@@ -206,7 +197,13 @@ public class UserController {
 		userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
 
 	}
-	
+
+	@GetMapping("/{id}")
+	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
+		if (!id.equals(userId)) throw new PermissionException();
+		return toUserDto(userService.getUserById(userId));
+	}
+
 	/**
 	 * Generate service token.
 	 *

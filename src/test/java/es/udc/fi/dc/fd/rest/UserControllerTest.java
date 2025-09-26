@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -206,4 +207,25 @@ public class UserControllerTest {
 				.andExpect(status().isBadRequest());
 	}
 
+	@Test
+	public void testGetUserbyId() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(get("/api/users/{id}", userId)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
+				).andExpect(status().isOk());
+	}
+
+	@Test
+	public void failedTestGetUserbyId() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(get("/api/users/{id}", userId+1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
+		).andExpect(status().isForbidden());
+	}
 }

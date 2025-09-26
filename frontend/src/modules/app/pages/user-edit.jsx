@@ -31,11 +31,11 @@ const UserEdit = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-            <h2 className="text-2xl font-bold mb-4">Editar usuario</h2>
+        <div className="max-w-md mx-auto mt-10 p-6 bg-auto ">
+            <h2 className="text-2xl font-bold mb-4 text-white">Editar usuario</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block mb-1">Email</label>
+                    <label className="block mb-1 text-white">Email</label>
                     <input
                         type="email"
                         value={email}
@@ -45,7 +45,7 @@ const UserEdit = () => {
                     />
                 </div>
                 <div>
-                    <label className="block mb-1">Nombre</label>
+                    <label className="block mb-1 text-white">Nombre</label>
                     <input
                         type="text"
                         value={firstname}
@@ -55,7 +55,7 @@ const UserEdit = () => {
                     />
                 </div>
                 <div>
-                    <label className="block mb-1">Apellido</label>
+                    <label className="block mb-1 text-white">Apellido</label>
                     <input
                         type="text"
                         value={lastname}
@@ -66,7 +66,7 @@ const UserEdit = () => {
                 </div>
                 <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded">Guardar cambios</button>
             </form>
-            {message && <div className="mt-4 text-center">{message}</div>}
+            {message && <div className="mt-4 text-center text-white">{message}</div>}
         </div>
     );
 }

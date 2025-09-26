@@ -83,6 +83,13 @@ public class RoutineController {
 
 	}
 
+    @GetMapping("/getRoutineById/{routineId}")
+	public RoutineDto getRoutineById(@PathVariable Long routineId) {
+
+		return RoutineConversor.toRoutineDto(routineService.getRoutineById(routineId));
+        
+	}
+
     @PutMapping("/modifyRoutine/{routineId}")
     public RoutineDto modifyRoutine(
             @PathVariable Long routineId,

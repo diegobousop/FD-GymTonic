@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
+import { Link } from 'react-router-dom';
 import backend from "../../../backend";
 import { UserContext } from "../components/common/user-provider";
 
@@ -210,7 +211,9 @@ const ViewAllRoutines = () => {
             ) : (
               // View mode
               <div>
+                <Link to={`/routines/${routine.id}`}>
                 <h3 className="text-xl text-black"><strong>{routine.name}</strong> <small>{routine.duration} min</small></h3>
+                </Link>
                 <ul>
                   {routine.exercises && routine.exercises.length > 0 ? (
                     routine.exercises.map((ex, i) => (

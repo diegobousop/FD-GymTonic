@@ -65,6 +65,11 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
+    public Routine getRoutineById(Long routineId){
+        return routineDao.getReferenceById(routineId);
+    }
+
+    @Override
     public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration) throws InstanceNotFoundException, PermissionException {
         Users creator = permissionChecker.checkUser(creatorId);
         
