@@ -15,6 +15,7 @@ import HomePage from "../pages/home-page";
 import ProfilePage from "../pages/profile-page";
 import { CreateRoutine } from "../../routine";
 import UserEdit from "../pages/user-edit";
+import ChangePasswordPage from "../pages/changePassword-page"; 
 
 const Body = () => {
 
@@ -29,6 +30,8 @@ const Body = () => {
     if (path.startsWith('/create-routine')) { setActivePage('create-routine'); return }
     if (path.startsWith('/test')) { setActivePage('test'); return }
     if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate');  }
+    if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
+
   }, [location.pathname])
 
   return (
@@ -51,6 +54,7 @@ const Body = () => {
               <Route path="/test" element={<Test />} />
               <Route path="/routines/create-routine" element={<CreateRoutine />} />
               <Route path="/profileUpdate" element={<UserEdit />} />
+              <Route path="/change-password" element={<ChangePasswordPage />} />
           </Routes>
         </div>
       </div>

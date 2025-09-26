@@ -68,16 +68,30 @@ export const logout = () => removeServiceToken();
 export const updateProfile = (user, onSuccess, onErrors) =>
   appFetch(`/users/${user.id}`, fetchConfig("PUT", user), onSuccess, onErrors);
 
-export const changePassword = (
-  id,
-  oldPassword,
-  newPassword,
-  onSuccess,
-  onErrors
-) =>
+export const changePassword = (oldPassword, newPassword, onSuccess, onErrors) => {
+  const serviceToken = getServiceToken();
+  if (!serviceToken) {
+    if (onErrors) onErrors("No token disponible");
+    return;
+  }
+
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    if (onErrors) onErrors("No se encontró userId");
+    return;
+  }
+
   appFetch(
-    `/users/${id}/changePassword`,
-    fetchConfig("POST", { oldPassword, newPassword }),
+    `/users/${userId}/changePassword`,
+    fetchConfig("POST", { oldPassword, newPassword }, serviceToken),
     onSuccess,
-    onErrors
+    async (err) => {
+      try {
+        const json = await err.json();
+        if (onErrors) onErrors(json.globalError || "Error al cambiar la contraseña");
+      } catch {
+        if (onErrors) onErrors("Error inesperado");
+      }
+    }
   );
+};
