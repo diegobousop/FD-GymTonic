@@ -212,9 +212,15 @@ const ViewAllRoutines = () => {
               <div>
                 <h3 className="text-xl text-black"><strong>{routine.name}</strong> <small>{routine.duration} min</small></h3>
                 <ul>
-                  {routine.exercises.map((ex, i) => (
-                    <li key={i} className="text-white">{ex.name} - <small>{ex.grupoMuscular}</small></li>
-                  ))}
+                  {routine.exercises && routine.exercises.length > 0 ? (
+                    routine.exercises.map((ex, i) => (
+                      <li key={i} className="text-white">
+                        {ex.name} - <small>{ex.grupoMuscular}</small>
+                      </li>
+                    ))
+                  ) : (
+                    <li>No hay ejercicios</li>
+                  )}
                 </ul>
                 <p className="text-black">Creada por: {routine.creator.userName}</p>
                 
