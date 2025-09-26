@@ -16,6 +16,7 @@ import ProfilePage from "../pages/profile-page";
 import { CreateRoutine } from "../../routine";
 import UserEdit from "../pages/user-edit";
 import ChangePasswordPage from "../pages/changePassword-page"; 
+import ProtectedPath from './common/protected-path';
 
 const Body = () => {
 
@@ -42,19 +43,19 @@ const Body = () => {
         {/* Renderiza SideMenu solo si activePage no es 'intro' */}
         {activePage !== 'intro' && (
           <SideMenu activePage={activePage} setActivePage={setActivePage} />
-        )}
+        )}  
         <div className="w-full">
           <Routes>
               <Route index exact element={<IntroPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/start" element={<IntroPage  />} />
-              <Route path="/home" element={<HomePage activePage={activePage} />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/test" element={<Test />} />
-              <Route path="/routines/create-routine" element={<CreateRoutine />} />
-              <Route path="/profileUpdate" element={<UserEdit />} />
-              <Route path="/change-password" element={<ChangePasswordPage />} />
+              <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
+              <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
+              <Route path="/test" element={<ProtectedPath path={<Test />} />} />
+              <Route path="/routines/create-routine" element={<ProtectedPath path={<CreateRoutine />} />} />
+              <Route path="/profileUpdate" element={<ProtectedPath path={<UserEdit />} />} />
+              <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
           </Routes>
         </div>
       </div>

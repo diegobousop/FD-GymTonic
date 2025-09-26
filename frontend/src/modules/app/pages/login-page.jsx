@@ -15,7 +15,6 @@ const LoginPage = () => {
   const { setUser } = useContext(UserContext);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const [userNameErrors, setUserNameErrors] = useState(null)
@@ -39,7 +38,8 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrors(null)
+    setPasswordErrors(null)
+    setUserNameErrors(null)
 
     if (isLoading) return; 
     if (!username) {
@@ -63,7 +63,6 @@ const LoginPage = () => {
           };
           setUser(userToSet);
           localStorage.setItem("user", JSON.stringify(userToSet));
-          
           window.location.href = "/gym-tonic/#/home";
         },
         (err) => {
@@ -74,7 +73,8 @@ const LoginPage = () => {
         }
       )
     } catch (ex) {
-      setErrors(ex.message || 'Error inesperado')
+      setUserNameErrors('\u00A0')
+      setPasswordErrors('Error en autenticación')
       setIsLoading(false)
     }
 
