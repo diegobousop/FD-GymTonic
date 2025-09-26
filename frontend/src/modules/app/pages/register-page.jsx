@@ -20,11 +20,17 @@ const RegisterPage = () => {
   const [lastName, setLastName] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [confirmPassword, setConfirmPassword] = React.useState('')
-  const [errors, setErrors] = React.useState(null)
 
+  const [isLoading, setIsLoading] = React.useState(false)
 
+  const [userNameErrors, setUserNameErrors] = React.useState(null)
+  const [passwordErrors, setPasswordErrors] = React.useState(null)
+  const [firstNameErrors, setFirstNameErrors] = React.useState(null)
+  const [lastNameErrors, setLastNameErrors] = React.useState(null)
+  const [emailErrors, setEmailErrors] = React.useState(null)
+  const [confirmPasswordErrors, setConfirmPasswordErrors] = React.useState(null)
 
-    useEffect(() => {
+  useEffect(() => {
         const prevOverflow = document.body.style.overflow;
         const prevOverscroll = document.body.style.overscrollBehavior;
     
@@ -35,17 +41,15 @@ const RegisterPage = () => {
           document.body.style.overflow = prevOverflow;
           document.body.style.overscrollBehavior = prevOverscroll;
         };
-      }, []);
+  }, []);
     
     
       const handleRegister = async (e) => {
         e.preventDefault();
-        setErrors(null)
-
-        if (password !== confirmPassword) {
-          setErrors('Las contraseñas no coinciden')
-          return
-        }
+        
+        if (isLoading) return;
+        const isValid = checkErrors();
+        if (!isValid) return; 
 
         const user = {
           userName: username,
@@ -56,7 +60,7 @@ const RegisterPage = () => {
           role: 0,
           avatar: 'fff'
         }
-
+        setIsLoading(true)
         try {
           await signUp(
             user,
@@ -71,10 +75,14 @@ const RegisterPage = () => {
               
               window.location.href = '/gym-tonic/#/home'
             },
-            (err) => setErrors(err || 'Error al registrarse')
+            (err) => {
+              setFirstNameErrors(err.globalError || 'Error al registrarse')
+              setIsLoading(false)
+            }
           )
         } catch (ex) {
-          setErrors(ex || 'Error inesperado')
+          setFirstNameErrors(ex || 'Error inesperado')
+          setIsLoading(false)
         }
       }
 
@@ -101,33 +109,68 @@ const RegisterPage = () => {
    
       <div className="flex flex-row">
         <img src={imageUrl} alt="Imagen" className="w-[37%]" />
-        <div className="ml-[5%] mt-[4%]">
+        <div className="ml-[5%] mt-[3%]">
           <h1 className="mb-10">Bienvenido/a a Gym Tonic</h1>
           <form onSubmit={handleRegister}>
 
             <div className="grid grid-cols-2 gap-4 w-[620px]">
-                <TextInput name="username" label="Nombre de usuario" value={username} onChange={(e) => setUsername(e.target.value)} />
-                <TextInput name="email" label="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} />
-                
-                <TextInput name="password" label="Contraseña" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <TextInput name="confirmPassword" label="Confirmar contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                <TextInput name="username" label="Nombre de usuario" value={username} onChange={(e) => setUsername(e.target.value)} errors={userNameErrors} errorMessage={userNameErrors} />
+                <TextInput name="email" label="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} errors={emailErrors} errorMessage={emailErrors} />
 
-                <TextInput name="firstName" label="Nombre" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                <TextInput name="lastName" label="Apellidos" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                <TextInput name="password" label="Contraseña" type="password" value={password} onChange={(e) => setPassword(e.target.value)}  errors={passwordErrors} errorMessage={passwordErrors} />
+                <TextInput name="confirmPassword" label="Confirmar contraseña" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} errors={confirmPasswordErrors} errorMessage={confirmPasswordErrors} />
+
+                <TextInput name="firstName" label="Nombre" value={firstName} onChange={(e) => setFirstName(e.target.value)} errors={firstNameErrors} errorMessage={firstNameErrors} />
+                <TextInput name="lastName" label="Apellidos" value={lastName} onChange={(e) => setLastName(e.target.value)}  errors={lastNameErrors} errorMessage={lastNameErrors} />
 
 
-              <div className="col-span-1 mt-4">
-                <SendButton onClick={handleRegister} />
+              <div className="col-span-1">
+                <SendButton onClick={handleRegister} isLoading={isLoading} />
               </div>
               
               <div className="col-span-1" />
             </div>
-             {errors && <div className="text-red-500 text-xs mt-2">{errors.globalError}</div>}
           </form>
         </div>
       </div>
     </div>
   )
-}
 
+
+  function checkErrors() {
+    const trimmedUsername = username.trim()
+    const trimmedEmail = email.trim()
+    const trimmedFirstName = firstName.trim()
+    const trimmedLastName = lastName.trim()
+
+    let hasError = false
+
+    
+    const isEmailValid = (value) => {
+      return /^\S+@\S+\.\S+$/.test(value)
+    }
+    const hasDigits = (value) => /\d/.test(value)
+
+    const usernameErr = !trimmedUsername ? 'El nombre de usuario es obligatorio' : (trimmedUsername.length < 3 ? 'El nombre de usuario debe tener al menos 3 caracteres' : null)
+    const emailErr = !trimmedEmail ? 'El correo electrónico es obligatorio' : (!isEmailValid(trimmedEmail) ? 'Introduce un correo electrónico válido' : null)
+    const passwordErr = !password ? 'La contraseña es obligatoria' : (password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : null)
+    const confirmPwdErr = (!password && !confirmPassword) ? '\u00A0' : (password !== confirmPassword ? 'Las contraseñas no coinciden' : null)
+    const firstNameErr = !trimmedFirstName ? 'El nombre es obligatorio' : (hasDigits(trimmedFirstName) ? 'El nombre no puede contener números' : null)
+    const lastNameErr = !trimmedLastName ? 'Los apellidos son obligatorios' : (hasDigits(trimmedLastName) ? 'Los apellidos no pueden contener números' : null)
+
+    if (usernameErr || emailErr || passwordErr || confirmPwdErr || firstNameErr || lastNameErr) {
+      hasError = true
+    }
+
+    // update states once
+    setUserNameErrors(usernameErr)
+    setEmailErrors(emailErr)
+    setPasswordErrors(passwordErr || (password !== confirmPassword ? '\u00A0' : null))
+    setConfirmPasswordErrors(confirmPwdErr)
+    setFirstNameErrors(firstNameErr)
+    setLastNameErrors(lastNameErr)
+
+    return !hasError
+  }
+}
 export default RegisterPage

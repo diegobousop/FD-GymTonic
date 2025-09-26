@@ -28,7 +28,7 @@ const Navbar = ({activePage}) => {
           <img
             src={GENERAL_ICONS.APP_LOGO}
             alt="logo"
-            className="h-12 ml-14"
+            className="h-12 ml-12"
           />
         </Link>
 
