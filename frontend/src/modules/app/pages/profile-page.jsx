@@ -28,13 +28,6 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 bg-auto ">
-      <Link to="/routines/createRoutine" className='no-underline'>
-        <div>
-          <button className="px-14 py-8 text-white bg-black text-2xl">
-            <h1 className="text-[36px]">Crea tu rutina</h1>
-          </button>
-        </div>
-      </Link>
 
       <SendButton children="Cerrar sesión" isLoading={false} onClick={() => {
         handleLogout();

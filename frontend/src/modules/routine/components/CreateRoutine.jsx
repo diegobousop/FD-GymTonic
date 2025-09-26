@@ -14,7 +14,7 @@ const CreateRoutine = () => {
     const [exercises, setExercises] = useState("");
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
-    const [activePage, setActivePage] = useState('create-routine')
+    
     
 
     let form;
@@ -65,14 +65,14 @@ const CreateRoutine = () => {
                 <form ref={node => form = node} className="needs-validation" noValidate onSubmit={handleSubmit}>
                     <TextInput
                         name="RoutineName"
-                        label="Nombre:"
+                        label="Nombre"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         />
 
                     <TextInput
                         name="RoutineDuration"
-                        label="Duración:"
+                        label="Duración"
                         value={duration}
                         onChange={(e) => setDuration(e.target.value)}
                         maxLength="3"
@@ -81,7 +81,7 @@ const CreateRoutine = () => {
 
                     <TextInput
                         name="RoutineExercises"
-                        label="Ejercicios (IDs):"
+                        label="Ejercicios (IDs)"
                         value={exercises}
                         onChange={(e) => setExercises(e.target.value)}
                         maxLength="20"
@@ -90,7 +90,7 @@ const CreateRoutine = () => {
                                 <SendButton onClick={handleSubmit}></SendButton>
                 </form>    
                         {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
-                        {success && <div className="text-green-500 text-xs mt-2">Rutina {name} creada Existosamente</div>}
+                        {success && <div className="text-green-500 text-xs mt-2">Rutina creada Exitosamente</div>}
             </div>       
 
     );
