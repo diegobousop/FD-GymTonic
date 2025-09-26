@@ -138,7 +138,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void viewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testViewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
@@ -152,6 +152,28 @@ public class RoutineServiceTest {
             
         assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines());
 
+    }
+
+    @Test
+    public void testViewAllRoutinesInOrder() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine1 = createRoutine("routine1", creator);
+        Routine routine2 = createRoutine("routine2", creator);
+        Routine routine3 = createRoutine("routine3", creator);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine3 = routineService.createRoutine(creator.getId(), routine3.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            
+        assertEquals(Arrays.asList(routine1, routine2, routine3), routineService.viewAllRoutines());
+    }
+    
+    @Test
+    public void testViewAllRoutinesWithoutRoutines() {
+        assertEquals(Arrays.asList(), routineService.viewAllRoutines());
     }
 
     @Test
