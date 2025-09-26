@@ -31,7 +31,7 @@ const UserEdit = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-auto rounded shadow">
+        <div className="max-w-md mx-auto mt-10 p-6 bg-auto ">
             <h2 className="text-2xl font-bold mb-4 text-white">Editar usuario</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
