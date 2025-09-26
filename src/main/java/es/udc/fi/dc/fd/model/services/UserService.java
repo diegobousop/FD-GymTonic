@@ -63,4 +63,11 @@ public interface UserService {
 	void changePassword(Long id, String oldPassword, String newPassword)
 		throws InstanceNotFoundException, IncorrectPasswordException;
 
+	/**
+	 * Change password.
+	 *
+	 * @param id the id
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	Users getUserById(Long id) throws InstanceNotFoundException;
 }

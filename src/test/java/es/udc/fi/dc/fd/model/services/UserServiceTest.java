@@ -108,5 +108,19 @@ public class UserServiceTest {
         Users loggedInWithNew = userService.login(user.getUserName(), newPassword);
         assertEquals(user, loggedInWithNew);
     }
+	@Test
+	public void testGetUserbyId() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users user = createUser("user");
+		userService.signUp(user, Users.RoleType.USER);
+		assertEquals(user.getUserName(), userService.getUserById(user.getId()).getUserName());
 
+	}
+
+	@Test
+	public void FailedTestGetUserbyId() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users user = createUser("user");
+		userService.signUp(user, Users.RoleType.USER);
+		assertThrows(InstanceNotFoundException.class, () -> {userService.getUserById(user.getId()+1);});
+
+	}
 }
