@@ -71,7 +71,7 @@ public class RoutineController {
 
     
     @PostMapping("/createRoutine")
-    public RoutineDto createRoutine(@RequestAttribute Long userId, @Validated @RequestBody RoutineParamsDto params ) 
+    public RoutineDto createRoutine(@RequestAttribute Long userId, @RequestBody RoutineParamsDto params ) 
         throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         return RoutineConversor.toRoutineDto(routineService.createRoutine(userId,params.getName(), params.getExercises(), params.getDuration()));
     }
