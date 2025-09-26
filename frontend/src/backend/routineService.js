@@ -12,6 +12,13 @@ export const createRoutine = (name, exercises, duration, onSuccess, onErrors) =>
   );
 };
 
+export const findRoutineById = (routineId, onSuccess, onErrors) =>
+  appFetch(
+    `/routines/getRoutineById/${routineId}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
 
 export const viewAllRoutines = (onSuccess, onErrors) =>
   appFetch(
