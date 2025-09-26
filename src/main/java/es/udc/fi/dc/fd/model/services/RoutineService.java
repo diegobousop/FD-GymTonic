@@ -16,6 +16,7 @@ public interface RoutineService {
     
     List<Routine> viewAllRoutines();
 
+    Routine getRoutineById(Long routineId);
     
     Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration) throws InstanceNotFoundException, PermissionException;
     void deleteRoutine(Long creatorId, Long routineId) throws InstanceNotFoundException, PermissionException;
