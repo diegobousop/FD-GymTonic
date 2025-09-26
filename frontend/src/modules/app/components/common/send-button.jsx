@@ -6,9 +6,11 @@ const SendButton = ({ onClick, type, children, isLoading = false }) => {
   const content = (
     <>
       {!isLoading ? (
-        <div className="flex flex-row relative w-[288px] h-[48px] px-[15px] py-[10px] bg-[#212121] items-center justify-start mt-8 border border-transparent hover:border hover:border-[#ff0000] group-active:bg-[#ff0000] transition-colors duration-150 ">
+        <div className="flex flex-row relative w-[288px] h-[48px] px-[15px] py-[10px] bg-[#212121] items-center
+         justify-start mt-8 border border-transparent hover:border hover:border-[#ff0000] group-active:bg-[#ff0000] transition-colors duration-150 ">
           <p className="text-white">{children || 'Enviar'}</p>
-          <img src={GENERAL_ICONS.LEFT_ARROW} alt="Flecha" className="w-[15px] h-[12.5px] absolute right-5 top-1/2 transform -translate-y-1/2 cursor-pointer transition-all duration-200" />
+          <img src={GENERAL_ICONS.LEFT_ARROW} alt="Flecha" className="w-[15px] h-[12.5px] absolute right-5 top-1/2 transform
+           -translate-y-1/2 cursor-pointer transition-all duration-200" />
         </div>
       ) : (
         <div className="flex flex-row w-[288px] h-[48px] px-[15px] py-[10px] bg-[#212121] items-center justify-center mt-8 border border-transparent hover:border hover:border-[#ff0000] group-active:bg-[#ff0000] transition-colors duration-150 ">

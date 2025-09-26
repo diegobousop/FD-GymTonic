@@ -34,12 +34,13 @@ const TextInput = ({
   return (
     <div className="mt-5 w-[288px]">
       <div className="flex items-center justify-between mb-1 text-xs text-[#c6c6c6]">
-        <p className="m-0">{label}</p>
+        <label htmlFor={name} className="m-0">{label}</label>
         {type !== 'password' && <span>{(value || '').length}/{maxLength}</span>}
       </div>
 
       <div className="relative">
         <input
+          id={name}
           name={name}
           type={inputType}
           value={value || ''}
