@@ -13,7 +13,7 @@ public class ExerciseConversor {
     }
 
     public static final ExerciseDto toExerciseDto(Exercise exercise){
-        return new ExerciseDto(exercise.getExerciseName(), exercise.getExerciseDescription(), exercise.getGrupoMuscular());
+        return new ExerciseDto(exercise.getId(), exercise.getExerciseName(), exercise.getExerciseDescription(), exercise.getGrupoMuscular());
     }
 
     public static final List<ExerciseDto> toExerciseDtos(List<Exercise> exercises){

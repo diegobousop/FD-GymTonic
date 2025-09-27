@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class ExerciseDto {
+    private Long id;
     private String name;
     private String descripcion;
     private grupoMuscular grupoMuscular;
@@ -14,6 +15,21 @@ public class ExerciseDto {
         this.name = name;
         this.descripcion = descripcion;
         this.grupoMuscular = grupoMuscular;
+    }
+
+        public ExerciseDto(Long id, String name, String descripcion,  grupoMuscular grupoMuscular){
+        this.id = id;
+        this.name = name;
+        this.descripcion = descripcion;
+        this.grupoMuscular = grupoMuscular;
+    }
+
+    @NotNull
+    public Long getId() {
+        return id;
+    } 
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @NotBlank
