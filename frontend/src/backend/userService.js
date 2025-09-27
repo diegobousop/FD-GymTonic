@@ -63,7 +63,7 @@ export const signUp = (user, onSuccess, onErrors, reauthenticationCallback) => {
   );
 };
 export const getProfile=(user, onSuccess, onErrors)=>
-    appFetch(`/users/${user.id}`, fetchConfig("GET", user),onSuccess,onErrors);
+    appFetch(`/users/${user.id}`, fetchConfig("GET"),onSuccess,onErrors);
 
 export const logout = () => removeServiceToken();
 

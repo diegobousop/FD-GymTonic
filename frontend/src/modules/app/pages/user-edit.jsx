@@ -6,8 +6,8 @@ import { updateProfile } from "../../../backend/userService"
 const UserEdit = () => {
     const { user, setUser } = useContext(UserContext);
     const [email, setEmail] = useState(user?.email || '');
-    const [firstname, setFirstname] = useState(user?.firstname || '');
-    const [lastname, setLastname] = useState(user?.lastname || '');
+    const [firstname, setFirstname] = useState(user?.firstName || '');
+    const [lastname, setLastname] = useState(user?.lastName || '');
     const [message, setMessage] = useState('');
 
     if (!user) return <div>Cargando usuario...</div>;
@@ -18,8 +18,8 @@ const UserEdit = () => {
         const updatedUser = {
             ...user,
             email: email.trim() === '' ? user.email : email,
-            firstname: firstname.trim() === '' ? user.firstname : firstname,
-            lastname: lastname.trim() === '' ? user.lastname : lastname,
+            firstName: firstname.trim() === '' ? user.firstName : firstname,
+            lastName: lastname.trim() === '' ? user.lastName : lastname,
         };
         updateProfile(updatedUser, (res) => {
             setUser(updatedUser);
@@ -50,7 +50,7 @@ const UserEdit = () => {
                         type="text"
                         value={firstname}
                         onChange={e => setFirstname(e.target.value)}
-                        placeholder={user.firstname}
+                        placeholder={user.firstName}
                         className="w-full border px-3 py-2 rounded"
                     />
                 </div>
@@ -60,7 +60,7 @@ const UserEdit = () => {
                         type="text"
                         value={lastname}
                         onChange={e => setLastname(e.target.value)}
-                        placeholder={user.lastname}
+                        placeholder={user.lastName}
                         className="w-full border px-3 py-2 rounded"
                     />
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState,  useContext } from 'react'
+import React, {useState, useContext, useEffect} from 'react'
 import NavBar from '../components/common/navbar'
 import SideMenu from '../components/common/side-menu'
 import { Link, Navigate } from 'react-router-dom'
@@ -14,7 +14,6 @@ const ProfilePage = () => {
   const { user, setUser, handleLogout } = useContext(UserContext);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
-  const [activePage, setActivePage] = useState('profile');
 
   React.useEffect(() => {
     if (user) {
@@ -38,8 +37,8 @@ const ProfilePage = () => {
       {user ? (
         <div className="space-y-2 text-white">
           <div><strong>Email:</strong> {user.email}</div>
-          <div><strong>Nombre:</strong> {user.firstname}</div>
-          <div><strong>Apellido:</strong> {user.lastname}</div>
+          <div><strong>Nombre:</strong> {user.firstName}</div>
+          <div><strong>Apellido:</strong> {user.lastName}</div>
 
         </div>
       ) : (
