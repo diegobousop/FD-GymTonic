@@ -10,7 +10,12 @@ jest.mock('../../backend/routineService', () => ({
     createRoutine: jest.fn(),
 }));
 
+jest.mock('../../backend/exerciseService', () => ({
+    getAllExercises: jest.fn(),
+}));
+
 import routineService from '../../backend/routineService';
+import exerciseService from '../../backend/exerciseService';
 
 describe('CreateRoutine', () => {
     const setUser = jest.fn();
@@ -30,11 +35,27 @@ describe('CreateRoutine', () => {
     });
 
     test('renders the form correctly', () => {
+        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+            onSuccess({
+                items: [
+                    { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" },
+                    { id: 2, name: "Squat", descripcion: "A lower body exercise that primarily targets the quadriceps, hamstrings, and glutes.", grupoMuscular: "PIERNA" },
+                    { id: 3, name: "Pull Up", descripcion: "An upper body exercise that primarily targets the back and biceps.", grupoMuscular: "ESPALDA" }
+                ]
+            });
+        });
+
         renderComponent();
 
         expect(screen.getByText('Nombre')).toBeInTheDocument();
         expect(screen.getByText('Duración')).toBeInTheDocument();
-        expect(screen.getByText('Ejercicios (IDs)')).toBeInTheDocument();
+        expect(screen.getByText('Ejercicios')).toBeInTheDocument();
+        fireEvent.click(screen.getByText('Ejercicios'));
+        
+        expect(screen.getByLabelText('Push Up')).toBeInTheDocument();
+        expect(screen.getByLabelText('Squat')).toBeInTheDocument();
+        expect(screen.getByLabelText('Pull Up')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /enviar/i })).toBeInTheDocument();
     });
 
     test("muestra error de nombre vacío", async () => {
@@ -57,7 +78,7 @@ describe('CreateRoutine', () => {
         );
     });
 
-    test("muestra error de nombre de duración vacío", async () => {
+    test("muestra error de duración vacío", async () => {
         renderComponent();
 
         routineService.createRoutine.mockImplementation((name, exercises, duration, onSuccess, onError) => {
@@ -82,7 +103,15 @@ describe('CreateRoutine', () => {
     });
 
     test("Rutina Creada Correctamente", async () => {
-        renderComponent();
+        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+            onSuccess({
+                items: [
+                    { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" },
+                    { id: 2, name: "Squat", descripcion: "A lower body exercise that primarily targets the quadriceps, hamstrings, and glutes.", grupoMuscular: "PIERNA" },
+                    { id: 3, name: "Pull Up", descripcion: "An upper body exercise that primarily targets the back and biceps.", grupoMuscular: "ESPALDA" }
+                ]
+            });
+        });
 
         routineService.createRoutine.mockImplementation((name, exercises, duration, onSuccess, onError) => {
             onSuccess({
@@ -111,9 +140,10 @@ describe('CreateRoutine', () => {
             });
         });
 
+        renderComponent();
+
         const nameInput = screen.getByLabelText(/nombre/i);
         const durationInput = screen.getByLabelText(/duración/i);
-        const exercisesInput = screen.getByLabelText(/ejercicios/i);
 
         fireEvent.change(nameInput, {
             target: { value: 'Rutina 1' },
@@ -121,9 +151,18 @@ describe('CreateRoutine', () => {
         fireEvent.change(durationInput, {
             target: { value: '120' },
         });
-        fireEvent.change(exercisesInput, {
-            target: { value: '1,2,3' },
+
+        fireEvent.click(screen.getByText('Ejercicios'));
+
+        await waitFor(() => {
+            expect(screen.getByLabelText('Push Up')).toBeInTheDocument();
+            expect(screen.getByLabelText('Squat')).toBeInTheDocument();
+            expect(screen.getByLabelText('Pull Up')).toBeInTheDocument();
         });
+
+        fireEvent.click(screen.getByLabelText('Push Up'));
+        fireEvent.click(screen.getByLabelText('Squat'));
+        fireEvent.click(screen.getByLabelText('Pull Up'));
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
 
@@ -133,7 +172,7 @@ describe('CreateRoutine', () => {
         expect(window.location.hash).toBe('#/routines/create-routine');
     });
 
-        test("Rutina Creada Sin Nombre", async () => {
+    test("Rutina Creada Sin Nombre", async () => {
         renderComponent();
 
         routineService.createRoutine.mockImplementation((name, exercises, duration, onSuccess, onError) => {
@@ -141,13 +180,9 @@ describe('CreateRoutine', () => {
         });
 
         const durationInput = screen.getByLabelText(/duración/i);
-        const exercisesInput = screen.getByLabelText(/ejercicios/i);
 
         fireEvent.change(durationInput, {
             target: { value: '120' },
-        });
-        fireEvent.change(exercisesInput, {
-            target: { value: '1,2,3' },
         });
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
@@ -158,7 +193,7 @@ describe('CreateRoutine', () => {
         expect(window.location.hash).toBe('#/routines/create-routine');
     });
 
-            test("Rutina Creada Sin Duración", async () => {
+    test("Rutina Creada Sin Duración", async () => {
         renderComponent();
 
         routineService.createRoutine.mockImplementation((name, exercises, duration, onSuccess, onError) => {
@@ -166,13 +201,9 @@ describe('CreateRoutine', () => {
         });
 
         const nameInput = screen.getByLabelText(/nombre/i);
-        const exercisesInput = screen.getByLabelText(/ejercicios/i);
 
         fireEvent.change(nameInput, {
             target: { value: 'Rutina 1' },
-        });
-        fireEvent.change(exercisesInput, {
-            target: { value: '1,2,3' },
         });
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));

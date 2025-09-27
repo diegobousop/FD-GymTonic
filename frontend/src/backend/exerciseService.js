@@ -11,3 +11,12 @@ export const addExercise = (name, descripcion, grupoMuscular, onSuccess, onError
         onErrors
     );
 };
+
+export const getAllExercises = (page, onSuccess, onErrors) => {
+    appFetch(
+        `/admin/getExercises?page=${page}`,
+        fetchConfig("GET"),
+        (exercises) => onSuccess(exercises),
+        onErrors
+    );
+};

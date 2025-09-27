@@ -1,41 +1,39 @@
-import {useState} from "react";
+ import {useState,useEffect} from "react";
 import backend from "../../../backend";
 import SendButton from "../../app/components/common/send-button";
 import TextInput from "../../app/components/common/text-input";
-
-import NavBar from '../../app/components/common/navbar'
-import SideMenu from '../../app/components/common/side-menu'
+import MultiSelectList from "./MultiSelectList";
 
 
 const CreateRoutine = () => {
 
     const [name, setName] = useState("");
     const [duration, setDuration] = useState("");
-    const [exercises, setExercises] = useState("");
+    const [exercises, setExercises] = useState([]);
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
-    
+    const [selectedExercises, setSelectedExercises] = useState([]);
     
 
     let form;
 
+    useEffect(() => {
+        backend.exerciseService.getAllExercises(
+        0,
+        (block) => setExercises(block.items),
+        (err) => setExercises([])
+        );
+    }, []);
+
+
     const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Parsear los ejercicios desde el input de texto
-    const parsedExercises = exercises
-        .split(",") // separar por coma
-        .map((id) => Number(id.trim())) // limpiar espacios y convertir a número
-        .filter((id) => !isNaN(id) && id > 0); // filtrar IDs no válidos
-
-
     if (form.checkValidity() && !isNaN(duration) ) {
-        // Si no hay ejercicios, los dejamos vacíos
-        const finalExercises = parsedExercises.length > 0 ? parsedExercises : [];
         try {
             await backend.routineService.createRoutine(
                 name.trim(),
-                finalExercises, 
+                selectedExercises, 
                 Number(duration),
                 (routine) => {
                     setSuccess(true)
@@ -61,7 +59,6 @@ const CreateRoutine = () => {
 
     return (
             <div className="flex flex-col mt-10 justify-center items-center">
-                <h2 className="text-white">Creación de Rutina</h2>
                 <form ref={node => form = node} className="needs-validation" noValidate onSubmit={handleSubmit}>
                     <TextInput
                         name="RoutineName"
@@ -79,16 +76,15 @@ const CreateRoutine = () => {
                         type="number"
                         />
 
-                    <TextInput
-                        name="RoutineExercises"
-                        label="Ejercicios (IDs)"
-                        value={exercises}
-                        onChange={(e) => setExercises(e.target.value)}
-                        maxLength="20"
+                    <MultiSelectList
+                        options={exercises}
+                        selected={selectedExercises}
+                        onChange={setSelectedExercises}
+                        label="Ejercicios"
                         />
-
-                                <SendButton onClick={handleSubmit}></SendButton>
+                    <SendButton onClick={handleSubmit}></SendButton>
                 </form>    
+
                         {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
                         {success && <div className="text-green-500 text-xs mt-2">Rutina creada Exitosamente</div>}
             </div>       
