@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,7 +150,7 @@ public class RoutineServiceTest {
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise3.getId());}}, (long) 90);
             
-        assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines());
+        assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines(PageRequest.of(0, 10)).getContent());
 
     }
 
@@ -167,12 +168,12 @@ public class RoutineServiceTest {
         routine3 = routineService.createRoutine(creator.getId(), routine3.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
             
-        assertEquals(Arrays.asList(routine1, routine2, routine3), routineService.viewAllRoutines());
+        assertEquals(Arrays.asList(routine1, routine2, routine3), routineService.viewAllRoutines(PageRequest.of(0, 10)).getContent());
     }
     
     @Test
     public void testViewAllRoutinesWithoutRoutines() {
-        assertEquals(Arrays.asList(), routineService.viewAllRoutines());
+        assertEquals(Arrays.asList(), routineService.viewAllRoutines(PageRequest.of(0, 10)).getContent());
     }
 
     @Test

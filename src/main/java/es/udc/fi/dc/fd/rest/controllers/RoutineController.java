@@ -6,6 +6,9 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,15 +16,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-
+import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
+import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineConversor;
 import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
@@ -77,11 +82,16 @@ public class RoutineController {
     }
 
     @GetMapping("/viewAllRoutines")
-	public List<RoutineDto> viewRoutine() {
+    public BlockDto<RoutineDto> viewRoutine(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-		return RoutineConversor.toRoutineDtos(routineService.viewAllRoutines());
-
-	}
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Routine> routinesPage = routineService.viewAllRoutines(pageable);
+        
+        return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
+                            routinesPage.hasNext());
+    }
 
     @GetMapping("/getRoutineById/{routineId}")
 	public RoutineDto getRoutineById(@PathVariable Long routineId) {
