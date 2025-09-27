@@ -1,14 +1,13 @@
 package es.udc.fi.dc.fd.rest;
 
-import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,23 +21,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
-import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
-import es.udc.fi.dc.fd.rest.controllers.AdminController;
 import es.udc.fi.dc.fd.rest.controllers.RoutineController;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
@@ -53,15 +45,6 @@ public class RoutineControllerTest {
     private UserController userController;
 
     @Autowired
-    private RoutineController routineController;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private ExerciseDao exerciseDao;
-
-    @Autowired
     private UserDao userDao;
 
 	@Autowired
@@ -72,6 +55,11 @@ public class RoutineControllerTest {
 
     private static final String PASSWORD = "12345";
 
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
 			throws IncorrectLoginException {
@@ -101,7 +89,7 @@ public class RoutineControllerTest {
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = createObjectMapper();
 
         mockMvc.perform(post("/api/routines/createRoutine").header("Authorization", "Bearer " + user.getServiceToken())
 			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)))
@@ -119,7 +107,7 @@ public class RoutineControllerTest {
         params.setDuration(-120L);
         params.setExercises(new ArrayList<>());
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = createObjectMapper();
 
         mockMvc.perform(post("/api/routines/createRoutine").header("Authorization", "Bearer " + user.getServiceToken())
 			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)))
@@ -143,7 +131,7 @@ public class RoutineControllerTest {
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = createObjectMapper();
 
         mockMvc.perform(post("/api/routines/createRoutine").header("Authorization", "Bearer " + user.getServiceToken())
 			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)))
@@ -165,7 +153,7 @@ public class RoutineControllerTest {
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = createObjectMapper();
 
         mockMvc.perform(post("/api/routines/createRoutine").header("Authorization", "Bearer " + user.getServiceToken())
 			.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(params)));
@@ -199,5 +187,153 @@ public class RoutineControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0)); 
+    }
+
+    @Test
+    public void testModifyRoutineSuccess() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        
+        RoutineParamsDto createParams = new RoutineParamsDto();
+        createParams.setName("Original Routine");
+        createParams.setDuration(60L);
+        createParams.setExercises(new ArrayList<>());
+        
+        ObjectMapper mapper = createObjectMapper();
+        
+        String responseJson = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(createParams)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+                
+        RoutineDto createdRoutine = mapper.readValue(responseJson, RoutineDto.class);
+        
+        RoutineParamsDto modifyParams = new RoutineParamsDto();
+        modifyParams.setName("Modified Routine");
+        modifyParams.setDuration(90L);
+        modifyParams.setExercises(new ArrayList<>());
+        
+        mockMvc.perform(put("/api/routines/modifyRoutine/" + createdRoutine.getId())
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(modifyParams)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Modified Routine"))
+                .andExpect(jsonPath("$.duration").value("90"));
+    }
+    
+    @Test
+    public void testModifyRoutineNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        
+        RoutineParamsDto params = new RoutineParamsDto();
+        params.setName("Modified Routine");
+        params.setDuration(90L);
+        params.setExercises(new ArrayList<>());
+        
+        ObjectMapper mapper = createObjectMapper();
+        
+        mockMvc.perform(put("/api/routines/modifyRoutine/999999")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(params)))
+                .andExpect(status().is4xxClientError());
+    }
+    
+    @Test
+    public void testModifyRoutinePermissionDenied() throws Exception {
+        AuthenticatedUserDto creator = createAuthenticatedUser("creator", RoleType.TRAINER);
+        AuthenticatedUserDto otherUser = createAuthenticatedUser("otheruser", RoleType.USER);
+        
+        RoutineParamsDto createParams = new RoutineParamsDto();
+        createParams.setName("Original Routine");
+        createParams.setDuration(60L);
+        createParams.setExercises(new ArrayList<>());
+        
+        ObjectMapper mapper = createObjectMapper();
+        
+        String responseJson = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + creator.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(createParams)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+                
+        RoutineDto createdRoutine = mapper.readValue(responseJson, RoutineDto.class);
+        
+        RoutineParamsDto modifyParams = new RoutineParamsDto();
+        modifyParams.setName("Modified Routine");
+        modifyParams.setDuration(90L);
+        modifyParams.setExercises(new ArrayList<>());
+        
+        mockMvc.perform(put("/api/routines/modifyRoutine/" + createdRoutine.getId())
+                .header("Authorization", "Bearer " + otherUser.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(modifyParams)))
+                .andExpect(status().is4xxClientError());
+    }
+    
+    @Test
+    public void testDeleteRoutineSuccess() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        
+        RoutineParamsDto createParams = new RoutineParamsDto();
+        createParams.setName("Routine to Delete");
+        createParams.setDuration(45L);
+        createParams.setExercises(new ArrayList<>());
+        
+        ObjectMapper mapper = createObjectMapper();
+        
+        String responseJson = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(createParams)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+                
+        RoutineDto createdRoutine = mapper.readValue(responseJson, RoutineDto.class);
+        
+        mockMvc.perform(delete("/api/routines/deleteRoutine/" + createdRoutine.getId())
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testDeleteRoutineNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        
+        mockMvc.perform(delete("/api/routines/deleteRoutine/999999")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+    
+    @Test
+    public void testDeleteRoutinePermissionDenied() throws Exception {
+        AuthenticatedUserDto creator = createAuthenticatedUser("creator", RoleType.TRAINER);
+        AuthenticatedUserDto otherUser = createAuthenticatedUser("otheruser", RoleType.USER);
+        
+        RoutineParamsDto createParams = new RoutineParamsDto();
+        createParams.setName("Routine to Delete");
+        createParams.setDuration(45L);
+        createParams.setExercises(new ArrayList<>());
+        
+        ObjectMapper mapper = createObjectMapper();
+        
+        String responseJson = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + creator.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(createParams)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+                
+        RoutineDto createdRoutine = mapper.readValue(responseJson, RoutineDto.class);
+        
+        mockMvc.perform(delete("/api/routines/deleteRoutine/" + createdRoutine.getId())
+                .header("Authorization", "Bearer " + otherUser.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
     }
 }

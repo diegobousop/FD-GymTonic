@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -248,6 +247,67 @@ public class RoutineServiceTest {
         Users otherUser = userService.login("user1", "12345");
         Routine routine = routineService.createRoutine(creator.getId(), "to-delete-2", new ArrayList<Long>(), 35L);
         routineService.deleteRoutine(otherUser.getId(), routine.getId());
+    }
+
+    @Test
+    public void testAdminCanModifyAnyRoutine() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+        Users admin = userService.login("admin1", "12345");
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "trainer-routine", new ArrayList<Long>(), 45L);
+        
+        // El Admin deberia poder modificar cualquier rutina
+        routineService.modifyRoutine(
+            routine.getId(),
+            admin.getId(),
+            "admin-modified",
+            new ArrayList<Long>(),
+            60L
+        );
+        
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        if (retrieved.isPresent()) {
+            assertEquals("admin-modified", retrieved.get().getName());
+            assertEquals((Long)60L, retrieved.get().getDuration());
+        }
+    }
+
+    @Test
+    public void testAdminCanDeleteAnyRoutine() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+        Users admin = userService.login("admin1", "12345");
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "trainer-routine-delete", new ArrayList<Long>(), 40L);
+        
+        // El Admin deberia poder eliminar cualquier rutina
+        routineService.deleteRoutine(admin.getId(), routine.getId());
+        
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        assertEquals(false, retrieved.isPresent());
+    }
+
+    @Test
+    public void testModifyRoutineWithEmptyExerciseList() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "with-exercises", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 30L);
+        
+         routineService.modifyRoutine(
+            routine.getId(),
+            creator.getId(),
+            "no-exercises",
+            new ArrayList<Long>(),
+            45L
+        );
+        
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        if (retrieved.isPresent()) {
+            assertEquals("no-exercises", retrieved.get().getName());
+            assertEquals(0, retrieved.get().getExercises().size());
+            assertEquals((Long)45L, retrieved.get().getDuration());
+        }
     }
 
 }
