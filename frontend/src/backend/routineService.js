@@ -20,9 +20,9 @@ export const findRoutineById = (routineId, onSuccess, onErrors) =>
     onErrors
   );
 
-export const viewAllRoutines = (onSuccess, onErrors) =>
+export const viewAllRoutines = ({ page, size }, onSuccess, onErrors) =>
   appFetch(
-    "/routines/viewAllRoutines",
+    `/routines/viewAllRoutines?page=${page}&size=${size}`,
     fetchConfig("GET"),
     onSuccess,
     onErrors

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import backend from "../../../backend";
 import { UserContext } from "../components/common/user-provider";
-import Pager from '../components/common/Pager';
+import Pager from '../components/common/pager';
 
 const ViewAllRoutines = () => {
   const { user } = useContext(UserContext);
