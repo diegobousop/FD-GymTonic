@@ -36,6 +36,7 @@ const SideMenu = ({ activePage, setActivePage }) => {
       <MenuItem title="Ver perfil" activePage={isActive} page={'profile'} onClick={() => go('profile', '/profile')} icon={ProfileIcon} />
       <MenuItem title="Crear rutina" activePage={isActive} page={'create-routine'} onClick={() => go('create-routine', '/routines/create-routine')} icon={CreateRoutineIcon} />
       <MenuItem title="Editar perfil" activePage={isActive} page={'user-edit'} onClick={() => go('user-edit', '/profileUpdate')} icon={ProfileIcon} />
+      <MenuItem title="Crear Ejercicio" activePage={isActive} page={'add-exercise'} onClick={() => go('add-exercise', '/admin/addExercise')} icon={CreateRoutineIcon} />
     </div>
   )
 }

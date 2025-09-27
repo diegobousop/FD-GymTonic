@@ -18,6 +18,8 @@ import UserEdit from "../pages/user-edit";
 import ChangePasswordPage from "../pages/changePassword-page"; 
 import ProtectedPath from './common/protected-path';
 import RoutineDetails from "../pages/routineDetails-page";
+import CreateExercise from '../pages/create-exercise-page';
+
 
 const Body = () => {
 
@@ -28,6 +30,7 @@ const Body = () => {
     const path = location.pathname
     if (path === '/' || path === '/start' || path === '/intro') {setActivePage('intro');return}
     if (path.startsWith('/home')) { setActivePage('home'); return }
+    if (path.startsWith('/admin/addExercise')) {setActivePage('create-exercise'); return}
     if (path.startsWith('/profile')) { setActivePage('profile'); return }
     if (path.startsWith('/create-routine')) { setActivePage('create-routine'); return }
     if (path.startsWith('/test')) { setActivePage('test'); return }
@@ -55,6 +58,7 @@ const Body = () => {
               <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
               <Route path="/test" element={<ProtectedPath path={<Test />} />} />
               <Route path="/routines/create-routine" element={<ProtectedPath path={<CreateRoutine />} />} />
+              <Route path='/admin/addExercise' element={<CreateExercise />} />
               <Route path="/routines/:id" element={<RoutineDetails />} />
               <Route path="/profileUpdate" element={<ProtectedPath path={<UserEdit />} />} />
               <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
