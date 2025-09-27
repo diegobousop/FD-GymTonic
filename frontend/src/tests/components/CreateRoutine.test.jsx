@@ -132,4 +132,55 @@ describe('CreateRoutine', () => {
         );
         expect(window.location.hash).toBe('#/routines/create-routine');
     });
+
+        test("Rutina Creada Sin Nombre", async () => {
+        renderComponent();
+
+        routineService.createRoutine.mockImplementation((name, exercises, duration, onSuccess, onError) => {
+            onError({ globalError: "project.exceptions.InvalidRoutineNameException" });
+        });
+
+        const durationInput = screen.getByLabelText(/duración/i);
+        const exercisesInput = screen.getByLabelText(/ejercicios/i);
+
+        fireEvent.change(durationInput, {
+            target: { value: '120' },
+        });
+        fireEvent.change(exercisesInput, {
+            target: { value: '1,2,3' },
+        });
+
+        fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
+
+        await waitFor(() =>
+            expect(screen.getByText("project.exceptions.InvalidRoutineNameException")).toBeInTheDocument()
+        );
+        expect(window.location.hash).toBe('#/routines/create-routine');
+    });
+
+            test("Rutina Creada Sin Duración", async () => {
+        renderComponent();
+
+        routineService.createRoutine.mockImplementation((name, exercises, duration, onSuccess, onError) => {
+            onError({ globalError: "project.exceptions.InvalidRoutineDurationException" });
+        });
+
+        const nameInput = screen.getByLabelText(/nombre/i);
+        const exercisesInput = screen.getByLabelText(/ejercicios/i);
+
+        fireEvent.change(nameInput, {
+            target: { value: 'Rutina 1' },
+        });
+        fireEvent.change(exercisesInput, {
+            target: { value: '1,2,3' },
+        });
+
+        fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
+
+        await waitFor(() =>
+            expect(screen.getByText("project.exceptions.InvalidRoutineDurationException")).toBeInTheDocument()
+        );
+        expect(window.location.hash).toBe('#/routines/create-routine');
+    });
+
 });
