@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { HashRouter as Router } from 'react-router-dom';
-import CreateRoutine from '../../modules/routine/components/CreateRoutine';
+import CreateRoutine from '../../modules/app/pages/create-routine-page';
 import { UserContext } from '../../modules/app/components/common/user-provider';
 
 import '@testing-library/jest-dom/extend-expect';

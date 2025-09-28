@@ -165,10 +165,10 @@ const ViewAllRoutines = () => {
                 <p className="text-black">Creada por: {routine.creator}</p>
                 {canUserModifyRoutine(routine) && (
                   <div className="mt-3">
-                    {user.role === "ADMIN" && user.id !== routine.creator.id && <p className="text-yellow-300 text-xs mb-2">👑 Permisos de administrador</p>}
+                    {user.role === "ADMIN" && user.userName !== routine.creator && <p className="text-yellow-300 text-xs mb-2">👑 Permisos de administrador</p>}
                     <div className="flex space-x-2">
                       <button onClick={() => handleEditRoutine(routine)} className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">Editar</button>
-                      <button onClick={() => handleDeleteRoutine(routine.id, routine.name, routine.creator.id)} className="bg-red-800 text-white px-3 py-1 rounded hover:bg-red-900 text-sm">Eliminar</button>
+                      <button onClick={() => handleDeleteRoutine(routine.id, routine.name, user.id)} className="bg-red-800 text-white px-3 py-1 rounded hover:bg-red-900 text-sm">Eliminar</button>
                     </div>
                   </div>
                 )}

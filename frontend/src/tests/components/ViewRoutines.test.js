@@ -23,7 +23,7 @@ describe("ViewRoutines", () => {
 
     render(
       <MemoryRouter>
-        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER", userName: "Trainer1" } }}>
           <ViewAllRoutinespage />
         </UserContext.Provider>
       </MemoryRouter>
@@ -46,14 +46,7 @@ describe("ViewRoutines", () => {
               { name: "Push Up", grupoMuscular: "PECHO" },
               { name: "Squat", grupoMuscular: "PIERNA" },
             ],
-            creator: {
-              id: 2,
-              userName: "trainer1",
-              firstName: "Trainer",
-              lastName: "User",
-              email: "trainer1@trainer.com",
-              role: "TRAINER",
-            },
+            creator:"Trainer1"
           },
         ],
         existMoreItems: false,
