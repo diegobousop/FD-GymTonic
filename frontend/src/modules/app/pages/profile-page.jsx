@@ -28,9 +28,7 @@ const ProfilePage = () => {
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 bg-auto ">
 
-      <SendButton children="Cerrar sesión" isLoading={false} onClick={() => {
-        handleLogout();
-      }}/>
+      
 
       <h2 className="text-xl font-bold mt-8 mb-4 text-white">Datos de usuario</h2>
       {error && <div className="text-red-600 mb-2">{error}</div>}
@@ -44,6 +42,10 @@ const ProfilePage = () => {
       ) : (
         <div>Cargando datos...</div>
       )}
+
+      <SendButton children="Cerrar sesión" isLoading={false} onClick={() => {
+        handleLogout();
+      }}/>
     </div>
   );
 }

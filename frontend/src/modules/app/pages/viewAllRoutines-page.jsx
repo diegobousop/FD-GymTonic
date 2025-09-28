@@ -145,12 +145,12 @@ const ViewAllRoutines = () => {
 
       <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
         {routines.map(routine => (
-          <div key={routine.id} className="bg-red-600 p-4 rounded-lg shadow-md">
+          <div key={routine.id} className="bg-[#262626] p-4 rounded-lg shadow-md">
             {editingRoutine === routine.id ? (
               <div className="space-y-3">
-                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full p-2 rounded bg-white text-black" placeholder="Nombre de la rutina"/>
-                <input type="number" value={editDuration} onChange={e => setEditDuration(e.target.value)} className="w-full p-2 rounded bg-white text-black" placeholder="Duración (min)"/>
-                <input type="text" value={editExercises} onChange={e => setEditExercises(e.target.value)} className="w-full p-2 rounded bg-white text-black" placeholder="IDs de ejercicios (separados por coma)"/>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full p-2 rounded bg-white text-white" placeholder="Nombre de la rutina"/>
+                <input type="number" value={editDuration} onChange={e => setEditDuration(e.target.value)} className="w-full p-2 rounded bg-white text-white" placeholder="Duración (min)"/>
+                <input type="text" value={editExercises} onChange={e => setEditExercises(e.target.value)} className="w-full p-2 rounded bg-white text-white" placeholder="IDs de ejercicios (separados por coma)"/>
                 <div className="flex space-x-2">
                   <button onClick={() => handleSaveEdit(routine.id)} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm">Guardar</button>
                   <button onClick={handleCancelEdit} className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 text-sm">Cancelar</button>
@@ -158,11 +158,11 @@ const ViewAllRoutines = () => {
               </div>
             ) : (
               <div>
-                <Link to={`/routines/${routine.id}`}><h3 className="text-xl text-black"><strong>{routine.name}</strong> <small>{routine.duration} min</small></h3></Link>
+                <Link to={`/routines/${routine.id}`}><h3 className="text-xl text-white"><strong>{routine.name}</strong> <small>{routine.duration} min</small></h3></Link>
                 <ul>
-                  {routine.exercises && routine.exercises.length > 0 ? routine.exercises.map((ex, i) => <li key={i} className="text-white">{ex.name} - <small>{ex.grupoMuscular}</small></li>) : <li>No hay ejercicios</li>}
+                  {routine.exercises && routine.exercises.length > 0 ? routine.exercises.map((ex, i) => <li key={i} className="text-white">{ex.name} - <small>{ex.grupoMuscular}</small></li>) : <li className="text-white">No hay ejercicios</li>}
                 </ul>
-                <p className="text-black">Creada por: {routine.creator}</p>
+                <p className="text-white">Creada por: {routine.creator}</p>
                 {canUserModifyRoutine(routine) && (
                   <div className="mt-3">
                     {user.role === "ADMIN" && user.userName !== routine.creator && <p className="text-yellow-300 text-xs mb-2">👑 Permisos de administrador</p>}
