@@ -19,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -342,4 +344,41 @@ public class RoutineControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
+
+
+    @Test
+    public void testGetRoutineById() throws Exception{
+
+		AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+
+        RoutineParamsDto params = new RoutineParamsDto();
+        params.setName("Full-Body");
+        params.setDuration(120L);
+        params.setExercises(new ArrayList<>());
+
+		ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+
+
+        MvcResult result = mockMvc.perform(post("/api/routines/createRoutine")
+            .header("Authorization", "Bearer " + user.getServiceToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(mapper.writeValueAsBytes(params)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        RoutineDto createdRoutine = mapper.readValue(jsonResponse, RoutineDto.class);
+
+        Long routineId = createdRoutine.getId();
+
+        mockMvc.perform(get("/api/routines/getRoutineById/" + routineId)
+        .header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("name").value("Full-Body"))
+        .andExpect(jsonPath("duration").value("120"));
+
+    }
+
 }
