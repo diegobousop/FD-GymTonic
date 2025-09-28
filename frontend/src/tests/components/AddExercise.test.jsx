@@ -1,0 +1,76 @@
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { HashRouter as Router } from 'react-router-dom';
+import { UserContext } from '../../modules/app/components/common/user-provider';
+import CreateExercise from '../../modules/app/pages/create-exercise-page';
+
+import '@testing-library/jest-dom/extend-expect';
+import exerciseService from '../../backend/exerciseService';
+
+jest.mock('../../backend/exerciseService', () => ({
+    addExercise: jest.fn(),
+}));
+
+describe('AddExercise', () => {
+    const setUser = jest.fn();
+
+    const renderComponent = () => 
+        render(
+            <UserContext.Provider value={{ setUser }}>
+                <Router>
+                    <CreateExercise />
+                </Router>
+            </UserContext.Provider>
+        );
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        window.location.hash = '#/admin/addExercise'
+    });
+
+    test('render the form correctly', () => {
+        renderComponent();
+
+        expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Descripcion/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Categoría/i)).toBeInTheDocument();
+        fireEvent.click(screen.getByLabelText(/Categoría/i));
+        
+        expect(screen.getByText('PECHO')).toBeInTheDocument();
+        expect(screen.getByText('PIERNA')).toBeInTheDocument();
+        expect(screen.getByText('BRAZOS')).toBeInTheDocument();
+        
+    });
+
+    test('completa los campos de forma correcta', async () => {
+        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular, onSuccess, onError) => {
+            onSuccess({
+                "id":6
+            });
+
+        });
+        renderComponent();
+
+        const nameInput = screen.getByLabelText(/Nombre/i);
+        const DescripcionInput = screen.getByLabelText(/Descripcion/i);
+        const categoriaInput = screen.getByLabelText(/Categoría/i);
+
+        fireEvent.change(nameInput, {
+            target: { value: 'ejercicio 1' },
+        });
+        fireEvent.change(DescripcionInput, {
+            target: { value: 'descripcion de prueba' },
+        });
+        fireEvent.change(categoriaInput, {
+            target: {value: 'PECHO'}
+        });
+
+        fireEvent.submit(screen.getByRole('button', {name: /enviar/i}));
+
+        await waitFor(() =>
+            expect(screen.getByText("Ejercicio ejercicio 1 añadido existosamente")).toBeInTheDocument()
+        );
+    });
+
+})
+
