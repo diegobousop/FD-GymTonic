@@ -14,7 +14,6 @@ const UserEdit = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Si el campo está vacío, se mantiene el valor antiguo
         const updatedUser = {
             ...user,
             email: email.trim() === '' ? user.email : email,
