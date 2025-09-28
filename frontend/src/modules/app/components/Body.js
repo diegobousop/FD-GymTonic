@@ -13,7 +13,7 @@ import LoginPage from "../pages/login-page";
 import RegisterPage from "../pages/register-page";
 import HomePage from "../pages/home-page";
 import ProfilePage from "../pages/profile-page";
-import { CreateRoutine } from "../../routine";
+import CreateRoutine  from "../pages/create-routine-page";
 import UserEdit from "../pages/user-edit";
 import ChangePasswordPage from "../pages/changePassword-page"; 
 import ProtectedPath from './common/protected-path';
@@ -30,9 +30,9 @@ const Body = () => {
     const path = location.pathname
     if (path === '/' || path === '/start' || path === '/intro') {setActivePage('intro');return}
     if (path.startsWith('/home')) { setActivePage('home'); return }
-    if (path.startsWith('/admin/addExercise')) {setActivePage('create-exercise'); return}
+    if (path.startsWith('/admin/addExercise')) {setActivePage('createExercise'); return}
     if (path.startsWith('/profile')) { setActivePage('profile'); return }
-    if (path.startsWith('/create-routine')) { setActivePage('create-routine'); return }
+    if (path.startsWith('/create-routine')) { setActivePage('createRoutine'); return }
     if (path.startsWith('/test')) { setActivePage('test'); return }
     if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate');  }
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }

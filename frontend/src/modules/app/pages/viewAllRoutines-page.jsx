@@ -162,7 +162,7 @@ const ViewAllRoutines = () => {
                 <ul>
                   {routine.exercises && routine.exercises.length > 0 ? routine.exercises.map((ex, i) => <li key={i} className="text-white">{ex.name} - <small>{ex.grupoMuscular}</small></li>) : <li>No hay ejercicios</li>}
                 </ul>
-                <p className="text-black">Creada por: {routine.creator.userName}</p>
+                <p className="text-black">Creada por: {routine.creator}</p>
                 {canUserModifyRoutine(routine) && (
                   <div className="mt-3">
                     {user.role === "ADMIN" && user.id !== routine.creator.id && <p className="text-yellow-300 text-xs mb-2">👑 Permisos de administrador</p>}

@@ -9,7 +9,9 @@ import PropTypes from 'prop-types'
 const PAGE_TITLES = {
   home: 'Inicio',
   profile: 'Perfil',
-  createroutine:'Crear Rutina',
+  userEdit: 'Editar Perfil',
+  createRoutine: 'Crear Rutina',
+  createExercise: 'Crear Ejercicio',
   'change-password': 'Cambiar Contraseña',
 }
 

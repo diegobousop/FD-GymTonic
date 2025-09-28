@@ -1,8 +1,8 @@
  import {useState,useEffect} from "react";
 import backend from "../../../backend";
-import SendButton from "../../app/components/common/send-button";
-import TextInput from "../../app/components/common/text-input";
-import MultiSelectList from "./MultiSelectList";
+import SendButton from "../components/common/send-button";
+import TextInput from "../components/common/text-input";
+import MultiSelectList from "../components/common/multi-select-list";
 
 
 const CreateRoutine = () => {
