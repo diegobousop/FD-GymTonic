@@ -13,7 +13,7 @@ const processLoginSignUp = (authenticatedUser, reauthenticationCallback, onSucce
   if (onSuccess) {
     onSuccess(authenticatedUser);
   }
-}
+};
 
 export const login = (
   userName,
@@ -62,30 +62,19 @@ export const signUp = (user, onSuccess, onErrors, reauthenticationCallback) => {
     onErrors
   );
 };
-export const getProfile=(user, onSuccess, onErrors)=>
-    appFetch(`/users/${user.id}`, fetchConfig("GET"),onSuccess,onErrors);
+
+export const getProfile = (user, onSuccess, onErrors) =>
+  appFetch(`/users/${user.id}`, fetchConfig("GET"), onSuccess, onErrors);
 
 export const logout = () => removeServiceToken();
 
 export const updateProfile = (user, onSuccess, onErrors) =>
   appFetch(`/users/${user.id}`, fetchConfig("PUT", user), onSuccess, onErrors);
 
-export const changePassword = (oldPassword, newPassword, onSuccess, onErrors) => {
-  const serviceToken = getServiceToken();
-  if (!serviceToken) {
-    if (onErrors) onErrors("No token disponible");
-    return;
-  }
-
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    if (onErrors) onErrors("No se encontró userId");
-    return;
-  }
-
+export const changePassword = (user, oldPassword, newPassword, onSuccess, onErrors) => {
   appFetch(
-    `/users/${userId}/changePassword`,
-    fetchConfig("POST", { oldPassword, newPassword }, serviceToken),
+    `/users/${user.id}/changePassword`,
+    fetchConfig("POST", { oldPassword, newPassword }),
     onSuccess,
     async (err) => {
       try {

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import TextInput from '../components/common/text-input';
 import SendButton from '../components/common/send-button';
 import { changePassword } from '../../../backend/userService';
+import { UserContext } from '../components/common/user-provider';
 
 const ChangePasswordPage = () => {
+  const { user } = useContext(UserContext);
+
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,7 +23,13 @@ const ChangePasswordPage = () => {
       return;
     }
 
+    if (!user) {
+      setErrors({ globalError: 'Usuario no identificado' });
+      return;
+    }
+
     changePassword(
+      user,
       oldPassword,
       newPassword,
       () => {
@@ -34,10 +43,9 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <div className="ml-[5%] mt-[4%]">
-      <h1 className="mb-10">Cambiar Contraseña</h1>
-      <form onSubmit={handleChangePassword}>
-        <div className="grid grid-cols-2 gap-4 w-[620px]">
+    <div className="flex justify-center mt-16">
+      <form onSubmit={handleChangePassword} className="w-[620px]">
+        <div className="grid grid-cols-2 gap-4">
           <TextInput
             name="oldPassword"
             label="Contraseña actual"
