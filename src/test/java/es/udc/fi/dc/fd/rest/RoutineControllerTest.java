@@ -20,12 +20,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -49,6 +50,9 @@ public class RoutineControllerTest {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+	private AvatarDao avatarDao;
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -65,8 +69,9 @@ public class RoutineControllerTest {
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
 			throws IncorrectLoginException {
-
-		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com");
+        Avatar avatar = new Avatar();
+        avatarDao.save(avatar);
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar);
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);

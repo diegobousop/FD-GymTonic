@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -36,7 +37,10 @@ public class UserDto {
 	
 	/** The email. */
 	private String email;
-	
+
+	/** The avatar. */
+	private AvatarDto avatar;
+
 	/** The role. */
 	private String role;
 
@@ -55,7 +59,7 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -63,7 +67,7 @@ public class UserDto {
 		this.lastName = lastName.trim();
 		this.email = email.trim();
 		this.role = role;
-		
+		this.avatar = avatar;
 	}
 
 	/**
@@ -183,6 +187,16 @@ public class UserDto {
 	 */
 	public void setEmail(String email) {
 		this.email = email.trim();
+	}
+
+	@NotNull(groups={UpdateValidations.class})
+	@Valid
+	public AvatarDto getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(AvatarDto avatar) {
+		this.avatar = avatar;
 	}
 
 	/**

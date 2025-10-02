@@ -2,10 +2,6 @@ package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-
-import jakarta.transaction.Transactional;
-
-import jakarta.validation.constraints.Null;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -16,9 +12,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import jakarta.transaction.Transactional;
 
 /**
  * The Class UserServiceTest.
@@ -33,6 +32,9 @@ public class UserServiceTest {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private AvatarDao avatarDao;
+
 	/**
 	 * Creates the user.
 	 *
@@ -40,7 +42,9 @@ public class UserServiceTest {
 	 * @return the user
 	 */
 	private Users createUser(String userName) {
-		return new Users(userName, "password", "firstName", "lastName", userName + "@" + userName + ".com");
+		Avatar avatar = new Avatar();
+		avatarDao.save(avatar);
+		return new Users(userName, "password", "firstName", "lastName", userName + "@" + userName + ".com", avatar);
 	}
 
 	/**
@@ -80,13 +84,14 @@ public class UserServiceTest {
 		assertEquals( "lastName",user.getLastName());
 		assertEquals("user@user.com",user.getEmail());
 
-		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com");
+		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "surf");
 
 		assertEquals("prueba",user.getFirstName());
 		assertEquals( "pruebez",user.getLastName());
 		assertEquals("prueba@pruebez.com",user.getEmail());
+		assertEquals("surf",user.getAvatar().getName());
 
-		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com"));
+		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "default"));
 	}
 
     @Test
