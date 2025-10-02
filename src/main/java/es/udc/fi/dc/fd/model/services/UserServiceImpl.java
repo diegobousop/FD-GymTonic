@@ -11,8 +11,6 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 
@@ -34,9 +32,6 @@ public class UserServiceImpl implements UserService {
 	/** The user dao. */
 	@Autowired
 	private UserDao userDao;
-
-	@Autowired
-	private AvatarDao avatarDao;
 
 	/**
 	 * Sign up.
@@ -108,7 +103,7 @@ public class UserServiceImpl implements UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	@Override
-	public Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName)
+	public Users updateProfile(Long id, String firstName, String lastName, String email)
 			throws InstanceNotFoundException {
 
 		Users user = permissionChecker.checkUser(id);
@@ -116,17 +111,6 @@ public class UserServiceImpl implements UserService {
 		user.setFirstName(firstName);
 		user.setLastName(lastName);
 		user.setEmail(email);
-
-		Optional<Avatar> avatar = avatarDao.findByName(avatarName);
-		if (!avatar.isPresent()) {
-			throw new InstanceNotFoundException("project.entities.avatar", avatarName);
-		}
-
-		if (user.getAvatar() == null || !user.getAvatar().getId().equals(avatar.get().getId())) {
-            user.setAvatar(avatar.get());
-        }
-
-		userDao.save(user);
 
 		return user;
 

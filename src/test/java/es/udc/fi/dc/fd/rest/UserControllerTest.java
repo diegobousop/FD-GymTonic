@@ -1,7 +1,5 @@
 package es.udc.fi.dc.fd.rest;
 
-import java.util.Optional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
-
-import es.udc.fi.dc.fd.rest.dtos.AvatarDto;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
@@ -66,9 +59,6 @@ public class UserControllerTest {
 	@Autowired
 	private UserController userController;
 
-	@Autowired
-	private AvatarDao avatarDao;
-
 	/**
 	 * Creates the authenticated user.
 	 *
@@ -79,8 +69,8 @@ public class UserControllerTest {
 	 */
 	private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
 			throws IncorrectLoginException {
-		Optional<Avatar> avatar = avatarDao.findByName("default");
-		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.get());
+
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com");
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
@@ -160,12 +150,10 @@ public class UserControllerTest {
 		// Crear usuario autenticado
 		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		Optional<Avatar> avatar = avatarDao.findByName("surf");
 
 		// Crear DTO de usuario con datos actualizados
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarUrl()));
+				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
 
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -178,9 +166,7 @@ public class UserControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.firstName").value(userDto.getFirstName()))
 				.andExpect(jsonPath("$.lastName").value(userDto.getLastName()))
-				.andExpect(jsonPath("$.email").value(userDto.getEmail()))
-				.andExpect(jsonPath("$.avatar.name").value(avatar.get().getName()))
-				.andExpect(jsonPath("$.avatar.avatarUrl").value(avatar.get().getAvatarUrl()));
+				.andExpect(jsonPath("$.email").value(userDto.getEmail()));
 	}
 
 	@Test
@@ -191,7 +177,7 @@ public class UserControllerTest {
 		Long differentUserId = userId + 1;
 
 		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), new AvatarDto("surf", "https://ik.imagekit.io/940wz34p7/icon4.png?updatedAt=1759058202678"));
+				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -209,7 +195,7 @@ public class UserControllerTest {
 		Long userId = user.getUserDto().getId();
 
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
-				"","email-invalido",user.getUserDto().getRole(), new AvatarDto("surf", "https://ik.imagekit.io/940wz34p7/icon4.png?updatedAt=1759058202678"));
+				"","email-invalido",user.getUserDto().getRole());
 
 		ObjectMapper mapper = new ObjectMapper();
 

@@ -49,7 +49,7 @@ public interface UserService {
 	 * @return the user
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
-	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName) throws InstanceNotFoundException;
+	Users updateProfile(Long id, String firstName, String lastName, String email) throws InstanceNotFoundException;
 	
 	/**
 	 * Change password.
