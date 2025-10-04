@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
-import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.Users;
 /**
  * The Class UserConversor.

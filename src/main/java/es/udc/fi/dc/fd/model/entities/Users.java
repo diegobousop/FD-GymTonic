@@ -4,8 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 
 /**
  * The Class User.
@@ -41,9 +39,6 @@ public class Users {
 	/** The email. */
 	private String email;
 
-	/** The avatar. */
-	private Avatar avatar;
-
 	/** The role. */
 	private RoleType role;
 
@@ -62,14 +57,13 @@ public class Users {
 	 * @param lastName  the last name
 	 * @param email     the email
 	 */
-	public Users(String userName, String password, String firstName, String lastName, String email, Avatar avatar) {
+	public Users(String userName, String password, String firstName, String lastName, String email) {
 
 		this.userName = userName;
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
-		this.avatar = avatar;
 	}
 
 	/**
@@ -180,16 +174,6 @@ public class Users {
 	 */
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	@ManyToOne
-	@JoinColumn(name = "avatar")
-	public Avatar getAvatar() {
-		return avatar;
-	}
-
-	public void setAvatar(Avatar avatar) {
-		this.avatar = avatar;
 	}
 
 	/**

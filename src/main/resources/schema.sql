@@ -17,9 +17,7 @@ CREATE TABLE Users (
     firstName VARCHAR(60) NOT NULL,
     lastName VARCHAR(60) NOT NULL, 
     email VARCHAR(60) NOT NULL,
-    avatar BIGINT,
-    role TINYINT NOT NULL, /*0 User, 1 Trainer. 2 Admin*/
-    FOREIGN KEY (avatar) REFERENCES Avatar(id)
+    role TINYINT NOT NULL /*0 User, 1 Trainer. 2 Admin*/
 );
 
 CREATE TABLE Exercise (

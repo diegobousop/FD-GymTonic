@@ -24,8 +24,6 @@ import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineDao;
 import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
@@ -45,8 +43,6 @@ public class RoutineServiceTest {
     private RoutineDao routineDao;
     @Autowired
     private ExerciseDao exerciseDao;
-    @Autowired
-    private AvatarDao avatarDao;
 
     private Users createUser(String userName) {
         Optional<Avatar> avatar = avatarDao.findByName("default");
