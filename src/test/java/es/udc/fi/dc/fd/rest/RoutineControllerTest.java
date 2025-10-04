@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,9 +70,8 @@ public class RoutineControllerTest {
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
 			throws IncorrectLoginException {
-        Avatar avatar = new Avatar();
-        avatarDao.save(avatar);
-		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar);
+        Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);

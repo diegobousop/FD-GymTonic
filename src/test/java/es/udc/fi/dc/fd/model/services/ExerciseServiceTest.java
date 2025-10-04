@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,9 +44,8 @@ public class ExerciseServiceTest {
     private AvatarDao avatarDao;
 
     private Users createUser(String userName) {
-        Avatar avatar = new Avatar();
-        avatarDao.save(avatar);
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar);
+        Optional<Avatar> avatar = avatarDao.findByName("default");
+        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
     }
 
     @Test

@@ -6,13 +6,13 @@ import jakarta.validation.constraints.Size;
 public class AvatarDto {
 
     private String name;
-    private String avatarUrl;
+    private String avatarBase64;
 
     public AvatarDto() {}
 
-    public AvatarDto(String name, String avatarUrl) {
+    public AvatarDto(String name, String avatarBase64) {
         this.name = name;
-        this.avatarUrl = avatarUrl;
+        this.avatarBase64 = avatarBase64;
     }
 
     @NotNull(groups = { UserDto.UpdateValidations.class })
@@ -25,11 +25,11 @@ public class AvatarDto {
         this.name = name;
     }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
+    public String getAvatarBase64() {
+        return avatarBase64;
     }
 
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    public void setAvatarBase64(String avatarBase64) {
+        this.avatarBase64 = avatarBase64;
     }
 }

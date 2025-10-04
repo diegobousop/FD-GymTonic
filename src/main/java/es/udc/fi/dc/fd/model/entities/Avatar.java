@@ -1,11 +1,13 @@
 package es.udc.fi.dc.fd.model.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 @Entity
 public class Avatar {
@@ -14,16 +16,13 @@ public class Avatar {
 
     private String name;
 
-    private String avatarUrl;
+    private String avatarBase64; // Campo para almacenar la imagen en base64
 
-    public Avatar() {
-        this.name = "default";
-        this.avatarUrl = "https://ik.imagekit.io/940wz34p7/icon1.png?updatedAt=1758634852371";
-    }
+    public Avatar() {}
 
-    public Avatar(String name, String avatarUrl) {
+    public Avatar(String name, String avatarBase64) {
         this.name = name;
-        this.avatarUrl = avatarUrl;
+        this.avatarBase64 = avatarBase64;
     }
 
     @Id
@@ -42,13 +41,15 @@ public class Avatar {
 
     public void setName(String name) {
         this.name = name;
+    }   
+
+    @Lob
+    @Column(name = "avatarBase64", columnDefinition = "MEDIUMTEXT")
+    public String getAvatarBase64() {
+        return avatarBase64;
     }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    public void setAvatarBase64(String avatarBase64) {
+        this.avatarBase64 = avatarBase64;
     }
 }
