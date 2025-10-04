@@ -17,6 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 import jakarta.transaction.Transactional;
@@ -35,6 +37,9 @@ public class UserServiceTest {
 	/** The user service. */
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private AvatarDao avatarDao;
 
 	/**
 	 * Creates the user.
@@ -84,13 +89,14 @@ public class UserServiceTest {
 		assertEquals( "lastName",user.getLastName());
 		assertEquals("user@user.com",user.getEmail());
 
-		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com");
+		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy");
 
 		assertEquals("prueba",user.getFirstName());
 		assertEquals( "pruebez",user.getLastName());
 		assertEquals("prueba@pruebez.com",user.getEmail());
+		assertEquals("messy",user.getAvatar().getName());
 
-		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com"));
+		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "messy987"));
 	}
 
     @Test

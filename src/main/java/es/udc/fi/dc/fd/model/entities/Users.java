@@ -5,6 +5,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+
 /**
  * The Class User.
  */
@@ -39,6 +42,9 @@ public class Users {
 	/** The email. */
 	private String email;
 
+	/** The avatar. */
+	private Avatar avatar;
+
 	/** The role. */
 	private RoleType role;
 
@@ -56,14 +62,16 @@ public class Users {
 	 * @param firstName the first name
 	 * @param lastName  the last name
 	 * @param email     the email
+	 * @param avatar    the avatar
 	 */
-	public Users(String userName, String password, String firstName, String lastName, String email) {
+	public Users(String userName, String password, String firstName, String lastName, String email, Avatar avatar) {
 
 		this.userName = userName;
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
+		this.avatar = avatar;
 	}
 
 	/**
@@ -174,6 +182,28 @@ public class Users {
 	 */
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	/**
+	 * Gets the avatar.
+	 *
+	 * @return the avatar
+	 */
+
+	@ManyToOne
+	@JoinColumn(name = "avatar")
+	public Avatar getAvatar() {
+		return avatar;
+	}
+
+	/**
+	 * Sets the avatar.
+	 *
+	 * @param avatar the new avatar
+	 */
+
+	public void setAvatar(Avatar avatar) {
+		this.avatar = avatar;
 	}
 
 	/**

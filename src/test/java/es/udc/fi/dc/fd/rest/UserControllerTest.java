@@ -20,15 +20,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.AvatarDto;
 
 /**
  * The Class UserControllerTest.
@@ -54,6 +58,9 @@ public class UserControllerTest {
 	/** The user dao. */
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private AvatarDao avatarDao;
 
 	/** The user controller. */
 	@Autowired
@@ -150,6 +157,7 @@ public class UserControllerTest {
 		// Crear usuario autenticado
 		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.USER);
 		Long userId = user.getUserDto().getId();
+		Optional<Avatar> avatar = avatarDao.findByName("messy");
 
 		// Crear DTO de usuario con datos actualizados
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
@@ -178,9 +186,11 @@ public class UserControllerTest {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
 		Long differentUserId = userId + 1;
+		Optional<Avatar> avatar = avatarDao.findByName("default");
 
 		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
+				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()));
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -196,9 +206,11 @@ public class UserControllerTest {
 	public void testUpdateProfile_ValidationError() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
+		Optional<Avatar> avatar = avatarDao.findByName("default");
 
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
-				"","email-invalido",user.getUserDto().getRole());
+				"","email-invalido",user.getUserDto().getRole(), 
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()));
 
 		ObjectMapper mapper = new ObjectMapper();
 

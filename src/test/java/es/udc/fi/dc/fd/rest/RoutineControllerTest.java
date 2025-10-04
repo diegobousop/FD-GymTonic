@@ -29,6 +29,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.rest.controllers.RoutineController;
@@ -49,6 +51,9 @@ public class RoutineControllerTest {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+	private AvatarDao avatarDao;
 
 	@Autowired
 	private MockMvc mockMvc;
