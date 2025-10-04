@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +46,8 @@ public class ExerciseServiceTest {
     private ExerciseDao exerciseDao;
 
     private Users createUser(String userName) {
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com");
+        Optional<Avatar> avatar = avatarDao.findByName("default");
+        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
     }
 
     @Test

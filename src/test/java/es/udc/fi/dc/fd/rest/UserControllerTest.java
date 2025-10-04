@@ -69,8 +69,8 @@ public class UserControllerTest {
 	 */
 	private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
 			throws IncorrectLoginException {
-
-		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com");
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
@@ -153,7 +153,8 @@ public class UserControllerTest {
 
 		// Crear DTO de usuario con datos actualizados
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
+				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()));
 
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -166,7 +167,9 @@ public class UserControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.firstName").value(userDto.getFirstName()))
 				.andExpect(jsonPath("$.lastName").value(userDto.getLastName()))
-				.andExpect(jsonPath("$.email").value(userDto.getEmail()));
+				.andExpect(jsonPath("$.email").value(userDto.getEmail()))
+				.andExpect(jsonPath("$.avatar.name").value(avatar.get().getName()))
+				.andExpect(jsonPath("$.avatar.avatarBase64").value(avatar.get().getAvatarBase64()));
 	}
 
 	@Test

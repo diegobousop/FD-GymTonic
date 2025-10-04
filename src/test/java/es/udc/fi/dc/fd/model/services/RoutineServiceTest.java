@@ -45,7 +45,8 @@ public class RoutineServiceTest {
     private ExerciseDao exerciseDao;
 
     private Users createUser(String userName) {
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com");
+        Optional<Avatar> avatar = avatarDao.findByName("default");
+        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
     }
 
     private Routine createRoutine(String name, Users creator) {

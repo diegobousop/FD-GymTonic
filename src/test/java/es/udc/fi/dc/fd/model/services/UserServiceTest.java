@@ -19,6 +19,9 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import jakarta.transaction.Transactional;
+
+import java.util.Optional;
 
 /**
  * The Class UserServiceTest.
@@ -40,7 +43,8 @@ public class UserServiceTest {
 	 * @return the user
 	 */
 	private Users createUser(String userName) {
-		return new Users(userName, "password", "firstName", "lastName", userName + "@" + userName + ".com");
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		return new Users(userName, "password", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
 	}
 
 	/**
