@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import { useEffect, useContext } from 'react'
 
 import SearchBar from './searchbar'
+import { UserContext } from './user-provider'
 
 import { GENERAL_ICONS } from '../../../../config/constants'
 import { Link } from 'react-router-dom'
@@ -19,9 +20,7 @@ const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
 
 const Navbar = ({activePage}) => {
 
-  useEffect(() => {
-    console.log('Navbar activePage:', activePage)
-  }, [activePage])
+  const { user } = useContext(UserContext);
 
   const title = PAGE_TITLES[activePage] || capitalize(activePage) || 'Inicio'
 
@@ -35,20 +34,16 @@ const Navbar = ({activePage}) => {
           />
         </Link>
 
-
         <div className="flex flex-row  ml-4 items-center w-full">
-
             <div className="flex flex-row grow w-full">
                 <h1 className="text-white ml-24">{title}</h1>
             </div>
-
             <div className="flex flex-row items-center justify-between gap-4 mr-2">
                 <SearchBar />
                 <Link to="/profile">
-                    <img src={GENERAL_ICONS.DEFAULT_AVATAR} alt="user avatar" className=" w-[52px] h-auto" />
+                    <img src={user.avatar.avatarBase64} alt="user avatar" className=" w-[52px] h-auto" />
                 </Link>
             </div>
-
         </div>
         
     </div>
