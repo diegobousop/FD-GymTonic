@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const MultiChecklist = ({ options, selected, onChange, label }) => {
+const MultiChecklist = ({ options, selected, onChange, label, page, setPage, existMoreItems }) => {
   const [open, setOpen] = useState(false);
 
   const handleToggle = (id) => {
@@ -21,25 +21,45 @@ const MultiChecklist = ({ options, selected, onChange, label }) => {
         {label}
       </button>
       {open && (
-        <ul className="bg-gray-800 rounded p-4">
-          {options.map(opt => (
-            <li key={opt.id} className="flex items-center mb-2 last:mb-0">
-              <input
-                type="checkbox"
-                id={`check-${opt.id}`}
-                checked={selected.includes(opt.id)}
-                onChange={() => handleToggle(opt.id)}
-                className="mr-2 accent-red-600"
-              />
-              <label
-                htmlFor={`check-${opt.id}`}
-                className={`cursor-pointer text-white ${selected.includes(opt.id) ? "font-bold" : ""}`}
-              >
-                {opt.name}
-              </label>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <ul className="bg-gray-800 rounded p-4">
+            {options.map(opt => (
+              <li key={opt.id} className="flex items-center mb-2 last:mb-0">
+                <input
+                  type="checkbox"
+                  id={`check-${opt.id}`}
+                  checked={selected.includes(opt.id)}
+                  onChange={() => handleToggle(opt.id)}
+                  className="mr-2 accent-red-600"
+                />
+                <label
+                  htmlFor={`check-${opt.id}`}
+                  className={`cursor-pointer text-white ${selected.includes(opt.id) ? "font-bold" : ""}`}
+                >
+                  {opt.name}
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-between mt-2">
+            <button
+              type="button"
+              className="text-white px-2 py-1 rounded bg-gray-700 disabled:opacity-50"
+              onClick={() => setPage(page - 1)}
+              disabled={page === 0}
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              className="text-white px-2 py-1 rounded bg-gray-700 disabled:opacity-50"
+              onClick={() => setPage(page + 1)}
+              disabled={!existMoreItems}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

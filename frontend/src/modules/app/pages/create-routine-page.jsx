@@ -13,17 +13,21 @@ const CreateRoutine = () => {
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     const [selectedExercises, setSelectedExercises] = useState([]);
-    
+    const [page, setPage] = useState(0);
+    const [existMoreItems, setExistMoreItems] = useState(false);
 
     let form;
 
     useEffect(() => {
         backend.exerciseService.getAllExercises(
-        0,
-        (block) => setExercises(block.items),
-        (err) => setExercises([])
+            page,
+            (block) => {
+                setExercises(block.items);
+                setExistMoreItems(block.existMoreItems);
+            },
+            (err) => setExercises([])
         );
-    }, []);
+    }, [page]);
 
 
     const handleSubmit = async (e) => {
@@ -81,7 +85,10 @@ const CreateRoutine = () => {
                         selected={selectedExercises}
                         onChange={setSelectedExercises}
                         label="Ejercicios"
-                        />
+                        page={page}
+                        setPage={setPage}
+                        existMoreItems={existMoreItems}
+                    />
                     <SendButton onClick={handleSubmit}></SendButton>
                 </form>    
 
