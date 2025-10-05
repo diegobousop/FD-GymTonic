@@ -1,6 +1,9 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+
+
 /**
  * The Class UserConversor.
  */
@@ -19,9 +22,8 @@ public class UserConversor {
 	 * @return the user dto
 	 */
 	public static final UserDto toUserDto(Users user) {
-		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(),
-				user.getRole().toString(), new AvatarDto(user.getAvatar().getName(),
-						user.getAvatar().getAvatarBase64()));
+		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), 
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()));
 	}
 
 	/**

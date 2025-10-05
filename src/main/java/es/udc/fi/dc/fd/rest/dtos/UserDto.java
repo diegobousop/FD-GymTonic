@@ -40,6 +40,9 @@ public class UserDto {
 	/** The role. */
 	private String role;
 
+	/** The avatar. */
+	private AvatarDto avatar;
+
 	/**
 	 * Instantiates a new user dto.
 	 */
@@ -55,7 +58,7 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -63,9 +66,8 @@ public class UserDto {
 		this.lastName = lastName.trim();
 		this.email = email.trim();
 		this.role = role;
-		
-	}
-
+		this.avatar = avatar;
+	} 
 	/**
 	 * Gets the id.
 	 *
@@ -201,6 +203,27 @@ public class UserDto {
 	 */
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	
+
+	/**
+	 * Gets the avatar.
+	 *
+	 * @return the avatar
+	 */
+	@NotNull(groups={AllValidations.class, UpdateValidations.class})
+	public AvatarDto getAvatar() {
+		return avatar;
+	}
+
+	/**
+	 * Sets the avatar.
+	 *
+	 * @param avatar the new avatar
+	 */
+	public void setAvatar(AvatarDto avatar) {
+		this.avatar = avatar;
 	}
 
 }
