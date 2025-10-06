@@ -38,6 +38,22 @@ export const UserProvider = ({children}) => {
         }
     }, []);
 
+    const refreshUser = React.useCallback(() => {
+        tryLoginFromServiceToken(
+            (authenticatedUser) => {
+                const userToSet = {
+                    ...authenticatedUser?.user,
+                    avatar: authenticatedUser?.user?.avatar || defaultAvatar
+                };
+                setUser(userToSet);
+                localStorage.setItem("user", JSON.stringify(userToSet));
+            },
+            () => {
+                console.error('Error refreshing user data');
+            }
+        );
+    }, []);
+
     const handleLogout = () => {
         sessionStorage.removeItem("userRole");
         sessionStorage.removeItem("serviceToken");
@@ -45,7 +61,15 @@ export const UserProvider = ({children}) => {
         setUser(null);
     }
 
-    const contextValue = React.useMemo(() => ({ user, setUser, handleLogout, loading, pendingInvites, setPendingInvites }), [user, loading, pendingInvites]);
+    const contextValue = React.useMemo(() => ({ 
+        user, 
+        setUser, 
+        handleLogout, 
+        refreshUser,
+        loading, 
+        pendingInvites, 
+        setPendingInvites 
+    }), [user, loading, pendingInvites, refreshUser]);
 
 
   return (

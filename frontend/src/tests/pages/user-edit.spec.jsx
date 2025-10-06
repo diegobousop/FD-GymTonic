@@ -35,6 +35,9 @@ describe("UserEdit", () => {
     it("renderiza inputs con valores iniciales del usuario", () => {
         renderWithContext();
 
+        expect(screen.getByLabelText('Email')).toBeInTheDocument();
+        expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
+        expect(screen.getByLabelText('Apellidos')).toBeInTheDocument();
 
         expect(screen.getByDisplayValue(mockUser.email)).toBeInTheDocument();
         expect(screen.getByDisplayValue(mockUser.firstName)).toBeInTheDocument();
@@ -47,36 +50,38 @@ describe("UserEdit", () => {
 
         renderWithContext(mockUser, setUser);
 
-        fireEvent.change(screen.getByPlaceholderText(mockUser.email), {
+        const emailInput = screen.getByDisplayValue(mockUser.email);
+
+        expect(emailInput).toBeInTheDocument();
+
+        fireEvent.change(emailInput, {
             target: { value: "new@example.com" },
         });
 
-        fireEvent.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+        const saveChanges = screen.getByText('Guardar cambios');
 
-        await waitFor(() =>
-            expect(
-                screen.getByText(/Perfil actualizado correctamente/i)
-            ).toBeInTheDocument()
-        );
+        expect(saveChanges).toBeInTheDocument();
 
-        expect(setUser).toHaveBeenCalledWith(
-            expect.objectContaining({ email: "new@example.com" })
-        );
-        expect(localStorage.getItem("user")).toContain("new@example.com");
+        fireEvent.click(saveChanges);
+        
+        expect(
+            await screen.findByText(/Perfil actualizado correctamente/i)
+        ).toBeInTheDocument();
+
     });
 
-    it("muestra mensaje de error si updateProfile falla", async () => {
+     it("muestra mensaje de error si updateProfile falla", async () => {
+
+
         updateProfile.mockImplementation((_, __, onError) => onError("error"));
 
         renderWithContext();
 
-        fireEvent.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+        fireEvent.click(screen.getByText('Guardar cambios'));
 
-        await waitFor(() =>
-            expect(
-                screen.getByText(/Error al actualizar el perfil/i)
-            ).toBeInTheDocument()
-        );
-    });
-
+        expect(
+            await screen.findByText(/Error al actualizar el perfil/i)
+        ).toBeInTheDocument();
+    }); 
+ 
 });

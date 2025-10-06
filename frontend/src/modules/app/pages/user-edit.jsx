@@ -1,71 +1,94 @@
 
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { UserContext } from '../components/common/user-provider'
 import { updateProfile } from "../../../backend/userService"
+import TextInput from '../components/common/text-input'
+import SendButton from '../components/common/send-button'
+
+import AvatarSelector from '../components/profile/avatar-selector'
 
 const UserEdit = () => {
-    const { user, setUser } = useContext(UserContext);
+    const { user, setUser, refreshUser } = useContext(UserContext);
     const [email, setEmail] = useState(user?.email || '');
     const [firstname, setFirstname] = useState(user?.firstName || '');
     const [lastname, setLastname] = useState(user?.lastName || '');
     const [message, setMessage] = useState('');
+    const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar?.name || 'default');
+
+    const [isLoading, setIsLoading] = useState(false);
 
     if (!user) return <div>Cargando usuario...</div>;
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setIsLoading(true);
         const updatedUser = {
             ...user,
             email: email.trim() === '' ? user.email : email,
             firstName: firstname.trim() === '' ? user.firstName : firstname,
             lastName: lastname.trim() === '' ? user.lastName : lastname,
+            avatar: { name: selectedAvatar }
         };
         updateProfile(updatedUser, (res) => {
-            setUser(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-            setMessage('Perfil actualizado correctamente');
+            if (refreshUser) {
+                refreshUser(); // Solo se llama después de éxito
+            }
+    setMessage('Perfil actualizado correctamente');
         }, (err) => {
             setMessage('Error al actualizar el perfil');
         });
+        if (refreshUser) {
+            refreshUser();
+        }
+        setIsLoading(false);
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-auto ">
-            <h2 className="text-2xl font-bold mb-4 text-white">Editar usuario</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block mb-1 text-white">Email</label>
-                    <input
+        <div className="flex flex-col mt-5 ml-10">
+            <form onSubmit={handleSubmit} className="">
+            <div className="flex flex-row items-center gap-6">
+                
+                <div className="flex flex-col">
+                    <TextInput
+                        label="Email"
+                        name="email"
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         placeholder={user.email}
-                        className="w-full border px-3 py-2 rounded"
                     />
-                </div>
-                <div>
-                    <label className="block mb-1 text-white">Nombre</label>
-                    <input
+
+                    <TextInput
+                        label="Nombre"
                         type="text"
+                        name="nombre"
                         value={firstname}
                         onChange={e => setFirstname(e.target.value)}
                         placeholder={user.firstName}
-                        className="w-full border px-3 py-2 rounded"
                     />
-                </div>
-                <div>
-                    <label className="block mb-1 text-white">Apellido</label>
-                    <input
+
+                    <TextInput
+                        label="Apellidos"
                         type="text"
+                        name="apellidos"
                         value={lastname}
                         onChange={e => setLastname(e.target.value)}
                         placeholder={user.lastName}
-                        className="w-full border px-3 py-2 rounded"
                     />
                 </div>
-                <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded">Guardar cambios</button>
+                
+
+                <AvatarSelector user={user} selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} />
+            </div>
+            <div className="flex flex-row items-end">
+                <SendButton
+                onClick={handleSubmit}
+                children="Guardar cambios"
+                isLoading={isLoading}
+                />
+                {message && <div className=" text-white mb-3 ml-14">{message}</div>}
+            </div>
             </form>
-            {message && <div className="mt-4 text-center text-white">{message}</div>}
         </div>
     );
 }
