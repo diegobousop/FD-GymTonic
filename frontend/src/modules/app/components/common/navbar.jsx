@@ -40,9 +40,11 @@ const Navbar = ({activePage}) => {
             </div>
             <div className="flex flex-row items-center justify-between gap-4 mr-2">
                 <SearchBar />
+              {user &&  
                 <Link to="/profile">
                     <img src={user.avatar.avatarBase64} alt="user avatar" className=" w-[52px] h-auto" />
                 </Link>
+              }
             </div>
         </div>
         

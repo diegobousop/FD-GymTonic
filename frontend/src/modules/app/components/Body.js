@@ -32,7 +32,7 @@ const Body = () => {
     if (path.startsWith('/home')) { setActivePage('home'); return }
     if (path.startsWith('/admin/addExercise')) {setActivePage('createExercise'); return}
     if (path.startsWith('/profile')) { setActivePage('profile'); return }
-    if (path.startsWith('/create-routine')) { setActivePage('createRoutine'); return }
+    if (path.startsWith('/routines/create-routine')) { setActivePage('createRoutine'); return }
     if (path.startsWith('/test')) { setActivePage('test'); return }
     if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate');  }
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
@@ -50,18 +50,25 @@ const Body = () => {
         )}  
         <div className="w-full">
           <Routes>
-              <Route index exact element={<IntroPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/start" element={<IntroPage  />} />
-              <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
-              <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
-              <Route path="/test" element={<ProtectedPath path={<Test />} />} />
-              <Route path="/routines/create-routine" element={<ProtectedPath path={<CreateRoutine />} />} />
-              <Route path='/admin/addExercise' element={<CreateExercise />} />
-              <Route path="/routines/:id" element={<RoutineDetails />} />
-              <Route path="/profileUpdate" element={<ProtectedPath path={<UserEdit />} />} />
-              <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
+            <Route index exact element={<IntroPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/start" element={<IntroPage />} />
+            
+            <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
+            <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
+            <Route path="/test" element={<ProtectedPath path={<Test />} />} />
+            <Route path="/routines/create-routine" element={
+              <ProtectedPath role={["TRAINER", "ADMIN"]} path={<CreateRoutine />} />
+            } />
+            <Route path='/admin/addExercise' element={
+              <ProtectedPath role="ADMIN" path={<CreateExercise />} />
+            } />
+            <Route path="/routines/:id" element={
+              <ProtectedPath path={<RoutineDetails />} />
+            } />
+            <Route path="/profileUpdate" element={<ProtectedPath path={<UserEdit />} />} />
+            <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
           </Routes>
         </div>
       </div>
