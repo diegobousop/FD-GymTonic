@@ -38,7 +38,7 @@ export const tryLoginFromServiceToken = (
   const serviceToken = getServiceToken();
 
   if (!serviceToken) {
-    onSuccess();
+    reauthenticationCallback();
     return;
   }
 
