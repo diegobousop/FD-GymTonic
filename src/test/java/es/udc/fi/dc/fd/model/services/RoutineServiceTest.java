@@ -343,4 +343,67 @@ public class RoutineServiceTest {
         }
     }
 
+
+    @Test
+    public void testFindRoutinesByCreator() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+        Users creator1 = userService.login("trainer1", "12345");
+        Users creator2 = userService.login("admin1", "12345");
+        Routine routine1 = createRoutine("routine1", creator1);
+        Routine routine2 = createRoutine("routine2", creator1);
+        Routine routine3 = createRoutine("routine3", creator2);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        
+        assertEquals(Arrays.asList(), routineService.findByFilters(creator2.getId(), null,PageRequest.of(0, 10)).getContent());        
+
+        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine2 = routineService.createRoutine(creator1.getId(), routine2.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            
+        assertEquals(Arrays.asList(routine1, routine2), routineService.findByFilters(creator1.getId(), null,PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine3), routineService.findByFilters(creator2.getId(), null,PageRequest.of(0, 10)).getContent());
+    }
+
+
+    @Test
+    public void testFindRoutinesByName() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+        Users creator1 = userService.login("trainer1", "12345");
+        Routine routine1 = createRoutine("routine1", creator1);
+        Routine routine2 = createRoutine("routine2", creator1);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        
+        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine2 = routineService.createRoutine(creator1.getId(), routine2.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            
+        assertEquals(Arrays.asList(routine1), routineService.findByFilters(null, "routine1",PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine2), routineService.findByFilters(null, "2",PageRequest.of(0, 10)).getContent());
+    }
+
+    @Test
+    public void testFindRoutinesByNameAndCreator() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+        Users creator1 = userService.login("trainer1", "12345");
+        Users creator2 = userService.login("admin1", "12345");
+        Routine routine1 = createRoutine("Pecho", creator1);
+        Routine routine2 = createRoutine("Pecho y Triceps", creator2);
+        Routine routine3 = createRoutine("Pierna", creator2);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        
+        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine2 = routineService.createRoutine(creator2.getId(), routine2.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+        routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(), 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            
+        assertEquals(Arrays.asList(routine2), routineService.findByFilters
+        (creator2.getId(), "Pecho",PageRequest.of(0, 10)).getContent());
+        
+        assertEquals(Arrays.asList(routine2, routine3), routineService.findByFilters
+        (creator2.getId(), "P",PageRequest.of(0, 10)).getContent());
+    }
+
 }

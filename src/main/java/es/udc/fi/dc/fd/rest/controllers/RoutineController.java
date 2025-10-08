@@ -118,5 +118,20 @@ public class RoutineController {
         throws InstanceNotFoundException, PermissionException {
         routineService.deleteRoutine(userId, routineId);
     }
+
+    @GetMapping("/search")
+    public BlockDto<RoutineDto> searchRoutines(
+            @RequestParam(required = false) Long creatorId,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Routine> routinesPage = routineService.findByFilters(creatorId, name, pageable);
+        
+        return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
+                            routinesPage.hasNext());
+    }
     
 }

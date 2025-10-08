@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,5 +123,20 @@ public class RoutineServiceImpl implements RoutineService {
         
         routineDao.delete(routine);
     }
-    
+
+    public Page<Routine> findByFilters(Long creatorId, String name, Pageable pageable) {
+        Specification<Routine> spec = Specification.where(null);
+
+        if (creatorId != null) {
+            spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("creator").get("id"), creatorId));
+        }
+
+        if (name != null && !name.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
+        }
+
+        return routineDao.findAll(spec, pageable);
+    }
 }
