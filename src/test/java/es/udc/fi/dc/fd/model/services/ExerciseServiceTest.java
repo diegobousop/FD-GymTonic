@@ -142,8 +142,8 @@ public class ExerciseServiceTest {
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
 
-        assertEquals(exercise1.getExerciseName(), "Push Up");
-        assertEquals(exercise1.getExerciseDescription(), "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.");
+        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
+        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
         assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
         // al añadirlo un trainer, el ejercicio no deberia estar validado
         assertFalse(exercise1.isValidated());
@@ -156,8 +156,8 @@ public class ExerciseServiceTest {
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
 
-        assertEquals(exercise1.getExerciseName(), "Push Up");
-        assertEquals(exercise1.getExerciseDescription(), "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.");
+        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
+        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
         assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
         // al añadirlo un trainer, el ejercicio no deberia estar validado
         assertTrue(exercise1.isValidated());
