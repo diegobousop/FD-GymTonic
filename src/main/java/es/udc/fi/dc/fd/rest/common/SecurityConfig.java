@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/users/signUp")).permitAll()
                 .requestMatchers(antMatcher("/api/users/login")).permitAll()
                 .requestMatchers(antMatcher("/api/users/loginFromServiceToken")).permitAll()
-                .requestMatchers(antMatcher("/api/admin/addExercise")).hasRole("ADMIN")
+                .requestMatchers(antMatcher("/api/admin/addExercise")).hasAnyRole("ADMIN","TRAINER")
                 .requestMatchers(antMatcher("/api/routines/createRoutine")).hasAnyRole("TRAINER","ADMIN")
                 .requestMatchers(antMatcher("/api/admin/getExercises")).hasAnyRole("TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/h2-console/*")).permitAll()
