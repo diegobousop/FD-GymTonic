@@ -387,4 +387,72 @@ public class RoutineControllerTest {
 
     }
 
+
+    @Test
+    public void testFindRoutinesByParams() throws Exception {
+
+        AuthenticatedUserDto user1 = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+
+        RoutineParamsDto params = new RoutineParamsDto();
+        params.setName("Pierna");
+        params.setDuration(120L);
+        params.setExercises(new ArrayList<>());
+
+        ObjectMapper mapper = createObjectMapper();
+
+        mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + user1.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(params)));
+
+        params.setName("Pecho");
+        params.setDuration(50L);
+        params.setExercises(new ArrayList<>());
+
+        mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + user1.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(params)));
+
+        params.setName("Pecho y hombro");
+        params.setDuration(60L);
+        params.setExercises(new ArrayList<>());
+
+        mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + user2.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(params)));
+        
+        // 3 rutinas en la bd ahora mismo -> Pierna, Pecho, Pecho y hombro
+        // Creadas por                        user1, user1,    user2
+
+        // Buscar por creador y nombre
+        mockMvc.perform(get("/api/routines/search?creatorId=" + user1.getUserDto().getId() + "&name=Pecho")
+                .header("Authorization", "Bearer " + user1.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].name").value("Pecho"))
+                .andExpect(jsonPath("$.items[0].duration").value(50))
+                .andExpect(jsonPath("$.existMoreItems").isBoolean());
+
+        // Buscar por nombre
+        mockMvc.perform(get("/api/routines/search?name=Pecho")
+                .header("Authorization", "Bearer " + user1.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].name").value("Pecho"))
+                .andExpect(jsonPath("$.items[1].name").value("Pecho y hombro"))
+                .andExpect(jsonPath("$.existMoreItems").isBoolean());
+
+        // Buscar por creador
+        mockMvc.perform(get("/api/routines/search?creatorId=" + user1.getUserDto().getId())
+                .header("Authorization", "Bearer " + user1.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].name").value("Pierna"))
+                .andExpect(jsonPath("$.items[1].name").value("Pecho"))
+                .andExpect(jsonPath("$.existMoreItems").isBoolean());
+    }
+
 }
