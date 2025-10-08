@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.rest.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,9 +27,9 @@ public class AdminController {
     private ExerciseService exerciseService;
 
     @PostMapping("/addExercise")
-    public Long addProduct(@RequestBody ExerciseDto exercise) throws DuplicateInstanceException{
+    public Long addProduct(@RequestAttribute Long userId,@RequestBody ExerciseDto exercise) throws DuplicateInstanceException{
  
-        return exerciseService.addExercise(ExerciseConversor.toExercise(exercise));
+        return exerciseService.addExercise(userId, ExerciseConversor.toExercise(exercise));
     }
 
     @GetMapping("/getExercises")
