@@ -33,9 +33,9 @@ describe('AddExercise', () => {
 
         expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Descripcion/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Categoría/i)).toBeInTheDocument();
-        fireEvent.click(screen.getByLabelText(/Categoría/i));
-        
+        expect(screen.getByText(/Grupo Muscular/i)).toBeInTheDocument();
+        fireEvent.click(screen.getByText(/Grupo Muscular/i));
+
         expect(screen.getByText('PECHO')).toBeInTheDocument();
         expect(screen.getByText('PIERNA')).toBeInTheDocument();
         expect(screen.getByText('BRAZOS')).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('AddExercise', () => {
 
         const nameInput = screen.getByLabelText(/Nombre/i);
         const DescripcionInput = screen.getByLabelText(/Descripcion/i);
-        const categoriaInput = screen.getByLabelText(/Categoría/i);
+        const categoriaInput = screen.getByText('Grupo Muscular');
 
         fireEvent.change(nameInput, {
             target: { value: 'ejercicio 1' },
@@ -61,10 +61,11 @@ describe('AddExercise', () => {
         fireEvent.change(DescripcionInput, {
             target: { value: 'descripcion de prueba' },
         });
-        fireEvent.change(categoriaInput, {
-            target: {value: 'PECHO'}
-        });
+        
+        fireEvent.click(categoriaInput);
+        await waitFor(() => expect(screen.getByLabelText('PECHO')).toBeInTheDocument());
 
+        fireEvent.click(screen.getByLabelText('PECHO'));
         fireEvent.submit(screen.getByRole('button', {name: /enviar/i}));
 
         await waitFor(() =>
