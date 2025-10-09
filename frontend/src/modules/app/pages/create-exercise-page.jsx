@@ -2,9 +2,9 @@ import {useState} from "react";
 import backend from "../../../backend";
 import SendButton from "../../app/components/common/send-button";
 import TextInput from "../../app/components/common/text-input";
+import ParagraphInput from "../../app/components/common/paragraph-input";
+import MultiSelectList from "../../app/components/common/multi-select-list";
 
-import NavBar from '../../app/components/common/navbar'
-import SideMenu from '../../app/components/common/side-menu'
 
 const CreateExercise = () => {
     
@@ -14,13 +14,18 @@ const CreateExercise = () => {
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     const [activePage, setActivePage] = useState('create-exercise')
-
+    const [exerciseNameErrors, setExerciseNameErrors] = useState(null);
+    const [exerciseDescriptionErrors, setExerciseDescriptionErrors] = useState(null);
+    const [grupoMuscularErrors, setGrupoMuscularErrors] = useState(null);
 
 
     let form;
 
     const handleSubmit = async (e) => {
     e.preventDefault();
+
+        const isValid = checkErrors();
+        if (!isValid) return;
 
         if(form.checkValidity()){
             try{
@@ -47,40 +52,44 @@ const CreateExercise = () => {
 
     return(
         <div  className="flex flex-col mt-10 justify-center items-center">
-            <h2 className="text-white"> Añadir ejercicio</h2>
             <form ref={node => form = node} className="need-validation" noValidate onSubmit={handleSubmit}>
                 <TextInput 
                     name="exerciseName"
                     label="Nombre: "
                     value={exerciseName}
                     onChange={(e) => setExerciseName(e.target.value)}
-                    />
+                    errors={exerciseNameErrors}
+                    errorMessage={exerciseNameErrors}
+                    className="h-10 w-full"
+                />
 
-                <TextInput 
+                <ParagraphInput 
                     name="exerciseDescription"
                     label="Descripcion: "
                     value={exerciseDescripcion}
                     onChange={(e) => setExerciseDescription(e.target.value)}
-                    />
+                    errors={exerciseDescriptionErrors}
+                    errorMessage={exerciseDescriptionErrors}
+                    maxLength={300}
+                    className="h-40 w-full"
+                />
 
-                <div className="flex flex-col my-2">
-                    <label htmlFor="exerciseCategory" className="text-white mb-1">Categoría:</label>
-                    <select
-                        id="exerciseCategory"
-                        name="exerciseCategory"
-                        value={grupoMuscular} 
-                        onChange={(e) => setGrupoMuscular(e.target.value)}
-                        className="p-2 rounded"
-                    >
-                        <option value="">Selecciona una categoría</option>
-                        <option value="PECHO">PECHO</option>
-                        <option value="ESPALDA">ESPALDA</option>
-                        <option value="PIERNA">PIERNA</option>
-                        <option value="HOMBROS">HOMBROS</option>
-                        <option value="BRAZOS">BRAZOS</option>
-                        <option value="ABDOMEN">ABDOMEN</option>
-                    </select>
-                </div>
+                <MultiSelectList
+                    options={[
+                        { id: 'PECHO', name: 'PECHO' },
+                        { id: 'ESPALDA', name: 'ESPALDA' },
+                        { id: 'PIERNA', name: 'PIERNA' },
+                        { id: 'HOMBROS', name: 'HOMBROS' },
+                        { id: 'BRAZOS', name: 'BRAZOS' },
+                        { id: 'ABDOMEN', name: 'ABDOMEN' },
+                    ]}
+                    selected={grupoMuscular ? [grupoMuscular] : []}
+                    onChange={(selected) => setGrupoMuscular(selected[0] || "")}
+                    required={true}
+                    label="Grupo Muscular"
+                    errors={grupoMuscularErrors}
+                    errorMessage={grupoMuscularErrors}
+                />
 
                 <SendButton onClick={handleSubmit}></SendButton>
             
@@ -89,6 +98,28 @@ const CreateExercise = () => {
                 {success && <div className="text-green-500 text-xs mt-2">Ejercicio {exerciseName} añadido existosamente</div>}
         </div>
     );
+
+    function checkErrors(){
+        const trimmedExerciseName = exerciseName.trim()
+        const trimmedExerciseDescription = exerciseDescripcion.trim()
+        const trimmedGrupoMuscular = grupoMuscular.trim()
+
+        let hasError = false
+
+        const exerciseNameErr = !trimmedExerciseName ? 'El nombre del ejercicio es obligatorio' : null
+        const exerciseDescriptionErr= !trimmedExerciseDescription ? 'La descripcion del ejercicio es obligatoria' : null
+        const grupoMuscularErr = !trimmedGrupoMuscular ? 'El grupo muscular es obligatorio' : null
+
+        if(exerciseNameErr || exerciseDescriptionErr || grupoMuscularErr) hasError = true
+
+        setExerciseNameErrors(exerciseNameErr)
+        setExerciseDescriptionErrors(exerciseDescriptionErr)
+        setGrupoMuscularErrors(grupoMuscularErr)
+
+        return !hasError;
+    }
 }
+
+
 
 export default CreateExercise;
