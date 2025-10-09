@@ -49,9 +49,11 @@ public class AdminControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA);
+        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test",
+                grupoMuscular.PIERNA,1);
         
-        ExerciseDto exerciseToAdd2 = new ExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA);
+        ExerciseDto exerciseToAdd2 = new ExerciseDto("ejercicio test 2", "ejercicio test",
+                grupoMuscular.PIERNA,1);
         
 		ObjectMapper mapper = new ObjectMapper();
 

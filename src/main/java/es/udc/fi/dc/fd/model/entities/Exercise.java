@@ -15,16 +15,18 @@ public class Exercise {
     private String exerciseName;  
     private String exerciseDescription;  
     private grupoMuscular grupoMuscular;
+    private int numeroSeries;
     private boolean validated;
     private Users validator;
 
     public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
 
     public Exercise() {}
-    public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo){
+    public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
         this.grupoMuscular = grupo;
+        this.numeroSeries = numeroSeries;
         this.validated = false;
         this.validator=null;
     }
@@ -62,6 +64,10 @@ public class Exercise {
     public void setGrupoMuscular(grupoMuscular grupoMuscular) {
         this.grupoMuscular = grupoMuscular;
     }
+
+    public int getNumeroSeries() {return numeroSeries;}
+
+    public void setNumeroSeries(int numeroSeries) {this.numeroSeries = numeroSeries;}
 
     public boolean isValidated() {
         return validated;

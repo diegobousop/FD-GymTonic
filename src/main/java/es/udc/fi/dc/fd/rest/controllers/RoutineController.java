@@ -133,5 +133,6 @@ public class RoutineController {
         return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
                             routinesPage.hasNext());
     }
+
     
 }
