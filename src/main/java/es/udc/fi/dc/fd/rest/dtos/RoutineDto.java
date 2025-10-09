@@ -14,27 +14,30 @@ public class RoutineDto {
     private String creator;
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
+    private Boolean isPublic;
 
     public RoutineDto() {
     }
 
     public RoutineDto(Long id, String name, List<ExerciseDto> exercises, String creator, Long duration,
-            LocalDateTime modificationDate) {
+            LocalDateTime modificationDate, Boolean isPublic) {
         this.id = id;
         this.name = name;
         this.exercises = exercises;
         this.creator = creator;
         this.duration = duration;
         this.modificationDate = modificationDate;
+        this.isPublic = isPublic;
     }
 
     public RoutineDto(Long id, String name, List<ExerciseDto> exercises,  Long duration,
-            LocalDateTime modificationDate) {
+            LocalDateTime modificationDate, Boolean isPublic) {
         this.id = id;
         this.name = name;
         this.exercises = exercises;
         this.duration = duration;
         this.modificationDate = modificationDate;
+        this.isPublic = isPublic;
     }
 
     @NotNull
@@ -84,6 +87,14 @@ public class RoutineDto {
     }
     public void setModificationDate(LocalDateTime modificationDate) {
         this.modificationDate = modificationDate;
+    }
+
+    @NotNull
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
 }

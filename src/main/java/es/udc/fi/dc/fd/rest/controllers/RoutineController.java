@@ -1,7 +1,6 @@
 package es.udc.fi.dc.fd.rest.controllers;
 
 
-import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,25 +77,27 @@ public class RoutineController {
     @PostMapping("/createRoutine")
     public RoutineDto createRoutine(@RequestAttribute Long userId, @RequestBody RoutineParamsDto params ) 
         throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
-        return RoutineConversor.toRoutineDto(routineService.createRoutine(userId,params.getName(), params.getExercises(), params.getDuration()));
+        return RoutineConversor.toRoutineDto(routineService.createRoutine(userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic()));
     }
 
     @GetMapping("/viewAllRoutines")
     public BlockDto<RoutineDto> viewRoutine(
+            @RequestAttribute Long userId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Routine> routinesPage = routineService.viewAllRoutines(pageable);
+        Page<Routine> routinesPage = routineService.viewAllRoutines(userId, pageable);
         
         return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
                             routinesPage.hasNext());
     }
 
     @GetMapping("/getRoutineById/{routineId}")
-	public RoutineDto getRoutineById(@PathVariable Long routineId) {
+	public RoutineDto getRoutineById(@PathVariable Long routineId, @RequestAttribute Long userId) 
+        throws InstanceNotFoundException, PermissionException {
 
-		return RoutineConversor.toRoutineDto(routineService.getRoutineById(routineId));
+		return RoutineConversor.toRoutineDto(routineService.getRoutineById(routineId, userId));
         
 	}
 
@@ -107,7 +108,7 @@ public class RoutineController {
             @Validated @RequestBody RoutineParamsDto params) 
         throws InstanceNotFoundException, PermissionException {
         return RoutineConversor.toRoutineDto(
-            routineService.modifyRoutine(routineId, userId, params.getName(), params.getExercises(), params.getDuration())
+            routineService.modifyRoutine(routineId, userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic())
         );
     }
 
@@ -121,14 +122,15 @@ public class RoutineController {
 
     @GetMapping("/search")
     public BlockDto<RoutineDto> searchRoutines(
+            @RequestAttribute Long userId,
             @RequestParam(required = false) Long creatorId,
             @RequestParam(required = false) String name,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Routine> routinesPage = routineService.findByFilters(creatorId, name, pageable);
+        Page<Routine> routinesPage = routineService.findByFilters(userId, creatorId, name, pageable);
         
         return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
                             routinesPage.hasNext());

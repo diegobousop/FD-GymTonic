@@ -38,6 +38,7 @@ CREATE TABLE Routine (
     creator BIGINT, 
     duration BIGINT,
     modificationDate TIMESTAMP,
+    isPublic BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (creator) REFERENCES Users(id)
 );
 
