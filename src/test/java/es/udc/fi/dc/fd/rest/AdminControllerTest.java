@@ -50,9 +50,7 @@ public class AdminControllerTest {
         AuthenticatedUserDto user = userController.login(loginParams);
         
         ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA);
-        
-        ExerciseDto exerciseToAdd2 = new ExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA);
-        
+                
 		ObjectMapper mapper = new ObjectMapper();
 
         mockMvc.perform(post("/api/admin/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
