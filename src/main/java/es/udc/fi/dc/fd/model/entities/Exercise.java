@@ -31,6 +31,16 @@ public class Exercise {
         this.validator=null;
     }
 
+    public Exercise(long Id,String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
+       this.id=Id;
+        this.exerciseName = exerciseName;
+        this.exerciseDescription = exerciseDescripcion;
+        this.grupoMuscular = grupo;
+        this.numeroSeries = numeroSeries;
+        this.validated = false;
+        this.validator=null;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     public Long getId(){

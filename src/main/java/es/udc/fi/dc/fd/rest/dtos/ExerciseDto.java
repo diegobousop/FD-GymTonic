@@ -8,23 +8,23 @@ public class ExerciseDto {
     private String name;
     private String descripcion;
     private grupoMuscular grupoMuscular;
-    private int numeroRepeticiones;
+    private int numeroSeries;
 
     public ExerciseDto() {}
 
-    public ExerciseDto(String name, String descripcion,  grupoMuscular grupoMuscular, int numeroRepeticiones) {
+    public ExerciseDto(String name, String descripcion,  grupoMuscular grupoMuscular, int numeroSeries) {
         this.name = name;
         this.descripcion = descripcion;
         this.grupoMuscular = grupoMuscular;
-        this.numeroRepeticiones = numeroRepeticiones;
+        this.numeroSeries = numeroSeries;
     }
 
-        public ExerciseDto(Long id, String name, String descripcion,  grupoMuscular grupoMuscular, int numeroRepeticiones) {
+        public ExerciseDto(Long id, String name, String descripcion,  grupoMuscular grupoMuscular, int numeroSeries) {
         this.id = id;
         this.name = name;
         this.descripcion = descripcion;
         this.grupoMuscular = grupoMuscular;
-        this.numeroRepeticiones = numeroRepeticiones;
+        this.numeroSeries = numeroSeries;
     }
 
     @NotNull
@@ -67,7 +67,7 @@ public class ExerciseDto {
 
     @NotBlank
     @NotNull
-    public int getNumeroRepeticiones() {return numeroRepeticiones;}
+    public int getNumeroSeries() {return numeroSeries;}
 
-    public void setNumeroRepeticiones(int numeroRepeticiones) {this.numeroRepeticiones = numeroRepeticiones;}
+    public void setNumeroSeries(int numeroSeries) {this.numeroSeries = numeroSeries;}
 }

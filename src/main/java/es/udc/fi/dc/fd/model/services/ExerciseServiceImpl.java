@@ -1,6 +1,8 @@
 package es.udc.fi.dc.fd.model.services;
 
+import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.*;
+import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
+
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -50,15 +54,18 @@ public class ExerciseServiceImpl implements ExerciseService {
 
 
     @Override
-    public Slice<Serie> createSeries(Exercise exercise) throws DuplicateInstanceException {
+    public Block<Serie> createSeries(Exercise exercise) throws DuplicateInstanceException, InstanceNotFoundException {
 
+        if (!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
+            throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
         if (serieDao.findByExercise(exercise).hasContent())
             throw new DuplicateInstanceException("project.entities.exercise", exercise.getExerciseName());
         for(int i=1;i<=exercise.getNumeroSeries();i++){
             Serie serie = new Serie(20,10,i,exercise);
             serieDao.save(serie);
         }
-        return serieDao.findByExercise(exercise);
+        Slice<Serie> slice= serieDao.findByExercise(exercise);
+        return new Block<>(slice.getContent(), slice.hasNext());
     }
 
     @Override
@@ -68,4 +75,12 @@ public class ExerciseServiceImpl implements ExerciseService {
         serieDao.save(serie);
         return serie;
     }
+    @Override
+    public Serie getSerie(Long id)throws NoSuchElementException {
+        if (serieDao.findById(id).isEmpty())
+            throw new NoSuchElementException("project.entities.serie");
+        return serieDao.findById(id).get();
+    }
+
+
 }

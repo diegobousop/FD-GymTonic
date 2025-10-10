@@ -79,3 +79,9 @@ INSERT INTO Exercise (exerciseName, exerciseDescription, grupoMuscular, numeroSe
 ('Pull Up', 'An upper body exercise that primarily targets the back and biceps.', 'ESPALDA',4,true,1),
 ('Lunge', 'A lower body exercise that targets the quadriceps, hamstrings, and glutes.', 'PIERNA',4,true,1),
 ('Shoulder Press', 'An upper body exercise that targets the shoulders and triceps.', 'HOMBROS',4,true,1);
+
+INSERT INTO Serie (repeticiones, peso, numeroSerie, exerciseId) VALUES
+(20,100,1,1),
+(30,150,2,1),
+(30,180,3,1),
+(30,200,4,1);

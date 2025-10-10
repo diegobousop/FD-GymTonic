@@ -57,4 +57,5 @@ public class Serie {
     @JoinColumn(name = "exerciseId")
     public Exercise getExercise() { return exercise; }
     public void setExercise(Exercise exercise) { this.exercise = exercise; }
+
 }
