@@ -138,13 +138,12 @@ public class ExerciseServiceTest {
     @Test
     public void addExerciseAsTrainerTest() throws IncorrectLoginException, DuplicateInstanceException{
         Users creator = userService.login("trainer1", "12345");
-        Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("Push Up1",
-                "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular.PECHO,1));
+        Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
 
-        assertEquals(exercise1.getExerciseName(), "Push Up1");
-        assertEquals(exercise1.getExerciseDescription(), "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.");
+        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
+        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
         assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
         // al añadirlo un trainer, el ejercicio no deberia estar validado
         assertFalse(exercise1.isValidated());
@@ -153,13 +152,12 @@ public class ExerciseServiceTest {
     @Test
     public void addExerciseAsAdminTest() throws IncorrectLoginException, DuplicateInstanceException{
         Users creator = userService.login("admin1", "12345");
-        Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("Push Up1",
-                "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular.PECHO,1));
+        Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
 
-        assertEquals(exercise1.getExerciseName(), "Push Up1");
-        assertEquals(exercise1.getExerciseDescription(), "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.");
+        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
+        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
         assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
         // al añadirlo un trainer, el ejercicio no deberia estar validado
         assertTrue(exercise1.isValidated());
