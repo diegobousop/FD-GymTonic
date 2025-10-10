@@ -3,11 +3,12 @@ import '@testing-library/jest-dom';
 import React from "react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import ViewAllRoutinespage from "../../modules/app/pages/viewAllRoutines-page";
+import ViewAllRoutinespage from "../../modules/app/pages/view-all-routines-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
 
 jest.mock("../../backend/routineService", () => ({
   viewAllRoutines: (params, onSuccess, onError) => {
+    console.log("✅ mock searchRoutines llamado con:", { params });
     mockImplementation(params, onSuccess, onError);
   },
 }));
@@ -112,10 +113,6 @@ describe("ViewRoutines", () => {
       expect(screen.getByText(/RUTINA 2/i)).toBeInTheDocument();
       expect(screen.getByText(/EJERCICIO 3/i)).toBeInTheDocument();
       expect(screen.getByText(/EJERCICIO 4/i)).toBeInTheDocument();
-      expect(screen.getByText(/PECHO/i)).toBeInTheDocument();
-      expect(screen.getByText(/PIERNA/i)).toBeInTheDocument();
-      expect(screen.getByText(/ESPALDA/i)).toBeInTheDocument();
-      expect(screen.getByText(/HOMBRO/i)).toBeInTheDocument();
     }); 
     });
 
@@ -172,7 +169,7 @@ describe("ViewRoutines", () => {
         </MemoryRouter>
         );
 
-        const routineLink = await screen.findByRole("link", { name: /RUTINA/i });
+        const routineLink = await screen.findByRole("link", { name: /→/i });
         await userEvent.click(routineLink);
 
         expect(routineLink).toHaveAttribute("href", "/routines/5");

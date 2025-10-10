@@ -44,3 +44,11 @@ export const modifyRoutine = (routineId, name, exercises, duration, onSuccess, o
     onErrors
   );
 
+export const searchRoutines = (creatorId, name, { page, size }, onSuccess, onErrors) =>
+  appFetch(
+    `/routines/search?creatorId=${creatorId || ""}&name=${name || ""}&page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+

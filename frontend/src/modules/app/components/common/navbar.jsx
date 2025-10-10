@@ -12,6 +12,7 @@ const PAGE_TITLES = {
   profile: 'Perfil',
   userEdit: 'Editar Perfil',
   createRoutine: 'Crear Rutina',
+  myRoutines: 'Mis rutinas',
   createExercise: 'Crear Ejercicio',
   'change-password': 'Cambiar Contraseña',
 }
