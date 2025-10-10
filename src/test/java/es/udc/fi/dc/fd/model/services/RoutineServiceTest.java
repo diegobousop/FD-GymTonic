@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.RoutineDao;
-import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
@@ -102,8 +96,8 @@ public class RoutineServiceTest {
     public void testCreateRoutineWithExercises() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
-        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
         routine = routineService.createRoutine(creator.getId(), routine.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90);
         Optional<Routine> retrievedRoutine = routineDao.findById(routine.getId());
@@ -123,7 +117,7 @@ public class RoutineServiceTest {
     public void createInvalidNameRoutine() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routineService.createRoutine(creator.getId(), routine.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
     }
@@ -133,7 +127,7 @@ public class RoutineServiceTest {
     public void createInvalidDurationRoutine1() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("X", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
 
         routineService.createRoutine(creator.getId(), routine.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, null);
@@ -143,7 +137,7 @@ public class RoutineServiceTest {
     public void createInvalidDurationRoutine2() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("X", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routineService.createRoutine(creator.getId(), routine.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, 0L);
     }
@@ -153,9 +147,9 @@ public class RoutineServiceTest {
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
-        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO));
-        Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
+        Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90);
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
@@ -171,7 +165,7 @@ public class RoutineServiceTest {
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
         Routine routine3 = createRoutine("routine3", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
@@ -191,7 +185,7 @@ public class RoutineServiceTest {
     public void testGetRoutineById() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise1.getId());}}, (long) 90);
             
@@ -212,12 +206,12 @@ public class RoutineServiceTest {
     public void testModifyRoutineSuccess() throws Exception {
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
-        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
         routine = routineService.createRoutine(creator.getId(), routine.getName(),
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 60);
 
-        Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.ESPALDA));
+        Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.ESPALDA,1));
 
         Routine modified = routineService.modifyRoutine(
             routine.getId(),
@@ -322,7 +316,7 @@ public class RoutineServiceTest {
     @Test
     public void testModifyRoutineWithEmptyExerciseList() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO,1));
         
         Routine routine = routineService.createRoutine(creator.getId(), "with-exercises", 
             new ArrayList<Long>(){{add(exercise1.getId());}}, 30L);
@@ -351,7 +345,7 @@ public class RoutineServiceTest {
         Routine routine1 = createRoutine("routine1", creator1);
         Routine routine2 = createRoutine("routine2", creator1);
         Routine routine3 = createRoutine("routine3", creator2);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
         assertEquals(Arrays.asList(), routineService.findByFilters(creator2.getId(), null,PageRequest.of(0, 10)).getContent());        
 
@@ -372,7 +366,7 @@ public class RoutineServiceTest {
         Users creator1 = userService.login("trainer1", "12345");
         Routine routine1 = createRoutine("routine1", creator1);
         Routine routine2 = createRoutine("routine2", creator1);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
         routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
@@ -390,7 +384,7 @@ public class RoutineServiceTest {
         Routine routine1 = createRoutine("Pecho", creator1);
         Routine routine2 = createRoutine("Pecho y Triceps", creator2);
         Routine routine3 = createRoutine("Pierna", creator2);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO));
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
         routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);

@@ -27,7 +27,7 @@ public class AdminController {
     private ExerciseService exerciseService;
 
     @PostMapping("/addExercise")
-    public Long addProduct(@RequestAttribute Long userId,@RequestBody ExerciseDto exercise) throws DuplicateInstanceException{
+    public Long addExercise(@RequestAttribute Long userId, @RequestBody ExerciseDto exercise) throws DuplicateInstanceException{
  
         return exerciseService.addExercise(userId, ExerciseConversor.toExercise(exercise));
     }
