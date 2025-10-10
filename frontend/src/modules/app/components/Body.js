@@ -66,7 +66,7 @@ const Body = () => {
               <ProtectedPath role={["TRAINER", "ADMIN"]} path={<CreateRoutine />} />
             } />
             <Route path='/admin/addExercise' element={
-              <ProtectedPath role="ADMIN" path={<CreateExercise />} />
+              <ProtectedPath role={["ADMIN","TRAINER"]} path={<CreateExercise />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />
