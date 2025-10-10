@@ -56,9 +56,7 @@ const RegisterPage = () => {
           password,
           firstName,
           lastName,
-          email,
-          role: 0,
-          avatar: 'fff'
+          email
         }
         setIsLoading(true)
         try {

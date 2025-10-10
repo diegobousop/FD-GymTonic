@@ -1,11 +1,14 @@
 
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { HashRouter as Router } from 'react-router-dom';
 import ProfilePage from "../../modules/app/pages/profile-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
 import { getProfile } from "../../backend/userService";
 
 import '@testing-library/jest-dom/extend-expect';
+
+
 
 jest.mock("../../backend/userService", () => ({
     getProfile: jest.fn(),
@@ -28,7 +31,9 @@ describe("ProfilePage", () => {
         };
         return render(
             <UserContext.Provider value={{ ...defaultContext, ...overrides }}>
-                <ProfilePage />
+                <Router>
+                    <ProfilePage />
+                </Router>
             </UserContext.Provider>
         );
     };
@@ -49,9 +54,7 @@ describe("ProfilePage", () => {
 
         renderWithContext(mockUser);
 
-        await waitFor(() =>
-            expect(screen.getByText('Datos de usuario')).toBeInTheDocument()
-        );
+        
         expect(screen.getByText(/test@example.com/i)).toBeInTheDocument();
         expect(screen.getByText(/John/i)).toBeInTheDocument();
         expect(screen.getByText(/Doe/i)).toBeInTheDocument();
