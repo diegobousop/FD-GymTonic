@@ -20,24 +20,27 @@ public class Routine {
     private Users creator;
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
+    private Boolean isPublic; // true = public, false = private
 
     public Routine() {
     }
 
-    public Routine(String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate) {
+    public Routine(String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
         this.name = name;
         this.exercises = exercises;
         this.creator = creator;
         this.duration = duration;
         this.modificationDate = modificationDate;
+        this.isPublic = isPublic;
     }
 
-    public Routine(Long id,String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate) {
+    public Routine(Long id,String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
         this.name = name;
         this.exercises = exercises;
         this.creator = creator;
         this.duration = duration;
         this.modificationDate = modificationDate;
+        this.isPublic = isPublic;
     }
     
     @Id
@@ -92,6 +95,14 @@ public class Routine {
 
     public void setModificationDate(LocalDateTime modificationDate) {
         this.modificationDate = modificationDate;
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
 }

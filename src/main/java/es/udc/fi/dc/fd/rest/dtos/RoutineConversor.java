@@ -10,7 +10,7 @@ public class RoutineConversor {
     public static RoutineDto toRoutineDto(Routine routine) {
         RoutineDto routineDto = new RoutineDto(routine.getId(), routine.getName(),
                 ExerciseConversor.toExerciseDtos(routine.getExercises()), routine.getCreator().getUserName(), routine.getDuration(),
-                routine.getModificationDate());
+                routine.getModificationDate(), routine.getIsPublic());
         return routineDto;
     }
 

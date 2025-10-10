@@ -24,7 +24,6 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
-import jakarta.persistence.EntityNotFoundException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -53,7 +52,7 @@ public class RoutineServiceTest {
     }
 
     private Routine createRoutine(String name, Users creator) {
-        return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0));
+        return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
 	/**
@@ -80,7 +79,7 @@ public class RoutineServiceTest {
     public void testCreateEmptyRoutine() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
-        routine = routineService.createRoutine(creator.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration());
+        routine = routineService.createRoutine(creator.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
         Optional<Routine> retrievedRoutine = routineDao.findById(routine.getId());
 
         if(retrievedRoutine.isPresent()){
@@ -99,7 +98,7 @@ public class RoutineServiceTest {
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
         routine = routineService.createRoutine(creator.getId(), routine.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90, true);
         Optional<Routine> retrievedRoutine = routineDao.findById(routine.getId());
 
         if(retrievedRoutine.isPresent()){
@@ -119,7 +118,7 @@ public class RoutineServiceTest {
         Routine routine = createRoutine("", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routineService.createRoutine(creator.getId(), routine.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
     }
 
 
@@ -130,7 +129,7 @@ public class RoutineServiceTest {
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
 
         routineService.createRoutine(creator.getId(), routine.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, null);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, null, true);
     }
 
     @Test(expected = InvalidRoutineDurationException.class)
@@ -139,7 +138,7 @@ public class RoutineServiceTest {
         Routine routine = createRoutine("X", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routineService.createRoutine(creator.getId(), routine.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, 0L);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 0L, true);
     }
 
     @Test
@@ -151,11 +150,11 @@ public class RoutineServiceTest {
         Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
         Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90, true);
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise3.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise3.getId());}}, (long) 90, true);
             
-        assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines(PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
 
     }
 
@@ -167,38 +166,39 @@ public class RoutineServiceTest {
         Routine routine3 = createRoutine("routine3", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine3 = routineService.createRoutine(creator.getId(), routine3.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
-        assertEquals(Arrays.asList(routine1, routine2, routine3), routineService.viewAllRoutines(PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine1, routine2, routine3), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
     }
     
     @Test
-    public void testViewAllRoutinesWithoutRoutines() {
-        assertEquals(Arrays.asList(), routineService.viewAllRoutines(PageRequest.of(0, 10)).getContent());
+    public void testViewAllRoutinesWithoutRoutines() throws InstanceNotFoundException, IncorrectLoginException {
+        Users user = userService.login("admin1", "12345");
+        assertEquals(Arrays.asList(), routineService.viewAllRoutines(user.getId(), PageRequest.of(0, 10)).getContent());
     }
 
     @Test
-    public void testGetRoutineById() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testGetRoutineById() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise1.getId());}}, (long) 90, true);
             
-        assertEquals(routine1, routineService.getRoutineById(routine1.getId()));
+        assertEquals(routine1, routineService.getRoutineById(routine1.getId(), creator.getId()));
 
     }
 
     
-    @Test(expected = EntityNotFoundException.class)
-    public void testGetRoutineByIdNonExistent() {
+    @Test(expected = InstanceNotFoundException.class)
+    public void testGetRoutineByIdNonExistent() throws InstanceNotFoundException, PermissionException, IncorrectLoginException {
+        Users user = userService.login("admin1", "12345");
         Long id = 1L;
-        Routine routine = routineService.getRoutineById(id);
-        routine.getName();
+        routineService.getRoutineById(id, user.getId());
     } 
 
 
@@ -209,7 +209,7 @@ public class RoutineServiceTest {
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
         routine = routineService.createRoutine(creator.getId(), routine.getName(),
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 60);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 60, true);
 
         Exercise exercise3 = exerciseDao.save(new Exercise("exercise3", "description3", grupoMuscular.ESPALDA,1));
 
@@ -218,7 +218,8 @@ public class RoutineServiceTest {
             creator.getId(),
             "routine-updated",
             new ArrayList<Long>(){{add(exercise2.getId()); add(exercise3.getId());}},
-            (long) 75
+            (long) 75,
+            true
         );
 
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
@@ -235,28 +236,28 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testModifyRoutineNotFound() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        routineService.modifyRoutine(999999L, creator.getId(), "any", new ArrayList<Long>(), 30L);
+        routineService.modifyRoutine(999999L, creator.getId(), "any", new ArrayList<Long>(), 30L, true);
     }
 
     @Test(expected = PermissionException.class)
     public void testModifyRoutinePermissionDenied() throws Exception {
         Users creator = userService.login("admin1", "12345");
         Users otherUser = userService.login("trainer1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L);
-        routineService.modifyRoutine(routine.getId(), otherUser.getId(), "new-name", new ArrayList<Long>(), 50L);
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+        routineService.modifyRoutine(routine.getId(), otherUser.getId(), "new-name", new ArrayList<Long>(), 50L, true);
     }
 
     @Test(expected = InstanceNotFoundException.class)
     public void testModifyRoutineWithInvalidExercise() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L);
-        routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L);
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+        routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L, true);
     }
 
     @Test
     public void testDeleteRoutineSuccess() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L);
+        Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L, true);
         routineService.deleteRoutine(creator.getId(), routine.getId());
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
         assertEquals(false, retrieved.isPresent());
@@ -272,7 +273,7 @@ public class RoutineServiceTest {
     public void testDeleteRoutinePermissionDenied() throws Exception {
         Users creator = userService.login("admin1", "12345");
         Users otherUser = userService.login("user1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "to-delete-2", new ArrayList<Long>(), 35L);
+        Routine routine = routineService.createRoutine(creator.getId(), "to-delete-2", new ArrayList<Long>(), 35L, true);
         routineService.deleteRoutine(otherUser.getId(), routine.getId());
     }
 
@@ -281,7 +282,7 @@ public class RoutineServiceTest {
         Users creator = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
         
-        Routine routine = routineService.createRoutine(creator.getId(), "trainer-routine", new ArrayList<Long>(), 45L);
+        Routine routine = routineService.createRoutine(creator.getId(), "trainer-routine", new ArrayList<Long>(), 45L, true);
         
         // El Admin deberia poder modificar cualquier rutina
         routineService.modifyRoutine(
@@ -289,7 +290,8 @@ public class RoutineServiceTest {
             admin.getId(),
             "admin-modified",
             new ArrayList<Long>(),
-            60L
+            60L,
+            true
         );
         
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
@@ -304,7 +306,7 @@ public class RoutineServiceTest {
         Users creator = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
         
-        Routine routine = routineService.createRoutine(creator.getId(), "trainer-routine-delete", new ArrayList<Long>(), 40L);
+        Routine routine = routineService.createRoutine(creator.getId(), "trainer-routine-delete", new ArrayList<Long>(), 40L, true);
         
         // El Admin deberia poder eliminar cualquier rutina
         routineService.deleteRoutine(admin.getId(), routine.getId());
@@ -319,14 +321,15 @@ public class RoutineServiceTest {
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO,1));
         
         Routine routine = routineService.createRoutine(creator.getId(), "with-exercises", 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, 30L);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 30L, true);
         
          routineService.modifyRoutine(
             routine.getId(),
             creator.getId(),
             "no-exercises",
             new ArrayList<Long>(),
-            45L
+            45L,
+            true
         );
         
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
@@ -347,17 +350,17 @@ public class RoutineServiceTest {
         Routine routine3 = createRoutine("routine3", creator2);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
-        assertEquals(Arrays.asList(), routineService.findByFilters(creator2.getId(), null,PageRequest.of(0, 10)).getContent());        
+        assertEquals(Arrays.asList(), routineService.findByFilters(creator2.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());        
 
         routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine2 = routineService.createRoutine(creator1.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
-        assertEquals(Arrays.asList(routine1, routine2), routineService.findByFilters(creator1.getId(), null,PageRequest.of(0, 10)).getContent());
-        assertEquals(Arrays.asList(routine3), routineService.findByFilters(creator2.getId(), null,PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine1, routine2), routineService.findByFilters(creator1.getId(), creator1.getId(), null,PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine3), routineService.findByFilters(creator2.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());
     }
 
 
@@ -369,12 +372,12 @@ public class RoutineServiceTest {
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
         routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine2 = routineService.createRoutine(creator1.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
-        assertEquals(Arrays.asList(routine1), routineService.findByFilters(null, "routine1",PageRequest.of(0, 10)).getContent());
-        assertEquals(Arrays.asList(routine2), routineService.findByFilters(null, "2",PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine1), routineService.findByFilters(creator1.getId(), null, "routine1",PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routine2), routineService.findByFilters(creator1.getId(), null, "2",PageRequest.of(0, 10)).getContent());
     }
 
     @Test
@@ -387,17 +390,17 @@ public class RoutineServiceTest {
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
         routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine2 = routineService.createRoutine(creator2.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
         routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
         assertEquals(Arrays.asList(routine2), routineService.findByFilters
-        (creator2.getId(), "Pecho",PageRequest.of(0, 10)).getContent());
+        (creator2.getId(), creator2.getId(), "Pecho",PageRequest.of(0, 10)).getContent());
         
         assertEquals(Arrays.asList(routine2, routine3), routineService.findByFilters
-        (creator2.getId(), "P",PageRequest.of(0, 10)).getContent());
+        (creator2.getId(), creator2.getId(), "P",PageRequest.of(0, 10)).getContent());
     }
 
 }
