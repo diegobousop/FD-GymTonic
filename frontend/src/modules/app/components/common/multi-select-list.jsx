@@ -46,9 +46,7 @@ const MultiChecklist = ({ options, selected, onChange, label, page=0,
               </li>
             ))}
           </ul>
-          {errors && (
-            <div className="text-red-500 text-sm mt-2">{errorMessage || "Debes seleccionar al menos un elemento."}</div>
-          )}
+
           <div className="flex justify-between mt-2">
             <button
               type="button"
@@ -68,6 +66,9 @@ const MultiChecklist = ({ options, selected, onChange, label, page=0,
             </button>
           </div>
         </div>
+      )}
+      {errors && (
+        <div className="text-red-500 text-sm mt-2">{errorMessage || "Debes seleccionar al menos un elemento."}</div>
       )}
     </div>
   );
