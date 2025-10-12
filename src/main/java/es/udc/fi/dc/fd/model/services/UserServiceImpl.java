@@ -53,6 +53,7 @@ public class UserServiceImpl implements UserService {
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+		if(user.getAvatar() == null) user.setAvatar(avatarDao.findByName("default").get());
 
 		userDao.save(user);
 
