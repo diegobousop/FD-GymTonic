@@ -37,7 +37,7 @@ public class RoutineServiceImpl implements RoutineService {
     private ExerciseDao exerciseDao;
     
     @Override
-    public Routine createRoutine( Long creatorId, String name, List<Long> exercises,Long duration) throws DuplicateInstanceException,
+    public Routine createRoutine( Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws DuplicateInstanceException,
         InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException {
         Users creator = permissionChecker.checkUser(creatorId);
 
@@ -56,24 +56,54 @@ public class RoutineServiceImpl implements RoutineService {
             }
             found.add(exercise.get());
         }
-        Routine routine = new Routine(name, found, creator, duration, LocalDateTime.now().withNano(0));
+        if (isPublic == null) {
+            isPublic = true;
+        }
+        Routine routine = new Routine(name, found, creator, duration, LocalDateTime.now().withNano(0), isPublic);
 
         routineDao.save(routine);
         return routine;
     }
 
     @Override
-    public Page<Routine> viewAllRoutines(Pageable pageable) {
-        return routineDao.findAll(pageable);
+    public Page<Routine> viewAllRoutines(Long userId, Pageable pageable) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+        
+        Specification<Routine> spec = Specification.where(null);
+        
+        if (!user.getRole().equals(Users.RoleType.ADMIN)) {
+            spec = spec.and((root, query, cb) ->
+                cb.or(
+                    cb.equal(root.get("isPublic"), true),
+                    cb.equal(root.get("creator").get("id"), userId)
+                ));
+        }
+        
+        return routineDao.findAll(spec, pageable);
     }
 
     @Override
-    public Routine getRoutineById(Long routineId){
-        return routineDao.getReferenceById(routineId);
+    public Routine getRoutineById(Long routineId, Long userId) throws InstanceNotFoundException, PermissionException {
+        Users user = permissionChecker.checkUser(userId);
+        
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+        
+        Routine routine = optionalRoutine.get();
+        
+        if (!routine.getIsPublic() && 
+            !user.getRole().equals(Users.RoleType.ADMIN) && 
+            !routine.getCreator().getId().equals(userId)) {
+            throw new PermissionException();
+        }
+        
+        return routine;
     }
 
     @Override
-    public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration) throws InstanceNotFoundException, PermissionException {
+    public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException {
         Users creator = permissionChecker.checkUser(creatorId);
         
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
@@ -100,6 +130,9 @@ public class RoutineServiceImpl implements RoutineService {
         routine.setName(name);
         routine.setExercises(foundExercises);
         routine.setDuration(duration);
+        if (isPublic != null) {
+            routine.setIsPublic(isPublic);
+        }
         routine.setModificationDate(LocalDateTime.now().withNano(0));
         
         routineDao.save(routine);
@@ -124,8 +157,17 @@ public class RoutineServiceImpl implements RoutineService {
         routineDao.delete(routine);
     }
 
-    public Page<Routine> findByFilters(Long creatorId, String name, Pageable pageable) {
+    public Page<Routine> findByFilters(Long userId, Long creatorId, String name, Pageable pageable) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
         Specification<Routine> spec = Specification.where(null);
+
+        if (!user.getRole().equals(Users.RoleType.ADMIN)) {
+            spec = spec.and((root, query, cb) ->
+                cb.or(
+                    cb.equal(root.get("isPublic"), true),
+                    cb.equal(root.get("creator").get("id"), userId)
+                ));
+        }
 
         if (creatorId != null) {
             spec = spec.and((root, query, cb) ->

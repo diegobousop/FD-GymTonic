@@ -11,7 +11,7 @@ const MenuItem = ({ title, activePage, onClick, page, icon: Icon }) => {
     const isChangePassword = page === 'change-password'
 
     // Clase de texto: ancho mayor solo para cambiar contraseña
-    const textClass = `text-[16px] ml-[50px] truncate w-[${isChangePassword ? '160px' : '120px'}]`
+    const textClass = `text-[20px] ml-[50px] truncate w-[${isChangePassword ? '160px' : '120px'}]`
 
     return (
         <button

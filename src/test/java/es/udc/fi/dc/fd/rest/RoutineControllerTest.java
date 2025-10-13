@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -8,8 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
+import es.udc.fi.dc.fd.model.services.Block;
+import es.udc.fi.dc.fd.rest.dtos.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,24 +27,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
-import es.udc.fi.dc.fd.rest.controllers.RoutineController;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
-import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
-import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -96,6 +92,7 @@ public class RoutineControllerTest {
         params.setName("Rutina Alvaro");
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
 		ObjectMapper mapper = createObjectMapper();
 
@@ -138,6 +135,7 @@ public class RoutineControllerTest {
         params.setName("Rutina Alvaro");
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
 		ObjectMapper mapper = createObjectMapper();
 
@@ -160,6 +158,7 @@ public class RoutineControllerTest {
         params.setName("Full-Body");
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
         ObjectMapper mapper = createObjectMapper();
 
@@ -171,6 +170,7 @@ public class RoutineControllerTest {
         params.setName("Push");
         params.setDuration(50L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
         mockMvc.perform(post("/api/routines/createRoutine")
                 .header("Authorization", "Bearer " + user.getServiceToken())
@@ -211,6 +211,7 @@ public class RoutineControllerTest {
         createParams.setName("Original Routine");
         createParams.setDuration(60L);
         createParams.setExercises(new ArrayList<>());
+        createParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
         
@@ -227,6 +228,7 @@ public class RoutineControllerTest {
         modifyParams.setName("Modified Routine");
         modifyParams.setDuration(90L);
         modifyParams.setExercises(new ArrayList<>());
+        modifyParams.setIsPublic(true);
         
         mockMvc.perform(put("/api/routines/modifyRoutine/" + createdRoutine.getId())
                 .header("Authorization", "Bearer " + user.getServiceToken())
@@ -264,6 +266,7 @@ public class RoutineControllerTest {
         createParams.setName("Original Routine");
         createParams.setDuration(60L);
         createParams.setExercises(new ArrayList<>());
+        createParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
         
@@ -280,6 +283,7 @@ public class RoutineControllerTest {
         modifyParams.setName("Modified Routine");
         modifyParams.setDuration(90L);
         modifyParams.setExercises(new ArrayList<>());
+        modifyParams.setIsPublic(true);
         
         mockMvc.perform(put("/api/routines/modifyRoutine/" + createdRoutine.getId())
                 .header("Authorization", "Bearer " + otherUser.getServiceToken())
@@ -296,6 +300,7 @@ public class RoutineControllerTest {
         createParams.setName("Routine to Delete");
         createParams.setDuration(45L);
         createParams.setExercises(new ArrayList<>());
+        createParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
         
@@ -333,6 +338,7 @@ public class RoutineControllerTest {
         createParams.setName("Routine to Delete");
         createParams.setDuration(45L);
         createParams.setExercises(new ArrayList<>());
+        createParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
         
@@ -361,6 +367,7 @@ public class RoutineControllerTest {
         params.setName("Full-Body");
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
 		ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -398,6 +405,7 @@ public class RoutineControllerTest {
         params.setName("Pierna");
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
         ObjectMapper mapper = createObjectMapper();
 
@@ -409,6 +417,7 @@ public class RoutineControllerTest {
         params.setName("Pecho");
         params.setDuration(50L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
         mockMvc.perform(post("/api/routines/createRoutine")
                 .header("Authorization", "Bearer " + user1.getServiceToken())
@@ -418,6 +427,7 @@ public class RoutineControllerTest {
         params.setName("Pecho y hombro");
         params.setDuration(60L);
         params.setExercises(new ArrayList<>());
+        params.setIsPublic(true);
 
         mockMvc.perform(post("/api/routines/createRoutine")
                 .header("Authorization", "Bearer " + user2.getServiceToken())
@@ -454,5 +464,74 @@ public class RoutineControllerTest {
                 .andExpect(jsonPath("$.items[1].name").value("Pecho"))
                 .andExpect(jsonPath("$.existMoreItems").isBoolean());
     }
+    @Test
+    public void testCreateSerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+
+        // Crear ExerciseDto de ejemplo
+        ExerciseDto exerciseDto = new ExerciseDto();
+        exerciseDto.setId(2L);
+        exerciseDto.setName("Squat");
+        exerciseDto.setNumeroSeries(4);
+        exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+
+
+        // Mockear el comportamiento del servicio
+
+
+        ObjectMapper mapper = createObjectMapper();
+
+        mockMvc.perform(post("/api/routines/Series")
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsBytes(exerciseDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(4)))
+                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[1].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.existMoreItems").value(false));
+    }
+
+
+    @Test
+    public void testGetSerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+
+
+        mockMvc.perform(get("/api/routines/Series?serieId=" + 1 )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.numeroSerie").value(1))
+                .andExpect(jsonPath("$.repeticiones").value(20))
+                .andExpect(jsonPath("$.peso").value(100));
+    }
+
+
+    @Test
+    public void testModifySerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+
+        mockMvc.perform(put("/api/routines/Series")
+                        .param("serieId", "1")
+                        .param("repeticiones", "25")
+                        .param("peso", "120")
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // Verificamos que el DTO devuelto tenga los nuevos valores
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.numeroSerie").value(1))
+                .andExpect(jsonPath("$.repeticiones").value(25))
+                .andExpect(jsonPath("$.peso").value(120));
+    }
+
+
 
 }

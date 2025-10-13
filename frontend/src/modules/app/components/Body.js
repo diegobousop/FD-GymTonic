@@ -29,27 +29,31 @@ const Body = () => {
   useEffect(() => {
     const path = location.pathname
     if (path === '/' || path === '/start' || path === '/intro') {setActivePage('intro');return}
+    if (path.startsWith('/login')) { setActivePage('login'); return }
+    if (path.startsWith('/register')) { setActivePage('register'); return }
     if (path.startsWith('/home')) { setActivePage('home'); return }
     if (path.startsWith('/admin/addExercise')) {setActivePage('createExercise'); return}
     if (path.startsWith('/profile')) { setActivePage('profile'); return }
     if (path.startsWith('/routines/create-routine')) { setActivePage('createRoutine'); return }
     if (path.startsWith('/test')) { setActivePage('test'); return }
-    if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate');  }
+    if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate'); return }
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
     if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
 
   }, [location.pathname])
 
+  const showNavAndMenu = activePage !== 'intro' && activePage !== 'login' && activePage !== 'register';
+
   return (
     <div>
       {/* Renderiza NavBar solo si activePage no es 'intro' */}
-      {activePage !== 'intro' && <NavBar activePage={activePage} />}
+      {showNavAndMenu && <NavBar activePage={activePage} />}
       <div className="flex flex-row h-screen">
         {/* Renderiza SideMenu solo si activePage no es 'intro' */}
-        {activePage !== 'intro' && (
+        {showNavAndMenu && (
           <SideMenu activePage={activePage} setActivePage={setActivePage} />
         )}  
-        <div className="w-full">
+        <div className={`w-full ${showNavAndMenu ? 'pt-[77px] pl-[270px]' : ''}`}>
           <Routes>
             <Route index exact element={<IntroPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -63,7 +67,7 @@ const Body = () => {
               <ProtectedPath role={["TRAINER", "ADMIN"]} path={<CreateRoutine />} />
             } />
             <Route path='/admin/addExercise' element={
-              <ProtectedPath role="ADMIN" path={<CreateExercise />} />
+              <ProtectedPath role={["ADMIN","TRAINER"]} path={<CreateExercise />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />

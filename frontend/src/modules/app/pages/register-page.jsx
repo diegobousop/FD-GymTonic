@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import TextInput from '../components/common/text-input'
 import SendButton from '../components/common/send-button'
+import MultiSelectList from '../components/common/multi-select-list';
+import FileInput from '../components/common/file-input';
 
 import { signUp } from '../../../backend/userService';
 import { UserContext } from '../components/common/user-provider';
@@ -20,6 +22,8 @@ const RegisterPage = () => {
   const [lastName, setLastName] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [confirmPassword, setConfirmPassword] = React.useState('')
+  const [role, setRole] = React.useState(null)
+  const [file, setFile] = React.useState(null)
 
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -29,6 +33,9 @@ const RegisterPage = () => {
   const [lastNameErrors, setLastNameErrors] = React.useState(null)
   const [emailErrors, setEmailErrors] = React.useState(null)
   const [confirmPasswordErrors, setConfirmPasswordErrors] = React.useState(null)
+  const [roleErrors, setRoleErrors] = React.useState(null)
+  const [fileErrors, setFileErrors] = React.useState(null)
+  const [globalError, setGlobalError] = React.useState(null)
 
   useEffect(() => {
         const prevOverflow = document.body.style.overflow;
@@ -57,8 +64,7 @@ const RegisterPage = () => {
           firstName,
           lastName,
           email,
-          role: 0,
-          avatar: 'fff'
+          role
         }
         setIsLoading(true)
         try {
@@ -67,8 +73,7 @@ const RegisterPage = () => {
             (authenticatedUser) => {
               // Set user in context
               const userToSet = {
-                ...authenticatedUser?.user,
-                avatar: authenticatedUser?.user?.avatar || 'https://ik.imagekit.io/940wz34p7/1.png?updatedAt=1758552818447'
+                ...authenticatedUser.user,
               };
               setUser(userToSet);
               localStorage.setItem("user", JSON.stringify(userToSet));
@@ -76,12 +81,12 @@ const RegisterPage = () => {
               window.location.href = '/gym-tonic/#/home'
             },
             (err) => {
-              setFirstNameErrors(err.globalError || 'Error al registrarse')
+              setUserNameErrors(err.globalError || 'Error al registrarse')
               setIsLoading(false)
             }
           )
         } catch (ex) {
-          setFirstNameErrors(ex || 'Error inesperado')
+          setGlobalError(ex || 'Error inesperado')
           setIsLoading(false)
         }
       }
@@ -122,11 +127,27 @@ const RegisterPage = () => {
 
                 <TextInput name="firstName" label="Nombre" value={firstName} onChange={(e) => setFirstName(e.target.value)} errors={firstNameErrors} errorMessage={firstNameErrors} />
                 <TextInput name="lastName" label="Apellidos" value={lastName} onChange={(e) => setLastName(e.target.value)}  errors={lastNameErrors} errorMessage={lastNameErrors} />
-
-
+                <MultiSelectList 
+                  options={[{id:"TRAINER", name:"TRAINER"},{id:"USER", name:"USER"}]} 
+                  selected={role !== null ? [role] : []} // Cambiar la condición
+                  onChange={(selected) => {setRole(selected[0] || null)}}
+                  label={"Rol"}
+                  required={true}
+                  errors={roleErrors}
+                  errorMessage={roleErrors}
+                />
+                {role === "TRAINER" && (
+                  <FileInput
+                    label="Diploma o certificación"
+                    errors={fileErrors}
+                    errorMessage={fileErrors}
+                    onChange={setFile}
+                  />
+                )}
               <div className="col-span-1">
                 <SendButton onClick={handleRegister} isLoading={isLoading} />
               </div>
+              {globalError && <p className="col-span-2 mt-1 text-sm text-red-500">{globalError}</p>}
               
               <div className="col-span-1" />
             </div>
@@ -157,8 +178,9 @@ const RegisterPage = () => {
     const confirmPwdErr = (!password && !confirmPassword) ? '\u00A0' : (password !== confirmPassword ? 'Las contraseñas no coinciden' : null)
     const firstNameErr = !trimmedFirstName ? 'El nombre es obligatorio' : (hasDigits(trimmedFirstName) ? 'El nombre no puede contener números' : null)
     const lastNameErr = !trimmedLastName ? 'Los apellidos son obligatorios' : (hasDigits(trimmedLastName) ? 'Los apellidos no pueden contener números' : null)
-
-    if (usernameErr || emailErr || passwordErr || confirmPwdErr || firstNameErr || lastNameErr) {
+    const roleErr = !role ? 'El rol es obligatorio' : null
+    const fileErr = (role === "TRAINER" && !file) ? 'El Diploma/Certificación es obligatorio' : null
+    if (usernameErr || emailErr || passwordErr || confirmPwdErr || firstNameErr || lastNameErr || roleErr || fileErr) {
       hasError = true
     }
 
@@ -169,6 +191,8 @@ const RegisterPage = () => {
     setConfirmPasswordErrors(confirmPwdErr)
     setFirstNameErrors(firstNameErr)
     setLastNameErrors(lastNameErr)
+    setRoleErrors(roleErr)
+    setFileErrors(fileErr)
 
     return !hasError
   }

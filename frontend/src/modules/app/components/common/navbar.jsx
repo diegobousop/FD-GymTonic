@@ -26,7 +26,7 @@ const Navbar = ({activePage}) => {
   const title = PAGE_TITLES[activePage] || capitalize(activePage) || 'Inicio'
 
   return (
-    <div className="flex flex-row items-center justify-start h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
+    <div className="fixed top-0 left-0 right-0 flex flex-row items-center justify-start h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
         <Link to="/home">
           <img
             src={GENERAL_ICONS.APP_LOGO}
@@ -37,9 +37,9 @@ const Navbar = ({activePage}) => {
 
         <div className="flex flex-row  ml-4 items-center w-full">
             <div className="flex flex-row grow w-full">
-                <h1 className="text-white ml-24">{title}</h1>
+                <h1 className="text-white ml-32">{title}</h1>
             </div>
-            <div className="flex flex-row items-center justify-between gap-4 mr-2">
+            <div className="flex flex-row items-center justify-between gap-4 mr-4">
                 <SearchBar />
               {user &&  
                 <Link to="/profile">
