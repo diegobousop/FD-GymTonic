@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import ViewAllRoutines from './viewAllRoutines-page'
+import ViewAllRoutines from './view-all-routines-page'
 
 const HomePage = () => {
 
