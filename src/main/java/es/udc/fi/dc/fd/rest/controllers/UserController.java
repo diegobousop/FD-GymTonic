@@ -29,6 +29,7 @@ import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
+import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 
 /**
  * The Class UserController.
@@ -102,12 +103,12 @@ public class UserController {
 	 */
 	@PostMapping("/signUp")
 	public ResponseEntity<AuthenticatedUserDto> signUp(
-			@Validated({ UserDto.AllValidations.class }) @RequestBody UserDto userDto)
+			@Validated({ UserDto.AllValidations.class }) @RequestBody UserRegisterParamsDto userDto)
 			throws DuplicateInstanceException {
 
 		Users user = toUser(userDto);
-
-		userService.signUp(user, Users.RoleType.USER);
+		Users.RoleType role = userDto.getRole() != null && userDto.getRole().equals("TRAINER") ? Users.RoleType.TRAINER : Users.RoleType.USER;
+		userService.signUp(user, role);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId())
 				.toUri();

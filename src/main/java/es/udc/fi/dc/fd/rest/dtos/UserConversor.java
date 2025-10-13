@@ -38,6 +38,12 @@ public class UserConversor {
 				userDto.getEmail(), new Avatar(userDto.getAvatar().getName(), userDto.getAvatar().getAvatarBase64()));
 	}
 
+	public static final Users toUser(UserRegisterParamsDto userDto) {
+
+		return new Users(userDto.getUserName(), userDto.getPassword(), userDto.getFirstName(), userDto.getLastName(),
+				userDto.getEmail(), null);
+	}
+
 	/**
 	 * To authenticated user dto.
 	 *
