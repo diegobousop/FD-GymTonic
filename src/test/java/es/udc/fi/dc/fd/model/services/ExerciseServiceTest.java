@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
+
 import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +23,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
+
 
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 
-import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -50,7 +55,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseTest() throws IncorrectLoginException, DuplicateInstanceException{
+    public void addExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException{
         Users creator = userService.login("admin1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
@@ -69,7 +74,16 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addDuplicateExerciseTest() throws IncorrectLoginException, DuplicateInstanceException{
+    public void addExercisePermissionExceptionTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException{
+        Users creator = userService.login("user1", "12345");
+        assertThrows(PermissionException.class, () -> {
+            exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        });
+    }
+
+
+    @Test
+    public void addDuplicateExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException {
         Users creator = userService.login("admin1", "12345");
 
         Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -136,7 +150,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseAsTrainerTest() throws IncorrectLoginException, DuplicateInstanceException{
+    public void addExerciseAsTrainerTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException{
         Users creator = userService.login("trainer1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
@@ -150,7 +164,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseAsAdminTest() throws IncorrectLoginException, DuplicateInstanceException{
+    public void addExerciseAsAdminTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException{
         Users creator = userService.login("admin1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
@@ -165,7 +179,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void getExercicesValidatedExercises() throws IncorrectLoginException, DuplicateInstanceException{
+    public void getExercicesValidatedExercises() throws IncorrectLoginException, DuplicateInstanceException, PermissionException{
         Users creator = userService.login("trainer1", "12345");
         //Creamos un ejercio sin validar
         exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -176,7 +190,7 @@ public class ExerciseServiceTest {
         assertFalse(returned.getExistMoreItems());
     }
     @Test
-    public void createSeriesTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException {
+    public void createSeriesTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(),new Exercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -188,7 +202,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void createSeriesThrowTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException {
+    public void createSeriesThrowTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(),new Exercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -200,7 +214,7 @@ public class ExerciseServiceTest {
         exerciseService.createSeries(exercise1);});
     }
     @Test
-    public void EditSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException {
+    public void EditSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(),new Exercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
@@ -221,7 +235,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void  GetSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException {
+    public void  GetSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(),new Exercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
@@ -235,5 +249,78 @@ public class ExerciseServiceTest {
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getPeso(),serie.getPeso());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getExercise(),serie.getExercise());
     }
+
+    @Test
+    public void validateExerciseSuccessTest() 
+    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+
+        Users trainer = userService.login("trainer1", "12345");
+        Users admin = userService.login("admin1", "12345");
+
+        long idExercise = exerciseService.addExercise(trainer.getId(),new Exercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        assertFalse(exercise1.isValidated());
+
+        Exercise exercise2 = exerciseService.validateExercise(admin.getId(), idExercise);
+        assertTrue(exercise2.isValidated());
+
+    }
+
+    @Test
+    public void validateExerciseAlreadyValidatedExceptionTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+        Users trainer = userService.login("trainer1", "12345");
+        Users admin = userService.login("admin1", "12345");
+
+        long idExercise = exerciseService.addExercise(trainer.getId(),new Exercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        assertFalse(exercise1.isValidated());
+
+        exercise1.setValidated(true);
+        exerciseDao.save(exercise1);
+
+        assertThrows(AlreadyValidatedException.class, () -> exerciseService.validateExercise(admin.getId(), idExercise));
+    }
+
+    @Test
+    public void validateExercisePermissionExceptionTest() 
+    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+        Users trainer = userService.login("trainer1", "12345");
+
+
+        long idExercise = exerciseService.addExercise(trainer.getId(),new Exercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        assertFalse(exercise1.isValidated());
+
+        assertThrows(PermissionException.class, () -> exerciseService.validateExercise(trainer.getId(), idExercise));
+    }
+
+    @Test
+    public void validateExercisePermissionException2Test() 
+    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+        Users trainer = userService.login("trainer1", "12345");
+        Users user1 = userService.login("user1", "12345");
+
+
+        long idExercise = exerciseService.addExercise(trainer.getId(),new Exercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        assertFalse(exercise1.isValidated());
+
+        assertThrows(PermissionException.class, () -> exerciseService.validateExercise(user1.getId(), idExercise));
+    }
+
+    
+
+
+
+
+
 
 }
