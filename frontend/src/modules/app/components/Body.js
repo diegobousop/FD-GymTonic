@@ -20,6 +20,7 @@ import ProtectedPath from './common/protected-path';
 import RoutineDetails from "../pages/routine-details-page";
 import CreateExercise from '../pages/create-exercise-page';
 import MyRoutines from '../pages/my-routines-page';
+import ValidateExercises from '../pages/validate-exercises-page';
 
 const Body = () => {
 
@@ -39,6 +40,7 @@ const Body = () => {
     if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate'); return }
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
     if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
+    if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
 
   }, [location.pathname])
 
@@ -59,7 +61,6 @@ const Body = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/start" element={<IntroPage />} />
-            
             <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
             <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
             <Route path="/test" element={<ProtectedPath path={<Test />} />} />
@@ -68,6 +69,9 @@ const Body = () => {
             } />
             <Route path='/admin/addExercise' element={
               <ProtectedPath role={["ADMIN","TRAINER"]} path={<CreateExercise />} />
+            } />
+            <Route path="/admin/validateExercises" element={
+              <ProtectedPath role={["ADMIN","TRAINER"]} path={<ValidateExercises />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />
