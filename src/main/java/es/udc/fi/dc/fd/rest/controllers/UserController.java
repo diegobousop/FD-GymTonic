@@ -167,7 +167,7 @@ public class UserController {
 			throws InstanceNotFoundException, PermissionException {
 
 		if (!id.equals(userId)) {
-			throw new PermissionException();
+			throw new PermissionException("project.entities.user", id);
 		}
 
 		return toUserDto(
@@ -192,7 +192,7 @@ public class UserController {
 			throws PermissionException, InstanceNotFoundException, IncorrectPasswordException {
 
 		if (!id.equals(userId)) {
-			throw new PermissionException();
+			throw new PermissionException("project.entities.user", id);
 		}
 
 		userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
@@ -201,7 +201,7 @@ public class UserController {
 
 	@GetMapping("/{id}")
 	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
-		if (!id.equals(userId)) throw new PermissionException();
+		if (!id.equals(userId)) throw new PermissionException("project.entities.user", id);
 		return toUserDto(userService.getUserById(userId));
 	}
 

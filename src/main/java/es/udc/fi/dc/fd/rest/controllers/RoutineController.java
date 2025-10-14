@@ -45,6 +45,7 @@ import static es.udc.fi.dc.fd.rest.dtos.ExerciseConversor.toExercise;
 @RestController
 @RequestMapping("/api/routines")
 public class RoutineController {
+    
     @Autowired
     private RoutineService routineService;
     @Autowired

@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
 
 import es.udc.fi.dc.fd.model.entities.RoutineDao;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
@@ -21,9 +24,7 @@ import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
-import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
-import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
+
 
 @Service
 @Transactional
@@ -96,7 +97,7 @@ public class RoutineServiceImpl implements RoutineService {
         if (!routine.getIsPublic() && 
             !user.getRole().equals(Users.RoleType.ADMIN) && 
             !routine.getCreator().getId().equals(userId)) {
-            throw new PermissionException();
+            throw new PermissionException("project.entities.routine", routineId);
         }
         
         return routine;
@@ -115,7 +116,7 @@ public class RoutineServiceImpl implements RoutineService {
         
         // Admin can modify any routine, others can only modify their own
         if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
-            throw new PermissionException();
+            throw new PermissionException("project.entities.routine", routineId);
         }
         
         List<Exercise> foundExercises = new ArrayList<>();
@@ -151,7 +152,7 @@ public class RoutineServiceImpl implements RoutineService {
         Routine routine = optionalRoutine.get();
         
         if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
-            throw new PermissionException();
+            throw new PermissionException("project.entities.routine", routineId);
         }
         
         routineDao.delete(routine);
