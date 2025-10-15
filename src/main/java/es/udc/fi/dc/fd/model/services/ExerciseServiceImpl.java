@@ -71,13 +71,13 @@ public class ExerciseServiceImpl implements ExerciseService {
 
 
     @Override
-    public Block<Serie> createSeries(Exercise exercise) throws DuplicateInstanceException, InstanceNotFoundException {
-
+    public Block<Serie> createSeries(Exercise exercise, Optional<Integer> n) throws  InstanceNotFoundException {
+        int aux;
         if (!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
             throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
-        if (serieDao.findByExercise(exercise).hasContent())
-            throw new DuplicateInstanceException("project.entities.exercise", exercise.getExerciseName());
-        for(int i=1;i<=exercise.getNumeroSeries();i++){
+
+        aux = n.orElseGet(exercise::getNumeroSeries);
+        for(int i=1;i<=aux;i++){
             Serie serie = new Serie(20,10,i,exercise);
             serieDao.save(serie);
         }
@@ -98,6 +98,17 @@ public class ExerciseServiceImpl implements ExerciseService {
         if (serieDao.findById(id).isEmpty())
             throw new NoSuchElementException("project.entities.serie");
         return serieDao.findById(id).get();
+    }
+
+    @Override
+    public Block<Serie> getSeriesByExercise(long exercise) {
+
+        if (exerciseDao.findById( exercise).isEmpty())
+            throw new NoSuchElementException("project.entities.serie");
+        else{
+            Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
+        return new Block<>(slice.getContent(), slice.hasNext());
+        }
     }
 
     @Override

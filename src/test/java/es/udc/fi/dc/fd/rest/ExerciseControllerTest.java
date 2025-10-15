@@ -1,8 +1,12 @@
 package es.udc.fi.dc.fd.rest;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import es.udc.fi.dc.fd.model.entities.Users;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +44,14 @@ public class ExerciseControllerTest {
 
     @Autowired
     private UserController userController;
-    
+
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
+
 
     @Test
     public void addExerciseSuccessTest() throws Exception{
@@ -203,7 +214,133 @@ public class ExerciseControllerTest {
     }
 
 
+    @Test
+    public void testCreateSerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        // Crear ExerciseDto de ejemplo
+        ExerciseDto exerciseDto = new ExerciseDto();
+        exerciseDto.setId(2L);
+        exerciseDto.setName("Squat");
+        exerciseDto.setNumeroSeries(4);
+        exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
 
 
+        // Mockear el comportamiento del servicio
 
+
+        ObjectMapper mapper = createObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/Series" )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsBytes(exerciseDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(4)))
+                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[1].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.existMoreItems").value(false));
+    }
+    @Test
+    public void testCreateSerieWithNumber_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        // Crear ExerciseDto de ejemplo
+        ExerciseDto exerciseDto = new ExerciseDto();
+        exerciseDto.setId(2L);
+        exerciseDto.setName("Squat");
+        exerciseDto.setNumeroSeries(4);
+        exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+
+
+        // Mockear el comportamiento del servicio
+
+
+        ObjectMapper mapper = createObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/Series?numSeries=3" )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsBytes(exerciseDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(3)))
+                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[1].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.existMoreItems").value(false));
+    }
+    @Test
+    public void testGetSerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+
+        mockMvc.perform(get("/api/exercise/Series?serieId=" + 1 )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.numeroSerie").value(1))
+                .andExpect(jsonPath("$.repeticiones").value(20))
+                .andExpect(jsonPath("$.peso").value(100));
+    }
+
+
+    @Test
+    public void testModifySerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        mockMvc.perform(put("/api/exercise/Series")
+                        .param("serieId", "1")
+                        .param("repeticiones", "25")
+                        .param("peso", "120")
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // Verificamos que el DTO devuelto tenga los nuevos valores
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.numeroSerie").value(1))
+                .andExpect(jsonPath("$.repeticiones").value(25))
+                .andExpect(jsonPath("$.peso").value(120));
+    }
+
+
+    @Test
+    public void testGetSerieByExercise_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        mockMvc.perform(get("/api/exercise/exerciseSeries?id=" + 1)
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // Verificamos que el DTO devuelto tenga los nuevos valores
+                .andExpect(jsonPath("$.items", hasSize(4)))
+                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[0].peso").value(100))
+                .andExpect(jsonPath("$.items[1].repeticiones").value(30))
+                .andExpect(jsonPath("$.items[1].peso").value(150))
+                .andExpect(jsonPath("$.existMoreItems").value(false));
+    }
 }
