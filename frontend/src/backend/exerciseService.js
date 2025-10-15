@@ -12,9 +12,18 @@ export const addExercise = (name, descripcion, grupoMuscular, onSuccess, onError
     );
 };
 
-export const getAllExercises = ({ page, size }, onSuccess, onErrors) => {
+export const getValidatedExercises = ({ page, size }, onSuccess, onErrors) => {
     appFetch(
-        `/exercise/getExercises?page=${page}&size=${size}`,
+        `/exercise/getValidatedExercises?page=${page}&size=${size}`,
+        fetchConfig("GET"),
+        (exercises) => onSuccess(exercises),
+        onErrors
+    );
+};
+
+export const getUnvalidatedExercises = ({ page, size }, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/getUnvalidatedExercises?page=${page}&size=${size}`,
         fetchConfig("GET"),
         (exercises) => onSuccess(exercises),
         onErrors
@@ -24,6 +33,15 @@ export const getAllExercises = ({ page, size }, onSuccess, onErrors) => {
 export const validateExercise = (exerciseId, onSuccess, onErrors) => {
     appFetch(
         `/exercise/validateExercise/${exerciseId}`,
+        fetchConfig("POST"),
+            (response) => onSuccess(response),
+            onErrors
+    );
+};
+
+export const declineExercise = (exerciseId, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/declineExercise/${exerciseId}`,
         fetchConfig("POST"),
         (response) => onSuccess(response),
         onErrors

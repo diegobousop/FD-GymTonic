@@ -58,5 +58,17 @@ export const SVG_ICONS = {
       <path fillRule="evenodd" clipRule="evenodd" d="M8.00023 22.8852L7.11523 22.0002L14.1152 15.0002L7.11523 8.00023L8.00023 7.11523L15.0002 14.1152L22.0002 7.11523L22.8852 8.00023L15.8852 15.0002L22.8852 22.0002L22.0002 22.8852L15.0002 15.8852L8.00023 22.8852Z" fill="currentColor"/>
     </svg>
   ),
+
+  NextIcon: (props) => (
+    <svg {...props} viewBox="-8 -2 30 30" xmlns="http://www.w3.org/2000/svg">
+      <path fillRule="evenodd" clipRule="evenodd" d="M1.99937 19.438L3.04437 20.5L10.7104 12.71C10.8949 12.5197 10.998 12.2651 10.998 12C10.998 11.7349 10.8949 11.4803 10.7104 11.29L3.04437 3.5L1.99937 4.563L9.31737 12L1.99937 19.438Z" fill="currentColor"/>
+    </svg>
+  ),
+
+  BackIcon: (props) => (
+    <svg {...props} viewBox="-8 -2 30 30" xmlns="http://www.w3.org/2000/svg">
+      <path fillRule="evenodd" clipRule="evenodd" d="M10.0006 19.438L8.95563 20.5L1.28963 12.71C1.10513 12.5197 1.00195 12.2651 1.00195 12C1.00195 11.7349 1.10513 11.4803 1.28963 11.29L8.95563 3.5L10.0006 4.563L2.68263 12L10.0006 19.438Z" fill="currentColor"/>
+    </svg>
+  ),  
 }
 
