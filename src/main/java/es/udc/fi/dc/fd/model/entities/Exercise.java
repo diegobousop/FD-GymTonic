@@ -16,6 +16,7 @@ public class Exercise {
     private String exerciseDescription;  
     private grupoMuscular grupoMuscular;
     private int numeroSeries;
+    private Users creator;
     private boolean validated;
     private Users validator;
 
@@ -31,8 +32,8 @@ public class Exercise {
         this.validator=null;
     }
 
-    public Exercise(long Id,String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
-       this.id=Id;
+    public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
+        this.id=id;
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
         this.grupoMuscular = grupo;
@@ -41,6 +42,18 @@ public class Exercise {
         this.validator=null;
     }
 
+    
+    public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries, Users creator) {
+        this.id=id;
+        this.exerciseName = exerciseName;
+        this.exerciseDescription = exerciseDescripcion;
+        this.grupoMuscular = grupo;
+        this.numeroSeries = numeroSeries;
+        this.validated = false;
+        this.validator=null;
+        this.creator=creator;
+    }
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) 
     public Long getId(){
@@ -78,6 +91,15 @@ public class Exercise {
     public int getNumeroSeries() {return numeroSeries;}
 
     public void setNumeroSeries(int numeroSeries) {this.numeroSeries = numeroSeries;}
+
+    @ManyToOne
+    @JoinColumn(name="creator")
+    public Users getCreator() {
+        return creator;
+    }
+    public void setCreator(Users creator) {
+        this.creator = creator;
+    }
 
     public boolean isValidated() {
         return validated;
