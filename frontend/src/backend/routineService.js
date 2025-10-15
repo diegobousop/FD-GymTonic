@@ -3,10 +3,10 @@ import {
   appFetch,
 } from "./appFetch";
 
-export const createRoutine = (name, exercises, duration, onSuccess, onErrors) => {
+export const createRoutine = (name, exercises, duration, isPublic, onSuccess, onErrors) => {
   appFetch(
     "/routines/createRoutine",
-    fetchConfig("POST", { name, exercises, duration }),
+    fetchConfig("POST", { name, exercises, duration, isPublic }),
     (createdRoutine) => onSuccess(createdRoutine),
     onErrors 
   );
@@ -36,10 +36,10 @@ export const deleteRoutine = (routineId, onSuccess, onErrors) =>
     onErrors
   );
 
-export const modifyRoutine = (routineId, name, exercises, duration, onSuccess, onErrors) =>
+export const modifyRoutine = (routineId, name, exercises, duration, isPublic, onSuccess, onErrors) =>
   appFetch(
     `/routines/modifyRoutine/${routineId}`,
-    fetchConfig("PUT", { name, exercises, duration }),
+    fetchConfig("PUT", { name, exercises, duration, isPublic }),
     onSuccess,
     onErrors
   );
