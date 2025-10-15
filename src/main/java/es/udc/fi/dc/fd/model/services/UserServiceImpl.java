@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
@@ -18,6 +19,7 @@ import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 /**
  * The Class UserServiceImpl.
@@ -169,13 +171,17 @@ public class UserServiceImpl implements UserService {
 	 * @throws AlreadyBlockException the user was already blocked
 	 */
 	@Override
-	public void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException{
-		if (blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked)){
-			System.out.println("entro en el if");
+	public void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
+		if (blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked))
 			throw new AlreadyBlockException();
-		}
-		System.out.println(blockUserDao.existsByIdBlockerAndIdBlocked(idBlocked, idBlocker));
-		System.out.println(blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked));
+
+		if (userDao.findById(idBlocked).isEmpty()) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocked);
+		
+		if (userDao.getById(idBlocker).getRole() != RoleType.ADMIN)
+			throw new PermissionException("project.entities.BlockUser", idBlocker);
+		
+		
 		BlockUser block = new BlockUser(idBlocker, idBlocked);
 
 		blockUserDao.save(block);

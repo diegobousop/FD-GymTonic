@@ -232,7 +232,7 @@ public class UserController {
 	}
 
 	@PostMapping("/block/{id}")
-	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws AlreadyBlockException{
+	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
 		userService.blockUser(userId, id);
 	}
 	

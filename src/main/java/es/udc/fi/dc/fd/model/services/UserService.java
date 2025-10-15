@@ -5,6 +5,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 
 /**
@@ -79,7 +80,7 @@ public interface UserService {
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
 	 */
-	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException;	
+	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException;	
 	
 	
 	/**

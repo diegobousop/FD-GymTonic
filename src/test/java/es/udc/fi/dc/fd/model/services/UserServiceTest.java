@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import jakarta.transaction.Transactional;
 
-import jakarta.validation.constraints.Null;
+
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -23,7 +23,8 @@ import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
-import jakarta.transaction.Transactional;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+
 
 import java.util.Optional;
 
@@ -137,22 +138,45 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testBlockUser() throws AlreadyBlockException, DuplicateInstanceException{
+	public void testBlockUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
 		Users user = createUser("user");
-		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(user, Users.RoleType.ADMIN);
 
 		userService.blockUser(user.getId(), 1L);
 		assertTrue(userService.checkUserIsBlocked(user.getId(), 1L));
 	}
 
 	@Test
-	public void testBlockUserBlocked() throws AlreadyBlockException, DuplicateInstanceException{
+	public void testBlockUserBlocked() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user");
-		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(user, Users.RoleType.ADMIN);
 
 		userService.blockUser(user.getId(), 1L);
 		assertThrows(AlreadyBlockException.class, () -> {
 			userService.blockUser(user.getId(), 1L);
 		});
 	}
+
+	@Test 
+	public void testBlockByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+		Users user = createUser("user");
+		userService.signUp(user, Users.RoleType.USER);
+
+
+		assertThrows(PermissionException.class, () -> {
+			userService.blockUser(user.getId(), 1L);
+		});
+	}
+
+	@Test 
+	public void testBlockNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+		Users user = createUser("user");
+		userService.signUp(user, Users.RoleType.USER);
+
+
+		assertThrows(InstanceNotFoundException.class, () -> {
+			userService.blockUser(user.getId(), 500L);
+		});
+	}
+
 }
