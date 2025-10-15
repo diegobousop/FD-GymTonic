@@ -33,6 +33,8 @@ import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+
 
 /**
  * The Class UserController.
@@ -127,12 +129,12 @@ public class UserController {
 	 */
 	@PostMapping("/signUp")
 	public ResponseEntity<AuthenticatedUserDto> signUp(
-			@Validated({ UserDto.AllValidations.class }) @RequestBody UserDto userDto)
+			@Validated({ UserDto.AllValidations.class }) @RequestBody UserRegisterParamsDto userDto)
 			throws DuplicateInstanceException {
 
 		Users user = toUser(userDto);
-
-		userService.signUp(user, Users.RoleType.USER);
+		Users.RoleType role = userDto.getRole() != null && userDto.getRole().equals("TRAINER") ? Users.RoleType.TRAINER : Users.RoleType.USER;
+		userService.signUp(user, role);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId())
 				.toUri();
@@ -191,7 +193,7 @@ public class UserController {
 			throws InstanceNotFoundException, PermissionException {
 
 		if (!id.equals(userId)) {
-			throw new PermissionException();
+			throw new PermissionException("project.entities.user", id);
 		}
 
 		return toUserDto(
@@ -216,7 +218,7 @@ public class UserController {
 			throws PermissionException, InstanceNotFoundException, IncorrectPasswordException {
 
 		if (!id.equals(userId)) {
-			throw new PermissionException();
+			throw new PermissionException("project.entities.user", id);
 		}
 
 		userService.changePassword(id, params.getOldPassword(), params.getNewPassword());
@@ -225,7 +227,7 @@ public class UserController {
 
 	@GetMapping("/{id}")
 	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
-		if (!id.equals(userId)) throw new PermissionException();
+		if (!id.equals(userId)) throw new PermissionException("project.entities.user", id);
 		return toUserDto(userService.getUserById(userId));
 	}
 

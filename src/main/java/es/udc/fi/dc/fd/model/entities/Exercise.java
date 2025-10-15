@@ -6,6 +6,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Exercise {
@@ -13,14 +15,30 @@ public class Exercise {
     private String exerciseName;  
     private String exerciseDescription;  
     private grupoMuscular grupoMuscular;
+    private int numeroSeries;
+    private boolean validated;
+    private Users validator;
 
     public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
 
     public Exercise() {}
-    public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo){
+    public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
         this.grupoMuscular = grupo;
+        this.numeroSeries = numeroSeries;
+        this.validated = false;
+        this.validator=null;
+    }
+
+    public Exercise(long Id,String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
+       this.id=Id;
+        this.exerciseName = exerciseName;
+        this.exerciseDescription = exerciseDescripcion;
+        this.grupoMuscular = grupo;
+        this.numeroSeries = numeroSeries;
+        this.validated = false;
+        this.validator=null;
     }
 
     @Id
@@ -55,5 +73,24 @@ public class Exercise {
 
     public void setGrupoMuscular(grupoMuscular grupoMuscular) {
         this.grupoMuscular = grupoMuscular;
+    }
+
+    public int getNumeroSeries() {return numeroSeries;}
+
+    public void setNumeroSeries(int numeroSeries) {this.numeroSeries = numeroSeries;}
+
+    public boolean isValidated() {
+        return validated;
+    }
+    public void setValidated(boolean validated) {
+        this.validated = validated;
+    }
+    @ManyToOne
+    @JoinColumn(name="validator")
+    public Users getValidator() {
+        return validator;
+    }
+    public void setValidator(Users validator) {
+        this.validator = validator;
     }
 }
