@@ -12,7 +12,10 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 
@@ -37,6 +40,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private AvatarDao avatarDao;
+
+	@Autowired 
+	private BlockUserDao blockUserDao;
 
 	/**
 	 * Sign up.
@@ -155,9 +161,34 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	/**
+	 * Block a User
+	 * @param idBlocker id who blocks
+	 * @param idBlocked id of user being blocked
+	 * @throws AlreadyBlockException the user was already blocked
+	 */
+	@Override
+	public void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException{
+		if (blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked)){
+			System.out.println("entro en el if");
+			throw new AlreadyBlockException();
+		}
+		System.out.println(blockUserDao.existsByIdBlockerAndIdBlocked(idBlocked, idBlocker));
+		System.out.println(blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked));
+		BlockUser block = new BlockUser(idBlocker, idBlocked);
+
+		blockUserDao.save(block);
+	}
+
 	@Override
 	public Users getUserById(Long id) throws InstanceNotFoundException {
 		if (!userDao.existsById(id)) throw new InstanceNotFoundException("project.entities.user", id);
 		return userDao.findById(id).get();
 	}
+
+	@Override
+	public boolean checkUserIsBlocked(Long idBlocker, Long idBlocked) throws AlreadyBlockException{
+		return blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked);
+	}
+
 }
