@@ -6,16 +6,18 @@ import { UserContext } from '../../modules/app/components/common/user-provider';
 
 import '@testing-library/jest-dom/extend-expect';
 
+import routineService from '../../backend/routineService';
+import exerciseService from '../../backend/exerciseService';
+
 jest.mock('../../backend/routineService', () => ({
     createRoutine: jest.fn(),
 }));
 
 jest.mock('../../backend/exerciseService', () => ({
-    getAllExercises: jest.fn(),
+    getValidatedExercises: jest.fn(),
 }));
 
-import routineService from '../../backend/routineService';
-import exerciseService from '../../backend/exerciseService';
+
 
 describe('CreateRoutine', () => {
     const setUser = jest.fn();
@@ -35,7 +37,7 @@ describe('CreateRoutine', () => {
     });
 
     test('renders the form correctly', () => {
-        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" },
@@ -103,7 +105,7 @@ describe('CreateRoutine', () => {
     });
 
     test("Rutina Creada Correctamente", async () => {
-        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" },

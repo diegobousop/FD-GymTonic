@@ -14,4 +14,6 @@ public interface ExerciseDao extends JpaRepository<Exercise, Long> {
     Slice<Exercise> findAllByOrderById(Pageable pageable);
 
     Slice<Exercise> findAllByValidatedTrueOrderById(Pageable pageable);
+
+    Slice<Exercise> findAllByValidatedFalseOrderById(Pageable pageable);
 }

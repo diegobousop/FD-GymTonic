@@ -12,45 +12,59 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
-import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
-
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.SerieDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 @Service
 @Transactional
 public class ExerciseServiceImpl implements ExerciseService {
+
     @Autowired
     private ExerciseDao exerciseDao;
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
     private SerieDao serieDao;
 
     @Override
-    public Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException {
+    public Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
 
         if(exerciseDao.existsByExerciseName(exercise.getExerciseName())){
             throw new DuplicateInstanceException("project.entities.exercise", exercise.getExerciseName());
         }
 
-        Users validator = userDao.findById(userId).get();
+        Optional<Users> creator = userDao.findById(userId);
 
-        if(validator.getRole().toString().equals("USER")){ // si el que añade es admin, se valida directamente
+        if(creator.isEmpty()){
+            throw new InstanceNotFoundException("project.entities.user", userId);
+        }
+
+        exercise.setCreator(creator.get());
+
+        Optional<Users> validator = userDao.findById(userId);
+
+        if(validator.isEmpty()){
+            throw new InstanceNotFoundException("project.entities.user", userId);
+        }
+
+        if(validator.get().getRole().toString().equals("USER")){ // si el que añade es admin, se valida directamente
             throw new PermissionException("project.entities.exercise", exercise.getExerciseName());
         }
 
-        if(validator.getRole().toString().equals("ADMIN")){ // si el que añade es admin, se valida directamente
+        if(validator.get().getRole().toString().equals("ADMIN")){ // si el que añade es admin, se valida directamente
             exercise.setValidated(true);
-            exercise.setValidator(validator);
+            exercise.setValidator(validator.get());
         }
 
-        if(validator.getRole().toString().equals("TRAINER") ){
+        if(validator.get().getRole().toString().equals("TRAINER") ){
             exercise.setValidated(false);
         }
 
@@ -61,7 +75,7 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Transactional(readOnly = true)
     @Override
-    public Block<Exercise> getExercices(int page, int size){
+    public Block<Exercise> getValidatedExercises(int page, int size){
         //Devuelve solo los ejerciccios validados
         Pageable pageable = PageRequest.of(page, size);
         Slice<Exercise> slice = exerciseDao.findAllByValidatedTrueOrderById(pageable);
@@ -69,6 +83,15 @@ public class ExerciseServiceImpl implements ExerciseService {
         return new Block<>(slice.getContent(), slice.hasNext());
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Block<Exercise> getUnvalidatedExercises(int page, int size){
+        //Devuelve solo los ejerciccios no validados
+        Pageable pageable = PageRequest.of(page, size);
+        Slice<Exercise> slice = exerciseDao.findAllByValidatedFalseOrderById(pageable);
+
+        return new Block<>(slice.getContent(), slice.hasNext());
+    }
 
     @Override
     public Block<Serie> createSeries(Exercise exercise) throws DuplicateInstanceException, InstanceNotFoundException {
@@ -121,6 +144,27 @@ public class ExerciseServiceImpl implements ExerciseService {
         exerciseDao.save(foundExercise.get());
 
         return foundExercise.get();
+    }
+
+    
+    @Override
+    public void declineExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException {
+
+        Optional<Exercise> foundExercise = exerciseDao.findById(exerciseId);
+
+        Users validator = userDao.findById(userId).get();
+
+        if(!(validator.getRole().toString().equals("ADMIN"))){ 
+            throw new PermissionException("project.entities.exercise", exerciseId);
+        }
+
+        if (foundExercise.isEmpty())
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+
+        if (foundExercise.get().isValidated())
+            throw new AlreadyValidatedException("project.entities.exercise", exerciseId);
+
+        exerciseDao.delete(foundExercise.get());
     }
 
 
