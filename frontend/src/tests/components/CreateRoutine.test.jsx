@@ -217,7 +217,7 @@ describe('CreateRoutine', () => {
     });
 
     test("checkbox desmarcado por defecto (rutina privada)", () => {
-        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: []
             });
@@ -230,7 +230,7 @@ describe('CreateRoutine', () => {
     });
 
     test("etiqueta del checkbox es estática y no cambia", () => {
-        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: []
             });
@@ -252,7 +252,7 @@ describe('CreateRoutine', () => {
     });
 
     test("crea rutina como privada cuando el checkbox está desmarcado", async () => {
-        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" }
@@ -297,7 +297,7 @@ describe('CreateRoutine', () => {
     });
 
     test("crea rutina como pública cuando el checkbox está marcado", async () => {
-        exerciseService.getAllExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" }
