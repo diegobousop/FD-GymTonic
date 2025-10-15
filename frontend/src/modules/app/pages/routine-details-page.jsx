@@ -28,7 +28,14 @@ const RoutineDetails = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold text-white">{routine.name}</h2>
+      <h2 className="text-2xl font-bold text-white">
+        {routine.name}
+        {routine.isPublic !== undefined && (
+          <span className={`ml-3 text-sm px-3 py-1 rounded ${routine.isPublic ? 'bg-green-600' : 'bg-gray-600'}`}>
+            {routine.isPublic ? '🌍 Pública' : '🔒 Privada'}
+          </span>
+        )}
+      </h2>
       <p className="text-gray-200">Duración: {routine.duration} min</p>
       <p className="text-gray-200">Creada por: {routine.creator}</p>
 

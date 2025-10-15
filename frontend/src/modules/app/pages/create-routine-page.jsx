@@ -15,6 +15,7 @@ const CreateRoutine = () => {
     const [selectedExercises, setSelectedExercises] = useState([]);
     const [page, setPage] = useState(0);
     const [existMoreItems, setExistMoreItems] = useState(false);
+    const [isPublic, setIsPublic] = useState(false);
 
     let form;
 
@@ -39,6 +40,7 @@ const CreateRoutine = () => {
                 name.trim(),
                 selectedExercises, 
                 Number(duration),
+                isPublic,
                 (routine) => {
                     setSuccess(true)
                     setBackendErrors(null)
@@ -89,6 +91,21 @@ const CreateRoutine = () => {
                         setPage={setPage}
                         existMoreItems={existMoreItems}
                     />
+                    
+                    <div className="flex items-center mb-4">
+                        <label className="flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isPublic}
+                                onChange={(e) => setIsPublic(e.target.checked)}
+                                className="mr-2 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-white font-medium">
+                                Rutina Publica
+                            </span>
+                        </label>
+                    </div>
+                    
                     <SendButton onClick={handleSubmit}></SendButton>
                 </form>    
 
