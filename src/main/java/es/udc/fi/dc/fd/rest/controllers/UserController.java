@@ -18,6 +18,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -29,7 +30,11 @@ import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+
 
 /**
  * The Class UserController.
@@ -43,6 +48,10 @@ public class UserController {
 
 	/** The Constant INCORRECT_PASSWORD_EXCEPTION_CODE. */
 	private static final String INCORRECT_PASS_EXCEPTION_CODE = "project.exceptions.IncorrectPasswordException";
+
+	/** The constant ALREADY_BLOCKED_EXCEPTION_CODE. */
+	private static final String ALREADY_BLOCKED_EXCEPTION = "project.exceptions.AlreadyBlockedException";
+
 
 	/** The message source. */
 	@Autowired
@@ -92,6 +101,23 @@ public class UserController {
 
 		return new ErrorsDto(errorMessage);
 
+	}
+
+	/**
+	 * Handle already block exception.
+	 *
+	 * @param exception the exception
+	 * @param locale    the locale
+	 * @return the errors dto
+	 */
+	@ExceptionHandler(AlreadyBlockException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ErrorsDto handleAlreadyStartedException(AlreadyBlockException exception, Locale locale){
+		String errorMessage = messageSource.getMessage(ALREADY_BLOCKED_EXCEPTION, null,
+				ALREADY_BLOCKED_EXCEPTION, locale);
+
+		return new ErrorsDto(errorMessage);
 	}
 
 	/**
@@ -204,6 +230,12 @@ public class UserController {
 		if (!id.equals(userId)) throw new PermissionException("project.entities.user", id);
 		return toUserDto(userService.getUserById(userId));
 	}
+
+	@PostMapping("/block/{id}")
+	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
+		userService.blockUser(userId, id);
+	}
+	
 
 	/**
 	 * Generate service token.
