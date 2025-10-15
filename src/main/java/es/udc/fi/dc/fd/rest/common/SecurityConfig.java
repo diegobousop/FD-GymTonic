@@ -49,11 +49,12 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/users/loginFromServiceToken")).permitAll()
                 .requestMatchers(antMatcher("/api/admin/addExercise")).hasAnyRole("ADMIN","TRAINER")
                 .requestMatchers(antMatcher("/api/routines/createRoutine")).hasAnyRole("TRAINER","ADMIN")
-                .requestMatchers(antMatcher("/api/admin/getExercises")).hasAnyRole("TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/exercise/getExercises")).hasAnyRole("TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/exercise/addExercises")).hasAnyRole("TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/exercise/validateExercise/**")).hasAnyRole("TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/h2-console/*")).permitAll()
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
-
-
+                .requestMatchers(antMatcher("/api/users/block/*")).hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

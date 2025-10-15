@@ -243,4 +243,57 @@ public class UserControllerTest {
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
 		).andExpect(status().isForbidden());
 	}
+
+	@Test
+	public void testBlockUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+		Long userId = user.getUserDto().getId();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		mockMvc.perform(post("/api/users/block/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isOk());
+	}
+
+	@Test
+	public void testBlockUserAlreadyBlocked() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+		Long userId = user.getUserDto().getId();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		mockMvc.perform(post("/api/users/block/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/block/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testBlockNullUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+		Long userId = user.getUserDto().getId();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		mockMvc.perform(post("/api/users/block/{id}", 500)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void testBlockByUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		mockMvc.perform(post("/api/users/block/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isForbidden());
+	}
 }

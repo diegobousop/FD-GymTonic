@@ -20,8 +20,8 @@ const CreateRoutine = () => {
     let form;
 
     useEffect(() => {
-        backend.exerciseService.getAllExercises(
-            page,
+        backend.exerciseService.getValidatedExercises(
+            {page, size: 3},
             (block) => {
                 setExercises(block.items);
                 setExistMoreItems(block.existMoreItems);

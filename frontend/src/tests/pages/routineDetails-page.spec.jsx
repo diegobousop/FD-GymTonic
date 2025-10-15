@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import React from "react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import RoutineDetailsPage from "../../modules/app/pages/routineDetails-page";
+import RoutineDetailsPage from "../../modules/app/pages/routine-details-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
 import { findRoutineById } from "../../backend/routineService";
 

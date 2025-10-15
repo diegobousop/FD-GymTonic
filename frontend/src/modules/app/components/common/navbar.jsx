@@ -12,8 +12,10 @@ const PAGE_TITLES = {
   profile: 'Perfil',
   userEdit: 'Editar Perfil',
   createRoutine: 'Crear Rutina',
+  myRoutines: 'Mis rutinas',
   createExercise: 'Crear Ejercicio',
   'change-password': 'Cambiar Contraseña',
+  validateExercises: 'Validar Ejercicios'
 }
 
 const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : ''

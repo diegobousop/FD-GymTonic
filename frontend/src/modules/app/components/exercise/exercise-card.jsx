@@ -1,0 +1,35 @@
+import React from 'react'
+import { SVG_ICONS } from '../../../../config/constants'
+
+
+const ExerciseCard = ({exercise, onValidate, onDecline}) => {
+  return (
+    <div className="flex flex-row mb-5 items-center justify-start">
+
+        <img src={exercise.ownerAvatar.avatarBase64} className="w-[52px] h-[52px] mr-5"/>
+        
+        <div className="flex flex-col min-w-[20%] max-w-[20%]">  
+            <p className="truncate font-semibold">{exercise.name}</p>
+            <p>{exercise.ownerName}</p>
+        </div>
+
+        <p className="w-[10%]">{exercise.grupoMuscular}</p>
+
+        <p className="w-[10%]"></p>
+
+        <p className="w-[40%] line-clamp-3">{exercise.descripcion}</p>
+
+        <div className="w-[20%] flex justify-center gap-5">
+            <button onClick={onValidate} className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
+                <SVG_ICONS.AcceptIcon  className="w-[30px] h-auto text-white"/>
+            </button>
+
+            <button onClick={onDecline}  className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
+                <SVG_ICONS.CancelIcon  className="w-[30px] h-auto text-white"/>
+            </button>
+        </div>
+    </div>
+  )
+}
+
+export default ExerciseCard
