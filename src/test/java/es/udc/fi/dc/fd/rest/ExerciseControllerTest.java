@@ -26,6 +26,8 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
+import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -51,6 +53,10 @@ public class ExerciseControllerTest {
         return mapper;
     }
 
+    private ExerciseDto createExerciseDto(String name, String description, grupoMuscular grupo, int numeroSeries) {
+        ExerciseDto dto = new ExerciseDto(name, description, grupo, numeroSeries, Difficulty.FACIL, Equipment.POLEA_CABLE);
+        return dto;
+    }
 
 
     @Test
@@ -62,7 +68,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -81,7 +87,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -100,7 +106,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -131,7 +137,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -168,7 +174,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -199,7 +205,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -224,7 +230,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -255,7 +261,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -292,7 +298,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -323,7 +329,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -348,7 +354,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -386,6 +392,8 @@ public class ExerciseControllerTest {
         exerciseDto.setName("Squat");
         exerciseDto.setNumeroSeries(4);
         exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+        exerciseDto.setDifficulty(Difficulty.FACIL);
+        exerciseDto.setEquipment(Equipment.MAQUINA);
 
 
         // Mockear el comportamiento del servicio
@@ -419,6 +427,8 @@ public class ExerciseControllerTest {
         exerciseDto.setName("Squat");
         exerciseDto.setNumeroSeries(4);
         exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+        exerciseDto.setDifficulty(Difficulty.INTERMEDIO);
+        exerciseDto.setEquipment(Equipment.PESO_LIBRE);
 
 
         // Mockear el comportamiento del servicio

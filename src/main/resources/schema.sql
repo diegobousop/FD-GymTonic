@@ -40,6 +40,8 @@ CREATE TABLE Exercise (
     creator BIGINT,
     validated BOOLEAN NOT NULL DEFAULT FALSE,
     validator BIGINT,
+    difficulty TINYINT NOT NULL DEFAULT 0, /*0 Easy, 1 Medium, 2 Hard*/
+    equipment TINYINT NOT NULL DEFAULT 3, /*0 Polea/cable, 1 Maquina, 2 Peso_Libre, 3 Otros*/
     FOREIGN KEY (creator) REFERENCES Users(id),
     FOREIGN KEY (validator) REFERENCES Users(id)
 );
@@ -84,12 +86,12 @@ INSERT INTO Users (userName, password, firstName, lastName, email, avatar, role)
 ('trainer1', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'Trainer', 'User', 'trainer1@trainer.com', 1, 1),
 ('user1', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'User', 'User', 'User1@user.com', 1, 0);
 
-INSERT INTO Exercise (exerciseName, exerciseDescription, grupoMuscular, numeroSeries, creator, validated, validator) VALUES
-('Push Up', 'A bodyweight exercise that primarily targets the chest, shoulders, and triceps.', 'PECHO',4, 1, true,1),
-('Squat', 'A lower body exercise that primarily targets the quadriceps, hamstrings, and glutes.', 'PIERNA',4, 1, true,1),
-('Pull Up', 'An upper body exercise that primarily targets the back and biceps.', 'ESPALDA', 4, 1, true,1),
-('Lunge', 'A lower body exercise that targets the quadriceps, hamstrings, and glutes.', 'PIERNA', 4, 1, true,1),
-('Shoulder Press', 'An upper body exercise that targets the shoulders and triceps.', 'HOMBROS',4,1, true,1);
+INSERT INTO Exercise (exerciseName, exerciseDescription, grupoMuscular, numeroSeries, creator, validated, validator, difficulty, equipment) VALUES
+('Push Up', 'A bodyweight exercise that primarily targets the chest, shoulders, and triceps.', 'PECHO', 4, 1, true, 1, 0, 3),
+('Squat', 'A lower body exercise that primarily targets the quadriceps, hamstrings, and glutes.', 'PIERNA', 4, 1, true, 1, 1, 2),
+('Pull Up', 'An upper body exercise that primarily targets the back and biceps.', 'ESPALDA', 4, 1, true, 1, 2, 3),
+('Lunge', 'A lower body exercise that targets the quadriceps, hamstrings, and glutes.', 'PIERNA', 4, 1, true, 1, 1, 2),
+('Shoulder Press', 'An upper body exercise that targets the shoulders and triceps.', 'HOMBROS', 4, 1, true, 1, 2, 1);
 
 INSERT INTO Serie (repeticiones, peso, numeroSerie, exerciseId) VALUES
 (20,100,1,1),

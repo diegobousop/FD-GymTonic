@@ -9,19 +9,25 @@ import es.udc.fi.dc.fd.model.entities.Exercise;
 public class ExerciseConversor {
 
     public static final Exercise toExercise(ExerciseDto exerciseDto){
-        return new Exercise(
+        Exercise exercise = new Exercise(
             exerciseDto.getName(), 
             exerciseDto.getDescripcion(), 
             exerciseDto.getGrupoMuscular(), 
             exerciseDto.getNumeroSeries());
+        exercise.setDifficulty(exerciseDto.getDifficulty());
+        exercise.setEquipment(exerciseDto.getEquipment());
+        return exercise;
     }
     public static final Exercise toExerciseId(ExerciseDto exerciseDto){
-        return new Exercise(
+        Exercise exercise = new Exercise(
             exerciseDto.getId(), 
             exerciseDto.getName(), 
             exerciseDto.getDescripcion(), 
             exerciseDto.getGrupoMuscular(), 
             exerciseDto.getNumeroSeries());
+        exercise.setDifficulty(exerciseDto.getDifficulty());
+        exercise.setEquipment(exerciseDto.getEquipment());
+        return exercise;
     }
 
 
@@ -31,7 +37,9 @@ public class ExerciseConversor {
             exercise.getExerciseName(), 
             exercise.getExerciseDescription(), 
             exercise.getGrupoMuscular(), 
-            exercise.getNumeroSeries());
+            exercise.getNumeroSeries(),
+            exercise.getDifficulty(),
+            exercise.getEquipment());
     }
 
     public static final List<ExerciseDto> toExerciseDtos(List<Exercise> exercises){
