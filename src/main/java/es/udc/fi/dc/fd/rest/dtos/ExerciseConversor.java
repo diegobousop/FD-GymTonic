@@ -9,15 +9,29 @@ import es.udc.fi.dc.fd.model.entities.Exercise;
 public class ExerciseConversor {
 
     public static final Exercise toExercise(ExerciseDto exerciseDto){
-        return new Exercise(exerciseDto.getName(), exerciseDto.getDescripcion(), exerciseDto.getGrupoMuscular(), exerciseDto.getNumeroSeries());
+        return new Exercise(
+            exerciseDto.getName(), 
+            exerciseDto.getDescripcion(), 
+            exerciseDto.getGrupoMuscular(), 
+            exerciseDto.getNumeroSeries());
     }
     public static final Exercise toExerciseId(ExerciseDto exerciseDto){
-        return new Exercise(exerciseDto.getId(), exerciseDto.getName(), exerciseDto.getDescripcion(), exerciseDto.getGrupoMuscular(), exerciseDto.getNumeroSeries());
+        return new Exercise(
+            exerciseDto.getId(), 
+            exerciseDto.getName(), 
+            exerciseDto.getDescripcion(), 
+            exerciseDto.getGrupoMuscular(), 
+            exerciseDto.getNumeroSeries());
     }
 
 
     public static final ExerciseDto toExerciseDto(Exercise exercise){
-        return new ExerciseDto(exercise.getId(), exercise.getExerciseName(), exercise.getExerciseDescription(), exercise.getGrupoMuscular(), exercise.getNumeroSeries());
+        return new ExerciseDto(
+            exercise.getId(), 
+            exercise.getExerciseName(), 
+            exercise.getExerciseDescription(), 
+            exercise.getGrupoMuscular(), 
+            exercise.getNumeroSeries());
     }
 
     public static final List<ExerciseDto> toExerciseDtos(List<Exercise> exercises){
@@ -27,5 +41,20 @@ public class ExerciseConversor {
     public static final List<Exercise> toExercises(List<ExerciseDto> exerciseDtos){
         return exerciseDtos.stream().map(ExerciseConversor::toExercise).toList();
     }
+    
+    public static final ExerciseSummaryDto toExerciseSummaryDto(Exercise exercise){
+        return new ExerciseSummaryDto(
+            exercise.getId(),
+            exercise.getExerciseName(), 
+            exercise.getExerciseDescription(), 
+            exercise.getGrupoMuscular(), 
+            exercise.getCreator().getUserName(), 
+            new AvatarDto(exercise.getCreator().getAvatar().getName(), exercise.getCreator().getAvatar().getAvatarBase64()));
+    }
+
+    public static final List<ExerciseSummaryDto> toExerciseSummaryDtos(List<Exercise> exercises){
+        return exercises.stream().map(ExerciseConversor::toExerciseSummaryDto).toList();
+    }
+
     
 }

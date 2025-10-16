@@ -12,14 +12,42 @@ export const addExercise = (name, descripcion, grupoMuscular,numeroSeries, onSuc
     );
 };
 
-export const getAllExercises = (page, onSuccess, onErrors) => {
+export const getValidatedExercises = ({ page, size }, onSuccess, onErrors) => {
     appFetch(
-        `/exercise/getExercises?page=${page}`,
+        `/exercise/getValidatedExercises?page=${page}&size=${size}`,
         fetchConfig("GET"),
         (exercises) => onSuccess(exercises),
         onErrors
     );
-}
+};
+
+export const getUnvalidatedExercises = ({ page, size }, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/getUnvalidatedExercises?page=${page}&size=${size}`,
+        fetchConfig("GET"),
+        (exercises) => onSuccess(exercises),
+        onErrors
+    );
+};
+
+
+export const validateExercise = (exerciseId, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/validateExercise/${exerciseId}`,
+        fetchConfig("POST"),
+        (response) => onSuccess(response),
+        onErrors
+    );
+};
+
+export const declineExercise = (exerciseId, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/declineExercise/${exerciseId}`,
+        fetchConfig("POST"),
+        (response) => onSuccess(response),
+        onErrors
+    );
+    };
 export const getSerie = (serieId,onSuccess,onErrors)=>
     appFetch(
         `/exercise/Series?serieId=${serieId}`,

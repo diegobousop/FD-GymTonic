@@ -135,7 +135,7 @@ public class ExerciseControllerTest {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
         .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
         .andExpect(status().isOk());
 
@@ -146,12 +146,14 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto admin = userController.login(loginParams2);
         
+        String exerciseId = response.andReturn().getResponse().getContentAsString();
+        
         //El admin valida el ejercicio correctamente
-        mockMvc.perform(post("/api/exercise/validateExercise/6").header("Authorization", "Bearer " + admin.getServiceToken())
+        mockMvc.perform(post("/api/exercise/validateExercise/" + exerciseId).header("Authorization", "Bearer " + admin.getServiceToken())
         .contentType(MediaType.APPLICATION_JSON));
 
         //Al volver a intentar validar muestra el error
-        mockMvc.perform(post("/api/exercise/validateExercise/6").header("Authorization", "Bearer " + admin.getServiceToken())
+        mockMvc.perform(post("/api/exercise/validateExercise/" + exerciseId).header("Authorization", "Bearer " + admin.getServiceToken())
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
 
@@ -208,6 +210,162 @@ public class ExerciseControllerTest {
 
         //El trainer intenta validar el ejercicio pero no tiene permisos
         mockMvc.perform(post("/api/exercise/validateExercise/" + response.andReturn().getResponse().getContentAsString()).header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    public void declineExerciseSuccessTest() throws Exception{
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("trainer1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto trainer = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        //Se loguea el admin
+        LoginParamsDto loginParams2 = new LoginParamsDto();
+        loginParams2.setUserName("admin1");
+        loginParams2.setPassword("12345");
+
+        AuthenticatedUserDto admin = userController.login(loginParams2);
+        
+        //El admin rechaza el ejercicio
+        mockMvc.perform(post("/api/exercise/declineExercise/" + response.andReturn().getResponse().getContentAsString()).header("Authorization", "Bearer " + admin.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void declineExerciseAlreadyValidatedExceptionTest() throws Exception{
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("trainer1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto trainer = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA,1);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        //Se loguea el admin
+        LoginParamsDto loginParams2 = new LoginParamsDto();
+        loginParams2.setUserName("admin1");
+        loginParams2.setPassword("12345");
+
+        AuthenticatedUserDto admin = userController.login(loginParams2);
+        
+        String exerciseId = response.andReturn().getResponse().getContentAsString();
+        
+        //El admin valida el ejercicio correctamente
+        mockMvc.perform(post("/api/exercise/validateExercise/" + exerciseId).header("Authorization", "Bearer " + admin.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON));
+
+        //Al intentar rechazar un ejercicio ya validado muestra el error
+        mockMvc.perform(post("/api/exercise/declineExercise/" + exerciseId).header("Authorization", "Bearer " + admin.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    public void declineExerciseInstanceNotFoundExceptionTest() throws Exception{
+        
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("trainer1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto trainer = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        //Se loguea el admin
+        LoginParamsDto loginParams2 = new LoginParamsDto();
+        loginParams2.setUserName("admin1");
+        loginParams2.setPassword("12345");
+
+        AuthenticatedUserDto admin = userController.login(loginParams2);
+
+        //El admin intenta rechazar un ejercicio que no existe
+        mockMvc.perform(post("/api/exercise/declineExercise/700").header("Authorization", "Bearer " + admin.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    public void declineExercisePermissionExceptionTest() throws Exception{
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("trainer1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto trainer = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+        //El trainer añade un ejercicio
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        //El trainer intenta rechazar el ejercicio pero no tiene permisos
+        mockMvc.perform(post("/api/exercise/declineExercise/" + response.andReturn().getResponse().getContentAsString()).header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    public void declineExercisePermissionException2Test() throws Exception{
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("trainer1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto trainer = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+        //El trainer añade un ejercicio
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + trainer.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        //Se loguea un usuario normal
+        LoginParamsDto loginParams2 = new LoginParamsDto();
+        loginParams2.setUserName("user1");
+        loginParams2.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams2);
+
+        //El usuario intenta rechazar el ejercicio pero no tiene permisos
+        mockMvc.perform(post("/api/exercise/declineExercise/" + response.andReturn().getResponse().getContentAsString()).header("Authorization", "Bearer " + user.getServiceToken())
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
 

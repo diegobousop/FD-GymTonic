@@ -20,10 +20,11 @@ describe('modifyRoutine service', () => {
     const name = 'Updated Routine';
     const exercises = [1, 2, 3];
     const duration = 60;
+    const isPublic = true;
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
-    expect(fetchConfig).toHaveBeenCalledWith('PUT', { name, exercises, duration });
+    expect(fetchConfig).toHaveBeenCalledWith('PUT', { name, exercises, duration, isPublic });
     expect(appFetch).toHaveBeenCalledWith(
       `/routines/modifyRoutine/${routineId}`,
       { method: 'PUT', headers: {} },
@@ -37,6 +38,7 @@ describe('modifyRoutine service', () => {
     const name = 'Updated Routine';
     const exercises = [1, 2, 3];
     const duration = 60;
+    const isPublic = true;
     const mockUpdatedRoutine = {
       id: 1,
       name: 'Updated Routine',
@@ -53,7 +55,7 @@ describe('modifyRoutine service', () => {
       onSuccess(mockUpdatedRoutine);
     });
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
     expect(mockOnSuccess).toHaveBeenCalledWith(mockUpdatedRoutine);
     expect(mockOnErrors).not.toHaveBeenCalled();
@@ -64,13 +66,14 @@ describe('modifyRoutine service', () => {
     const name = 'Updated Routine';
     const exercises = [1, 2, 3];
     const duration = 60;
+    const isPublic = true;
     const mockError = { globalError: 'Routine not found' };
 
     appFetch.mockImplementation((path, config, onSuccess, onErrors) => {
       onErrors(mockError);
     });
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
     expect(mockOnErrors).toHaveBeenCalledWith(mockError);
     expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -81,13 +84,14 @@ describe('modifyRoutine service', () => {
     const name = 'Updated Routine';
     const exercises = [1, 2, 3];
     const duration = 60;
+    const isPublic = true;
     const mockError = { globalError: 'Permission denied' };
 
     appFetch.mockImplementation((path, config, onSuccess, onErrors) => {
       onErrors(mockError);
     });
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
     expect(mockOnErrors).toHaveBeenCalledWith(mockError);
     expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -98,13 +102,14 @@ describe('modifyRoutine service', () => {
     const name = '';
     const exercises = [1, 2, 3];
     const duration = 60;
+    const isPublic = true;
     const mockError = { globalError: 'project.exceptions.InvalidRoutineNameException' };
 
     appFetch.mockImplementation((path, config, onSuccess, onErrors) => {
       onErrors(mockError);
     });
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
     expect(mockOnErrors).toHaveBeenCalledWith(mockError);
     expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -115,13 +120,14 @@ describe('modifyRoutine service', () => {
     const name = 'Valid Name';
     const exercises = [1, 2, 3];
     const duration = 0;
+    const isPublic = true;
     const mockError = { globalError: 'project.exceptions.InvalidRoutineDurationException' };
 
     appFetch.mockImplementation((path, config, onSuccess, onErrors) => {
       onErrors(mockError);
     });
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
     expect(mockOnErrors).toHaveBeenCalledWith(mockError);
     expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -132,6 +138,7 @@ describe('modifyRoutine service', () => {
     const name = 'Updated Routine';
     const exercises = [1, 2, 3];
     const duration = 60;
+    const isPublic = true;
     const networkError = new Error('Network error');
 
     appFetch.mockImplementation((path, config, onSuccess, onErrors) => {
@@ -139,7 +146,7 @@ describe('modifyRoutine service', () => {
     });
 
     expect(() => {
-      modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+      modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
     }).toThrow('Network error');
   });
 
@@ -148,10 +155,11 @@ describe('modifyRoutine service', () => {
     const name = 'Routine without exercises';
     const exercises = [];
     const duration = 30;
+    const isPublic = true;
 
-    modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
 
-    expect(fetchConfig).toHaveBeenCalledWith('PUT', { name, exercises, duration });
+    expect(fetchConfig).toHaveBeenCalledWith('PUT', { name, exercises, duration, isPublic });
     expect(appFetch).toHaveBeenCalledWith(
       `/routines/modifyRoutine/${routineId}`,
       { method: 'PUT', headers: {} },
@@ -162,15 +170,15 @@ describe('modifyRoutine service', () => {
 
   test('modificar rutina con diferentes valores de duración', () => {
     const testCases = [
-      { routineId: 1, name: 'Short Routine', exercises: [1], duration: 15 },
-      { routineId: 2, name: 'Medium Routine', exercises: [1, 2], duration: 45 },
-      { routineId: 3, name: 'Long Routine', exercises: [1, 2, 3], duration: 120 }
+      { routineId: 1, name: 'Short Routine', exercises: [1], duration: 15, isPublic: true },
+      { routineId: 2, name: 'Medium Routine', exercises: [1, 2], duration: 45, isPublic: false },
+      { routineId: 3, name: 'Long Routine', exercises: [1, 2, 3], duration: 120, isPublic: true }
     ];
 
-    testCases.forEach(({ routineId, name, exercises, duration }) => {
-      modifyRoutine(routineId, name, exercises, duration, mockOnSuccess, mockOnErrors);
+    testCases.forEach(({ routineId, name, exercises, duration, isPublic }) => {
+      modifyRoutine(routineId, name, exercises, duration, isPublic, mockOnSuccess, mockOnErrors);
       
-      expect(fetchConfig).toHaveBeenCalledWith('PUT', { name, exercises, duration });
+      expect(fetchConfig).toHaveBeenCalledWith('PUT', { name, exercises, duration, isPublic });
       expect(appFetch).toHaveBeenCalledWith(
         `/routines/modifyRoutine/${routineId}`,
         { method: 'PUT', headers: {} },

@@ -54,8 +54,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/exercise/validateExercise/**")).hasAnyRole("TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/h2-console/*")).permitAll()
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
-
-
+                .requestMatchers(antMatcher("/api/users/block/*")).hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

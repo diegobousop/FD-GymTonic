@@ -43,8 +43,11 @@ const SideMenu = ({ activePage, setActivePage }) => {
         <MenuItem title="Ver mis rutinas" activePage={isActive} page={'myRoutines'} onClick={() => go('myRoutines', '/routines/my-routines')} icon={ProfileIcon} />
       }
       <MenuItem title="Editar perfil" activePage={isActive} page={'userEdit'} onClick={() => go('userEdit', '/profileUpdate')} icon={ProfileIcon} />
-      { user && user.role === 'ADMIN' &&
+      { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
         <MenuItem title="Crear Ejercicio" activePage={isActive} page={'createExercise'} onClick={() => go('createExercise', '/admin/addExercise')} icon={CreateRoutineIcon} />
+      }
+      { user && user.role === 'ADMIN' &&
+        <MenuItem title="Validar Ejercicios" activePage={isActive} page={'validateExercises'} onClick={() => go('validateExercises', '/admin/validateExercises')} icon={CreateExerciseIcon} />
       }
       
     </div>
