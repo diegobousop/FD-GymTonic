@@ -7,6 +7,8 @@ import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
+import java.util.Optional;
+
 
 public interface ExerciseService {
 
@@ -16,11 +18,13 @@ public interface ExerciseService {
 
     Block<Exercise> getUnvalidatedExercises(int page, int size);
 
-    Block<Serie> createSeries(Exercise exercise) throws DuplicateInstanceException, InstanceNotFoundException;
+    Block<Serie> createSeries(Exercise exercise,  Optional<Integer> n) throws  InstanceNotFoundException;
 
     Serie editSerie(Serie serie,int repeticiones, int peso) throws DuplicateInstanceException;
 
     Serie getSerie(Long serieId);
+
+    Block<Serie>getSeriesByExercise(long exercise);
 
     Exercise validateExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
 

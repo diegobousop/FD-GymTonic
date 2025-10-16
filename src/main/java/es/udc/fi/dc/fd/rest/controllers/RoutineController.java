@@ -139,22 +139,5 @@ public class RoutineController {
         return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
                             routinesPage.hasNext());
     }
-    @PostMapping("/Series")
-    public BlockDto<SerieDto> CreateSerie( @RequestBody ExerciseDto exercise) throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
 
-       return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise)).getItems()),false);
-
-    }
-
-    @PutMapping("/Series")
-    public SerieDto modifySerie(@RequestParam long serieId,
-                                @RequestParam int repeticiones,
-                                @RequestParam int peso) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
-        return SerieConversor.toSerieDto(exerciseService.editSerie(exerciseService.getSerie(serieId),repeticiones,peso));
-    }
-    @GetMapping("/Series")
-    public SerieDto getSerie(@RequestParam long serieId) {
-
-        return SerieConversor.toSerieDto(exerciseService.getSerie(serieId));
-    }
 }

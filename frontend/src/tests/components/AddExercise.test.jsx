@@ -34,6 +34,7 @@ describe('AddExercise', () => {
         expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Descripcion/i)).toBeInTheDocument();
         expect(screen.getByText(/Grupo Muscular/i)).toBeInTheDocument();
+        expect(screen.getByText(/Numero series/i)).toBeInTheDocument();
         fireEvent.click(screen.getByText(/Grupo Muscular/i));
 
         expect(screen.getByText('PECHO')).toBeInTheDocument();
@@ -43,7 +44,7 @@ describe('AddExercise', () => {
     });
 
     test('completa los campos de forma correcta', async () => {
-        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular, onSuccess, onError) => {
+        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular,numeroSeries, onSuccess, onError) => {
             onSuccess({
                 "id":6
             });
@@ -53,6 +54,7 @@ describe('AddExercise', () => {
 
         const nameInput = screen.getByLabelText(/Nombre/i);
         const DescripcionInput = screen.getByLabelText(/Descripcion/i);
+        const numeroInput=screen.getByLabelText(/Numero series/i);
         const categoriaInput = screen.getByText('Grupo Muscular');
 
         fireEvent.change(nameInput, {
@@ -61,7 +63,10 @@ describe('AddExercise', () => {
         fireEvent.change(DescripcionInput, {
             target: { value: 'descripcion de prueba' },
         });
-        
+        fireEvent.change(numeroInput, {
+            target: { value: 1 },
+        });
+
         fireEvent.click(categoriaInput);
         await waitFor(() => expect(screen.getByLabelText('PECHO')).toBeInTheDocument());
 

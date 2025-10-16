@@ -7,17 +7,18 @@ import MultiSelectList from "../../app/components/common/multi-select-list";
 
 
 const CreateExercise = () => {
-    
+
     const [exerciseName, setExerciseName] = useState("");
     const [exerciseDescripcion, setExerciseDescription] = useState("");
     const [grupoMuscular, setGrupoMuscular] = useState("");
+    const [numeroSeries, setNumeroSeries] = useState("");
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     const [activePage, setActivePage] = useState('create-exercise')
     const [exerciseNameErrors, setExerciseNameErrors] = useState(null);
     const [exerciseDescriptionErrors, setExerciseDescriptionErrors] = useState(null);
     const [grupoMuscularErrors, setGrupoMuscularErrors] = useState(null);
-
+    const [numeroSeriesErrors, setNumeroSeriesErrors] = useState("");
 
     let form;
 
@@ -30,10 +31,11 @@ const CreateExercise = () => {
         if(form.checkValidity()){
             try{
                 await backend.exerciseService.addExercise(
-                    exerciseName, exerciseDescripcion, grupoMuscular, 
+                    exerciseName, exerciseDescripcion, grupoMuscular, numeroSeries,
                     (id) => {
                         setSuccess(true)
                         setBackendErrors(null)
+
                     },
                     (err) => {
                         setSuccess(false);
@@ -53,7 +55,7 @@ const CreateExercise = () => {
     return(
         <div  className="flex flex-col mt-10 justify-center items-center">
             <form ref={node => form = node} className="need-validation" noValidate onSubmit={handleSubmit}>
-                <TextInput 
+                <TextInput
                     name="exerciseName"
                     label="Nombre: "
                     value={exerciseName}
@@ -63,7 +65,7 @@ const CreateExercise = () => {
                     className="h-10 w-full"
                 />
 
-                <ParagraphInput 
+                <ParagraphInput
                     name="exerciseDescription"
                     label="Descripcion: "
                     value={exerciseDescripcion}
@@ -74,6 +76,16 @@ const CreateExercise = () => {
                     className="h-40 w-full"
                 />
 
+                <TextInput
+                    name="numeroSeries"
+                    label="Numero series: "
+                    value={numeroSeries}
+                    onChange={(e) => setNumeroSeries(e.target.value)}
+                    errors={numeroSeriesErrors}
+                    errorMessage={numeroSeriesErrors}
+                    className="h-10 w-full"
+                    type="number"
+                />
                 <MultiSelectList
                     options={[
                         { id: 'PECHO', name: 'PECHO' },
@@ -92,7 +104,7 @@ const CreateExercise = () => {
                 />
 
                 <SendButton onClick={handleSubmit}></SendButton>
-            
+
             </form>
                 {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
                 {success && <div className="text-green-500 text-xs mt-2">Ejercicio {exerciseName} añadido existosamente</div>}
@@ -103,18 +115,20 @@ const CreateExercise = () => {
         const trimmedExerciseName = exerciseName.trim()
         const trimmedExerciseDescription = exerciseDescripcion.trim()
         const trimmedGrupoMuscular = grupoMuscular.trim()
-
+        const trimmedNumeroSeries = numeroSeries.trim()
         let hasError = false
 
         const exerciseNameErr = !trimmedExerciseName ? 'El nombre del ejercicio es obligatorio' : null
         const exerciseDescriptionErr= !trimmedExerciseDescription ? 'La descripcion del ejercicio es obligatoria' : null
         const grupoMuscularErr = !trimmedGrupoMuscular ? 'El grupo muscular es obligatorio' : null
+        const numeroSeriesErr =!trimmedNumeroSeries ? 'Número de series obligatorio' : null
 
-        if(exerciseNameErr || exerciseDescriptionErr || grupoMuscularErr) hasError = true
+        if(exerciseNameErr || exerciseDescriptionErr || grupoMuscularErr || numeroSeriesErr) hasError = true
 
         setExerciseNameErrors(exerciseNameErr)
         setExerciseDescriptionErrors(exerciseDescriptionErr)
         setGrupoMuscularErrors(grupoMuscularErr)
+        setNumeroSeriesErrors(numeroSeriesErr)
 
         return !hasError;
     }
