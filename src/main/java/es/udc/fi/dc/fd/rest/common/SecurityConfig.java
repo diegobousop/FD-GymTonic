@@ -56,6 +56,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/images/**")).permitAll()
                 .requestMatchers(antMatcher("/h2-console/*")).permitAll()
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
+                .requestMatchers("/api/users/allUsers").hasRole("ADMIN")
                 .requestMatchers(antMatcher("/api/users/block/*")).hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

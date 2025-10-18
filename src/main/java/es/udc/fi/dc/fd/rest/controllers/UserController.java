@@ -3,6 +3,7 @@ package es.udc.fi.dc.fd.rest.controllers;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toAuthenticatedUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUser;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
+import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 
 import java.net.URI;
 import java.util.Locale;
@@ -27,13 +28,13 @@ import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.common.JwtGenerator;
 import es.udc.fi.dc.fd.rest.common.JwtInfo;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
+import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+
 
 
 /**
@@ -235,6 +236,12 @@ public class UserController {
 	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
 		userService.blockUser(userId, id);
 	}
+
+	@GetMapping("/allUsers")
+	public BlockDto<ResumeUserDto> getAllUsers(@RequestParam(defaultValue = "0") int page) {
+		return toBlockResumeUserDto(userService.getAllUser(page, 5));
+	}
+	
 	
 
 	/**
@@ -250,5 +257,4 @@ public class UserController {
 		return jwtGenerator.generate(jwtInfo);
 
 	}
-
 }

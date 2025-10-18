@@ -296,4 +296,14 @@ public class UserControllerTest {
 				requestAttr("userId", userId)
 		).andExpect(status().isForbidden());
 	}
+
+
+	@Test
+	public void testGetAllUsers() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+
+		mockMvc.perform(get("/api/users/allUsers", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+		).andExpect(status().isOk());
+	}
 }
