@@ -52,6 +52,8 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/exercise/getExercises")).hasAnyRole("TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/api/exercise/addExercises")).hasAnyRole("TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/api/exercise/validateExercise/**")).hasAnyRole("TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/images/getAllAvatars")).hasAnyRole("USER","TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/images/**")).permitAll()
                 .requestMatchers(antMatcher("/h2-console/*")).permitAll()
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
                 .requestMatchers(antMatcher("/api/users/block/*")).hasRole("ADMIN")
