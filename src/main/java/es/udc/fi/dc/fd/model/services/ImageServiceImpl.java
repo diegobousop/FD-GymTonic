@@ -38,7 +38,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<Image> findAllBackgrounds(Pageable pageable) {
-        return imageDao.findAllByOrderByIdDesc(pageable).getContent();
+        return imageDao.findAllByOrderByIdAsc(pageable).getContent();
     }
 
 
