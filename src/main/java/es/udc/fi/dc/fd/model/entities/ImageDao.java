@@ -10,5 +10,5 @@ public interface ImageDao extends JpaRepository<Image, Long> {
 
     Image findByName(String name);
 
-    Slice<Image> findAllByOrderByIdDesc(Pageable pageable);
+    Slice<Image> findAllByOrderByIdAsc(Pageable pageable);
 }
