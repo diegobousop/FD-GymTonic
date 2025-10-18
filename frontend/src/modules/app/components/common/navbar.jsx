@@ -1,11 +1,12 @@
-import { useEffect, useContext } from 'react'
+import { useEffect, useContext,useState } from 'react'
 
 import SearchBar from './searchbar'
 import { UserContext } from './user-provider'
 
-import { GENERAL_ICONS } from '../../../../config/constants'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+
+import backend from '../../../../backend'
 
 const PAGE_TITLES = {
   home: 'Inicio',
@@ -23,6 +24,20 @@ const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
 const Navbar = ({activePage}) => {
 
   const { user } = useContext(UserContext);
+  const [logo, setLogo] = useState(null);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      backend.imageService.getImageByName('logo',
+        (response) => {
+          setLogo(response);
+        },
+        (error) => {
+          console.error(error);
+        });
+    }
+    fetchLogo();
+  },[])
 
   const title = PAGE_TITLES[activePage] || capitalize(activePage) || 'Inicio'
 
@@ -30,7 +45,7 @@ const Navbar = ({activePage}) => {
     <div className="fixed top-0 left-0 right-0 flex flex-row items-center justify-start h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
         <Link to="/home">
           <img
-            src={GENERAL_ICONS.APP_LOGO}
+            src={logo?.base64}
             alt="logo"
             className="h-12 ml-12"
           />
