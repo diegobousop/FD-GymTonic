@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
@@ -48,14 +46,8 @@ public class ExerciseServiceTest {
     private ExerciseDao exerciseDao;
 
     @Autowired
-    private AvatarDao avatarDao;
-    @Autowired
     private SerieDao serieDao;
 
-    private Users createUser(String userName) {
-        Optional<Avatar> avatar = avatarDao.findByName("default");
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
-    }
 
     @Test
     public void addExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
@@ -89,9 +81,9 @@ public class ExerciseServiceTest {
     public void addDuplicateExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
 
-        Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
         assertThrows(DuplicateInstanceException.class, () -> {
-        Long idExercise2 = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
         });
     }
 

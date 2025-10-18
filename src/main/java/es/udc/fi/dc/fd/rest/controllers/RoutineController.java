@@ -3,8 +3,6 @@ package es.udc.fi.dc.fd.rest.controllers;
 
 import java.util.Locale;
 
-import es.udc.fi.dc.fd.model.services.ExerciseService;
-import es.udc.fi.dc.fd.model.services.ExerciseServiceImpl;
 import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -39,7 +37,6 @@ import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
-import static es.udc.fi.dc.fd.rest.dtos.ExerciseConversor.toExercise;
 
 
 @RestController
@@ -48,8 +45,7 @@ public class RoutineController {
     
     @Autowired
     private RoutineService routineService;
-    @Autowired
-    private ExerciseService exerciseService;
+
     @Autowired
     private MessageSource messageSource;
 
