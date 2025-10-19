@@ -21,6 +21,7 @@ import RoutineDetails from "../pages/routine-details-page";
 import CreateExercise from '../pages/create-exercise-page';
 import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
+import ViewAllUsers from '../pages/viewAllUsers-page';
 
 const Body = () => {
 
@@ -41,6 +42,7 @@ const Body = () => {
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
     if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
     if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
+    if (path.startsWith("/admin/seeUsers")) { setActivePage('viewAllUsers'); return }
 
   }, [location.pathname])
 
@@ -72,6 +74,9 @@ const Body = () => {
             } />
             <Route path="/admin/validateExercises" element={
               <ProtectedPath role={["ADMIN","TRAINER"]} path={<ValidateExercises />} />
+            } />
+            <Route path="/admin/seeUsers" element={
+              <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />
