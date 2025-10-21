@@ -13,7 +13,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
     }
 
     const timeout = setTimeout(() => {
-      // Llamar a getSearchSuggestions del backend
+      // Llamar a getSearchSuggestions del backend (por ahora vacío)
       setSuggestions([]);
     }, 300);
 
@@ -52,7 +52,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
           }}
         />
 
-        {/* Botón de lupa, fondo gris */}
+        {/* Botón de lupa */}
         <button
           type="submit"
           className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600"
@@ -60,7 +60,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
           🔍
         </button>
 
-        {/* Botón de filtrar, sin flecha */}
+        {/* Botón de filtrar */}
         <button
           type="button"
           className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600"
@@ -73,6 +73,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       {/* Panel de filtros */}
       {showFilters && (
         <div className="absolute z-40 bg-[#1a1a1a] border border-gray-700 mt-1 w-full rounded-md shadow-lg p-3 text-white">
+          {/* Nombre del entrenador */}
           <label className="block mb-1 text-sm">Nombre del entrenador</label>
           <input
             type="text"
@@ -82,6 +83,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             placeholder="Filtrar por entrenador"
           />
 
+          {/* Grupo muscular */}
           <label className="block mb-1 text-sm">Grupo muscular</label>
           <select
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
@@ -97,10 +99,28 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             <option value="ABDOMEN">Abdomen</option>
           </select>
 
+          {/* Dificultad */}
+          <label className="block mb-1 text-sm">Dificultad</label>
+          <select
+            className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
+            value={filters.dificultad || ""}
+            onChange={(e) => setFilters({ ...filters, dificultad: e.target.value })}
+          >
+            <option value="">Todas</option>
+            <option value="MUY_FACIL">Muy fácil</option>
+            <option value="FACIL">Fácil</option>
+            <option value="INTERMEDIO">Intermedio</option>
+            <option value="DIFICIL">Difícil</option>
+            <option value="EXTREMO">Extremo</option>
+          </select>
+
+          {/* Botón limpiar */}
           <button
             type="button"
             className="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700"
-            onClick={() => setFilters({ trainerName: "", muscleGroup: "" })}
+            onClick={() =>
+              setFilters({ trainerName: "", muscleGroup: "", dificultad: "" })
+            }
           >
             Limpiar filtros
           </button>

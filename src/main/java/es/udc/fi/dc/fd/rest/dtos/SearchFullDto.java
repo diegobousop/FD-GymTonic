@@ -12,9 +12,14 @@ public class SearchFullDto {
     private String type;              // "user", "routine" o "exercise"
     private String name;              // nombre de usuario, rutina o ejercicio
     private String avatarBase64;      // solo para usuario
-    private String creatorUsername;   // solo para rutina
-    private List<String> exercises;   // solo para rutina
-    private String grupoMuscular;     // solo para ejercicio
+
+    // ---- Campos adicionales para rutina ----
+    private String creatorUsername;   // nombre del creador
+    private Integer duration;         // duración en minutos
+    private List<SearchExerciseForRoutineDto> exercises; // ejercicios con número de series
+
+    // ---- Campo para ejercicio ----
+    private String grupoMuscular;     // grupo muscular del ejercicio
 
     public SearchFullDto() {}
 
@@ -30,9 +35,11 @@ public class SearchFullDto {
         return dto;
     }
 
-    public static SearchFullDto fromRoutine(Long id, String name, String creatorUsername, List<String> exercises) {
+    public static SearchFullDto fromRoutine(Long id, String name, String creatorUsername,
+                                             Integer duration, List<SearchExerciseForRoutineDto> exercises) {
         SearchFullDto dto = new SearchFullDto(id, "routine", name);
         dto.setCreatorUsername(creatorUsername);
+        dto.setDuration(duration);
         dto.setExercises(exercises);
         return dto;
     }
@@ -43,59 +50,29 @@ public class SearchFullDto {
         return dto;
     }
 
-    public Long getId() {
-        return id;
-    }
+    // --- Getters y setters ---
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getType() {
-        return type;
-    }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getAvatarBase64() { return avatarBase64; }
+    public void setAvatarBase64(String avatarBase64) { this.avatarBase64 = avatarBase64; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getCreatorUsername() { return creatorUsername; }
+    public void setCreatorUsername(String creatorUsername) { this.creatorUsername = creatorUsername; }
 
-    public String getAvatarBase64() {
-        return avatarBase64;
-    }
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
 
-    public void setAvatarBase64(String avatarBase64) {
-        this.avatarBase64 = avatarBase64;
-    }
+    public List<SearchExerciseForRoutineDto> getExercises() { return exercises; }
+    public void setExercises(List<SearchExerciseForRoutineDto> exercises) { this.exercises = exercises; }
 
-    public String getCreatorUsername() {
-        return creatorUsername;
-    }
-
-    public void setCreatorUsername(String creatorUsername) {
-        this.creatorUsername = creatorUsername;
-    }
-
-    public List<String> getExercises() {
-        return exercises;
-    }
-
-    public void setExercises(List<String> exercises) {
-        this.exercises = exercises;
-    }
-
-    public String getGrupoMuscular() {
-        return grupoMuscular;
-    }
-
-    public void setGrupoMuscular(String grupoMuscular) {
-        this.grupoMuscular = grupoMuscular;
-    }
+    public String getGrupoMuscular() { return grupoMuscular; }
+    public void setGrupoMuscular(String grupoMuscular) { this.grupoMuscular = grupoMuscular; }
 }
