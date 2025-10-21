@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
@@ -48,14 +46,8 @@ public class ExerciseServiceTest {
     private ExerciseDao exerciseDao;
 
     @Autowired
-    private AvatarDao avatarDao;
-    @Autowired
     private SerieDao serieDao;
 
-    private Users createUser(String userName) {
-        Optional<Avatar> avatar = avatarDao.findByName("default");
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
-    }
 
     @Test
     public void addExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
@@ -89,9 +81,9 @@ public class ExerciseServiceTest {
     public void addDuplicateExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
 
-        Long idExercise = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
         assertThrows(DuplicateInstanceException.class, () -> {
-        Long idExercise2 = exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        exerciseService.addExercise(creator.getId(), new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
         });
     }
 
@@ -199,23 +191,12 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-       Block<Serie> Series = exerciseService.createSeries(exercise1);
+       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty());
 
         assertEquals(Series.getItems(),serieDao.findByExercise(exercise1).getContent());
     }
 
-    @Test
-    public void createSeriesThrowTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
-        Users creator = userService.login("trainer1", "12345");
-        long idExercise= exerciseService.addExercise(creator.getId(),new Exercise("ejercicio de prueba 1",
-                "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1);
-
-        assertThrows(DuplicateInstanceException.class, () -> {
-        exerciseService.createSeries(exercise1);});
-    }
     @Test
     public void EditSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
@@ -223,7 +204,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1);
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
 
         exerciseService.editSerie(Series.getItems().get(0),30,100);
         exerciseService.editSerie(Series.getItems().get(1),40,200);
@@ -244,13 +225,26 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1);
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
         Serie serie=exerciseService.getSerie(Series.getItems().get(0).getId());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()),serie);
         assertNotEquals(exerciseService.getSerie(Series.getItems().get(1).getId()),serie);
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getRepeticiones(),serie.getRepeticiones());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getPeso(),serie.getPeso());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getExercise(),serie.getExercise());
+    }
+
+    @Test
+    public void getSeriesByExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        Users creator = userService.login("trainer1", "12345");
+        long idExercise= exerciseService.addExercise(creator.getId(),new Exercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,3));
+        Block<Serie> series= exerciseService.getSeriesByExercise(idExercise);
+        assertEquals(true,series.getItems().isEmpty());
+        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty());
+        series= exerciseService.getSeriesByExercise(idExercise);
+        assertEquals(series,exerciseService.getSeriesByExercise(idExercise));
+
     }
 
     @Test

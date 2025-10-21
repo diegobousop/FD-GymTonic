@@ -13,8 +13,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
     }
 
     const timeout = setTimeout(() => {
-      // Lamar a getSearchSuggestions del backend
-      // getSearchSuggestions(query, (data) => setSuggestions(data || []), () => setSuggestions([]));
+      // Llamar a getSearchSuggestions del backend
       setSuggestions([]);
     }, 300);
 
@@ -52,6 +51,16 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             setShowSuggestions(true);
           }}
         />
+
+        {/* Botón de lupa, fondo gris */}
+        <button
+          type="submit"
+          className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600"
+        >
+          🔍
+        </button>
+
+        {/* Botón de filtrar, sin flecha */}
         <button
           type="button"
           className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600"
@@ -85,7 +94,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             <option value="PIERNA">Pierna</option>
             <option value="BRAZO">Brazo</option>
             <option value="HOMBRO">Hombro</option>
-            <option value="ABS">Abs</option>
+            <option value="ABDOMEN">Abdomen</option>
           </select>
 
           <button

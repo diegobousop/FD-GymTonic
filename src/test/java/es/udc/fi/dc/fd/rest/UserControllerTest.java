@@ -226,7 +226,7 @@ public class UserControllerTest {
 	public void testGetUserbyId() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		new ObjectMapper();
 		mockMvc.perform(get("/api/users/{id}", userId)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
@@ -237,7 +237,7 @@ public class UserControllerTest {
 	public void failedTestGetUserbyId() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		new ObjectMapper();
 		mockMvc.perform(get("/api/users/{id}", userId+1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
@@ -248,7 +248,7 @@ public class UserControllerTest {
 	public void testBlockUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/block/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
@@ -260,7 +260,7 @@ public class UserControllerTest {
 	public void testBlockUserAlreadyBlocked() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/block/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
@@ -277,7 +277,7 @@ public class UserControllerTest {
 	public void testBlockNullUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/block/{id}", 500)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
@@ -289,11 +289,21 @@ public class UserControllerTest {
 	public void testBlockByUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/block/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isForbidden());
+	}
+
+
+	@Test
+	public void testGetAllUsers() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+
+		mockMvc.perform(get("/api/users/allUsers", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+		).andExpect(status().isOk());
 	}
 }

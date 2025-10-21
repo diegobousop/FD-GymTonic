@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.rest;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -9,12 +8,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 import java.util.Optional;
 
 import es.udc.fi.dc.fd.model.entities.*;
-import es.udc.fi.dc.fd.model.services.Block;
+
 import es.udc.fi.dc.fd.rest.dtos.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -464,74 +462,5 @@ public class RoutineControllerTest {
                 .andExpect(jsonPath("$.items[1].name").value("Pecho"))
                 .andExpect(jsonPath("$.existMoreItems").isBoolean());
     }
-    @Test
-    public void testCreateSerie_Ok() throws Exception {
-        // Crear usuario autenticado
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
-
-        // Crear ExerciseDto de ejemplo
-        ExerciseDto exerciseDto = new ExerciseDto();
-        exerciseDto.setId(2L);
-        exerciseDto.setName("Squat");
-        exerciseDto.setNumeroSeries(4);
-        exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
-
-
-        // Mockear el comportamiento del servicio
-
-
-        ObjectMapper mapper = createObjectMapper();
-
-        mockMvc.perform(post("/api/routines/Series")
-                        .header("Authorization", "Bearer " + user.getServiceToken())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsBytes(exerciseDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(4)))
-                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
-                .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
-                .andExpect(jsonPath("$.existMoreItems").value(false));
-    }
-
-
-    @Test
-    public void testGetSerie_Ok() throws Exception {
-        // Crear usuario autenticado
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
-
-
-        mockMvc.perform(get("/api/routines/Series?serieId=" + 1 )
-                        .header("Authorization", "Bearer " + user.getServiceToken())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.numeroSerie").value(1))
-                .andExpect(jsonPath("$.repeticiones").value(20))
-                .andExpect(jsonPath("$.peso").value(100));
-    }
-
-
-    @Test
-    public void testModifySerie_Ok() throws Exception {
-        // Crear usuario autenticado
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
-
-        mockMvc.perform(put("/api/routines/Series")
-                        .param("serieId", "1")
-                        .param("repeticiones", "25")
-                        .param("peso", "120")
-                        .header("Authorization", "Bearer " + user.getServiceToken())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                // Verificamos que el DTO devuelto tenga los nuevos valores
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.numeroSerie").value(1))
-                .andExpect(jsonPath("$.repeticiones").value(25))
-                .andExpect(jsonPath("$.peso").value(120));
-    }
-
-
 
 }

@@ -1,20 +1,34 @@
-import React from 'react'
+import React, { use } from 'react'
 import LoginNavBar from "../components/common/login-navbar";
 import { Link } from 'react-router-dom';
-
-const backgroundImage1 = "https://ik.imagekit.io/940wz34p7/prueba4.png?updatedAt=1758557039243"
-const backgroundImage2 = "https://ik.imagekit.io/940wz34p7/Project-academy-About-Us-Page-banner-basketbll.png?updatedAt=1758624873099"
-const backgroundImage3 = "https://ik.imagekit.io/940wz34p7/prueba5.png?updatedAt=1758557379960"
-
+import backend from '../../../backend';
 
 
 const IntroPage = () => {
   const [active, setActive] = React.useState(0);
-  const backgrounds = [
-    { id: 1, url: backgroundImage1 },
-    { id: 2, url: backgroundImage2 },
-    { id: 3, url: backgroundImage3 }
-  ];
+
+  const [backgrounds, setBackgrounds] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchBackgrounds = () => {
+      backend.imageService.getAllBackgrounds(
+        (response) => {
+          const mappedBackgrounds = response.map((item, index) => ({
+            id: index + 1,
+            name: item.name,
+            url: item.base64,
+          }));
+          setBackgrounds(mappedBackgrounds); 
+
+        },
+        (error) => {
+          console.error('Error al obtener los backgrounds:', error);
+        }
+      );
+    };
+
+    fetchBackgrounds();
+  }, []);
 
   React.useEffect(() => {
     const interval = setInterval(() => {

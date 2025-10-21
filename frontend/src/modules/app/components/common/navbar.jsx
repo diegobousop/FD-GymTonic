@@ -1,9 +1,9 @@
-import { useState, useEffect, useContext } from 'react';
+import { useEffect, useContext, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SearchBar from './searchbar';
 import { UserContext } from './user-provider';
-import { GENERAL_ICONS } from '../../../../config/constants';
 import PropTypes from 'prop-types';
+import backend from '../../../../backend';
 
 const PAGE_TITLES = {
   home: 'Inicio',
@@ -21,12 +21,24 @@ const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
 const Navbar = ({ activePage }) => {
   const { user } = useContext(UserContext);
-  const title = PAGE_TITLES[activePage] || capitalize(activePage) || 'Inicio';
-
+  const [logo, setLogo] = useState(null);
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({ trainerName: '', muscleGroup: '' });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const title = PAGE_TITLES[activePage] || capitalize(activePage) || 'Inicio';
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      backend.imageService.getImageByName(
+        'logo',
+        (response) => setLogo(response),
+        (error) => console.error(error)
+      );
+    };
+    fetchLogo();
+  }, []);
 
   useEffect(() => {
     const text = searchParams.get('text') || '';
@@ -36,7 +48,6 @@ const Navbar = ({ activePage }) => {
     setFilters({ trainerName, muscleGroup });
   }, [searchParams]);
 
-  // Enviar búsqueda
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (query.trim()) params.append('text', query);
@@ -48,7 +59,7 @@ const Navbar = ({ activePage }) => {
   return (
     <div className="fixed top-0 left-0 right-0 flex flex-row items-center justify-start h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
       <Link to="/home">
-        <img src={GENERAL_ICONS.APP_LOGO} alt="logo" className="h-12 ml-12" />
+        <img src={logo?.base64} alt="logo" className="h-12 ml-12" />
       </Link>
 
       <div className="flex flex-row ml-4 items-center w-full">

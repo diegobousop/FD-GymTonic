@@ -3,8 +3,6 @@ package es.udc.fi.dc.fd.rest.controllers;
 
 import java.util.Locale;
 
-import es.udc.fi.dc.fd.model.services.ExerciseService;
-import es.udc.fi.dc.fd.model.services.ExerciseServiceImpl;
 import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -39,7 +37,6 @@ import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
-import static es.udc.fi.dc.fd.rest.dtos.ExerciseConversor.toExercise;
 
 
 @RestController
@@ -48,8 +45,7 @@ public class RoutineController {
     
     @Autowired
     private RoutineService routineService;
-    @Autowired
-    private ExerciseService exerciseService;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -139,22 +135,5 @@ public class RoutineController {
         return new BlockDto<>(RoutineConversor.toRoutineDtos(routinesPage.getContent()),
                             routinesPage.hasNext());
     }
-    @PostMapping("/Series")
-    public BlockDto<SerieDto> CreateSerie( @RequestBody ExerciseDto exercise) throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
 
-       return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise)).getItems()),false);
-
-    }
-
-    @PutMapping("/Series")
-    public SerieDto modifySerie(@RequestParam long serieId,
-                                @RequestParam int repeticiones,
-                                @RequestParam int peso) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
-        return SerieConversor.toSerieDto(exerciseService.editSerie(exerciseService.getSerie(serieId),repeticiones,peso));
-    }
-    @GetMapping("/Series")
-    public SerieDto getSerie(@RequestParam long serieId) {
-
-        return SerieConversor.toSerieDto(exerciseService.getSerie(serieId));
-    }
 }
