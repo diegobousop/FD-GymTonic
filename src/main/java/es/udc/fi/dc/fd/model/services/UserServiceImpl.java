@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,8 @@ public class UserServiceImpl implements UserService {
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+		user.setFollowers(new ArrayList<Users>());
+		user.setFollowing(new ArrayList<Users>());
 		if(user.getAvatar() == null) user.setAvatar(avatarDao.findByName("default").get());
 
 		userDao.save(user);
@@ -213,4 +216,73 @@ public class UserServiceImpl implements UserService {
 		return block;
 	}
 
+	@Override
+	public boolean followUser(Long followerId, Long followedId) throws InstanceNotFoundException {
+		Users newFollower = permissionChecker.checkUser(followerId);
+		Users followed = permissionChecker.checkUser(followedId);
+
+		if (followed.getFollowers().contains(newFollower) || followerId.equals(followedId)) {
+			return false; // Already following or trying to follow myself
+		}
+
+		followed.getFollowers().add(newFollower);
+		userDao.save(followed);
+		return true;
+	}
+
+	@Override
+	public boolean unfollowUser(Long followerId, Long followedId) throws InstanceNotFoundException {
+		Users follower = permissionChecker.checkUser(followerId);
+		Users followed = permissionChecker.checkUser(followedId);
+
+		if (!follower.getFollowers().contains(followed) || followerId.equals(followedId)) {
+			return false; // Not following or Not follow myself
+		}
+
+		follower.getFollowing().remove(followed);
+		userDao.save(follower);
+
+		followed.getFollowers().add(follower);
+		userDao.save(followed);
+		return true;
+	}
+
+	/**
+	 * Get followers of a user
+	 * @param id the userId 
+	 * @return list of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	@Override
+	public Block<Users> getFollowers(Long userId, int page, int size) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		Pageable pageable = PageRequest.of(page, size);
+		Slice<Users> slice = user.getFollowers().stream()
+				.skip(page * size)
+				.limit(size)
+				.collect(java.util.stream.Collectors.collectingAndThen(
+						java.util.stream.Collectors.toList(),
+						list -> new org.springframework.data.domain.SliceImpl<>(list, pageable, list.size() == size)
+				));
+		return new Block<>(slice.getContent(), slice.hasNext());
+	}
+	/**
+	 * Get following of a user
+	 * @param userId the userId
+	 * @return list of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	@Override
+	public Block<Users> getFollowing(Long userId, int page, int size) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		Pageable pageable = PageRequest.of(page, size);
+		Slice<Users> slice = user.getFollowing().stream()
+				.skip(page * size)
+				.limit(size)
+				.collect(java.util.stream.Collectors.collectingAndThen(
+						java.util.stream.Collectors.toList(),
+						list -> new org.springframework.data.domain.SliceImpl<>(list, pageable, list.size() == size)
+				));
+		return new Block<>(slice.getContent(), slice.hasNext());
+	}
 }

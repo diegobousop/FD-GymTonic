@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS Routine_Exercise;
+DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS Routine;
 DROP TABLE IF EXISTS Serie;
 DROP TABLE IF EXISTS Exercise;
@@ -86,4 +87,13 @@ CREATE TABLE Icons(
     name VARCHAR(60) UNIQUE NOT NULL,
     iconBase64 MEDIUMTEXT NOT NULL
 );
+
+CREATE TABLE User_Follow(
+    follower_id BIGINT NOT NULL,
+    followed_id BIGINT NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, followed_id),
+    FOREIGN KEY (follower_id) REFERENCES Users(id),
+    FOREIGN KEY (followed_id) REFERENCES Users(id)
+)
 
