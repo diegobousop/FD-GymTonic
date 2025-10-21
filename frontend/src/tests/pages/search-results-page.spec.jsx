@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { searchResults } from "../../backend/searchService.js";
 import SearchResultsPage from "../../modules/app/pages/search-results-page.jsx";
+import { UserContext } from "../../modules/app/components/common/user-provider"; // importa tu UserContext
 import "@testing-library/jest-dom";
 
 jest.mock("../../backend/searchService.js", () => ({
@@ -14,16 +15,24 @@ describe("SearchResultsPage", () => {
     jest.clearAllMocks();
   });
 
+  const renderWithUserContext = (ui, user = { id: 1, name: "Test User" }) => {
+    return render(
+      <UserContext.Provider value={{ user }}>
+        {ui}
+      </UserContext.Provider>
+    );
+  };
+
   it("renderiza resultados completos según la query", async () => {
     searchResults.mockImplementation((params, onSuccess) => {
       onSuccess({
-        users: [{ name: "Alice" }],
-        routines: [{ name: "Full Body", exercises: ["Press banca", "Sentadilla"] }],
-        exercises: [{ name: "Bicep Curl" }],
+        users: [{ id: 2, name: "Alice" }],
+        routines: [{ id: 1, name: "Full Body", exercises: [{ name: "Press banca" }, { name: "Sentadilla" }] }],
+        exercises: [{ id: 1, name: "Bicep Curl" }],
       });
     });
 
-    render(
+    renderWithUserContext(
       <MemoryRouter initialEntries={["/search?text=test"]}>
         <Routes>
           <Route path="/search" element={<SearchResultsPage />} />
@@ -43,7 +52,7 @@ describe("SearchResultsPage", () => {
       onSuccess({ users: [], routines: [], exercises: [] });
     });
 
-    render(
+    renderWithUserContext(
       <MemoryRouter initialEntries={["/search?text=nada"]}>
         <Routes>
           <Route path="/search" element={<SearchResultsPage />} />
