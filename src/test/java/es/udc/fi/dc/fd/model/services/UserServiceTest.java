@@ -3,6 +3,8 @@ package es.udc.fi.dc.fd.model.services;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.transaction.Transactional;
 
@@ -18,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -25,7 +28,8 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -177,6 +181,37 @@ public class UserServiceTest {
 		assertThrows(InstanceNotFoundException.class, () -> {
 			userService.blockUser(user.getId(), 500L);
 		});
+	}
+
+	@Test
+	public void testGetAllUser() {
+
+		Avatar avatar = new Avatar();
+
+        Users admin = new Users("admin1", "pass", "Admin", "User", "admin1@admin.com", avatar);
+        admin.setId(1L);
+        admin.setRole(RoleType.ADMIN);
+
+        Users trainer = new Users("trainer1", "pass", "Trainer", "User", "trainer1@trainer.com", avatar);
+        trainer.setId(2L);
+        trainer.setRole(RoleType.TRAINER);
+
+        Users user = new Users("user1", "pass", "User", "User", "User1@user.com", avatar);
+        user.setId(3L);
+        user.setRole(RoleType.USER);
+		
+        List<Users> usersList = Arrays.asList(admin, trainer, user);
+
+		Block<Users> result = userService.getAllUser(0, 5);
+
+		assertNotNull(result);
+        assertEquals(3, result.getItems().size());
+        assertEquals("admin1", result.getItems().get(0).getUserName());
+        assertEquals(RoleType.ADMIN, result.getItems().get(0).getRole());
+        assertEquals("trainer1", result.getItems().get(1).getUserName());
+        assertEquals(RoleType.TRAINER, result.getItems().get(1).getRole());
+        assertEquals("user1", result.getItems().get(2).getUserName());
+        assertEquals(RoleType.USER, result.getItems().get(2).getRole());
 	}
 
 }

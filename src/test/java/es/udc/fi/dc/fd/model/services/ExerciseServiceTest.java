@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
@@ -50,14 +48,8 @@ public class ExerciseServiceTest {
     private ExerciseDao exerciseDao;
 
     @Autowired
-    private AvatarDao avatarDao;
-    @Autowired
     private SerieDao serieDao;
 
-    private Users createUser(String userName) {
-        Optional<Avatar> avatar = avatarDao.findByName("default");
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
-    }
 
     private Exercise createExercise(String name, String description, grupoMuscular grupo, int numeroSeries) {
         Exercise exercise = new Exercise(name, description, grupo, numeroSeries);

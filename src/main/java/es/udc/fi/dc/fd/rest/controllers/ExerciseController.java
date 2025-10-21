@@ -4,7 +4,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 import es.udc.fi.dc.fd.rest.dtos.*;
-import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -21,8 +20,6 @@ import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
-import es.udc.fi.dc.fd.model.services.Block;
-import es.udc.fi.dc.fd.model.entities.Exercise;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,19 +27,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import es.udc.fi.dc.fd.rest.dtos.BlockDto;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
+
 import es.udc.fi.dc.fd.rest.dtos.ExerciseSummaryDto;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-
-
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-
 
 
 @RestController

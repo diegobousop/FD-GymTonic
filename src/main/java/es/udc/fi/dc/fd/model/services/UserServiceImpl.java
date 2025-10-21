@@ -3,9 +3,12 @@ package es.udc.fi.dc.fd.model.services;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
@@ -196,6 +199,18 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public boolean checkUserIsBlocked(Long idBlocker, Long idBlocked) throws AlreadyBlockException{
 		return blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked);
+	}
+
+	@Override
+	public Block<Users> getAllUser(int page, int size){
+
+		Pageable pageable = PageRequest.of(page, size);
+
+		Slice<Users> slice = userDao.findAllByOrderByIdAsc(pageable);
+
+		Block<Users> block = new Block<>(slice.getContent(), slice.hasNext());
+
+		return block;
 	}
 
 }

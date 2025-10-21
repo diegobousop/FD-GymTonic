@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
-import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 
 import java.util.List;

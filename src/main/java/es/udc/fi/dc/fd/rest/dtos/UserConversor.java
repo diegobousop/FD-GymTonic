@@ -1,6 +1,12 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.services.Block;
+
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import es.udc.fi.dc.fd.model.entities.Avatar;
 
 
@@ -55,6 +61,15 @@ public class UserConversor {
 
 		return new AuthenticatedUserDto(serviceToken, toUserDto(user));
 
+	}
+
+	public static final ResumeUserDto toResumeUserDto(Users user){
+		return new ResumeUserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole().toString());
+	}
+
+	public static final BlockDto toBlockResumeUserDto(Block<Users> userBlock){
+		List<ResumeUserDto> list = userBlock.getItems().stream().map(u -> toResumeUserDto(u)).collect(Collectors.toList());
+		return new BlockDto<ResumeUserDto>(list ,userBlock.getExistMoreItems());
 	}
 
 }

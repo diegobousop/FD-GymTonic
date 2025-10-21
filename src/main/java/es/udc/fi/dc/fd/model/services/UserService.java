@@ -90,4 +90,6 @@ public interface UserService {
 	* @throws AlreadyBlockException the user was already blocked
 	*/
 	boolean checkUserIsBlocked(Long idBlocker, Long idBlocked) throws AlreadyBlockException;
+
+	Block<Users> getAllUser (int page, int size);
 }
