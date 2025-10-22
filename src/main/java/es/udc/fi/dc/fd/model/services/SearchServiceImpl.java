@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.entities.SearchDao;
+import es.udc.fi.dc.fd.rest.dtos.SearchExerciseForRoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.SearchFullDto;
 import es.udc.fi.dc.fd.rest.dtos.SearchSuggestionDto;
 
@@ -65,6 +66,7 @@ public class SearchServiceImpl implements SearchService {
 
         Map<String, List<SearchFullDto>> resultMap = new HashMap<>();
 
+        // Usuarios
         List<SearchFullDto> users = searchDao.findUsersDetailed(safeText, limit).stream()
                 .map(u -> SearchFullDto.fromUser(
                         u.getId(),
@@ -74,19 +76,30 @@ public class SearchServiceImpl implements SearchService {
                 .collect(Collectors.toList());
         resultMap.put("users", users);
 
+        // Rutinas
         List<SearchFullDto> routines = searchDao.findRoutinesDetailed(safeText, limit).stream()
                 .filter(r -> noTrainer || r.getCreator().getUserName().toLowerCase().contains(safeTrainer))
-                .map(r -> SearchFullDto.fromRoutine(
-                        r.getId(),
-                        r.getName(),
-                        r.getCreator().getUserName(),
-                        r.getExercises().stream()
-                                .map(e -> e.getExerciseName())
-                                .collect(Collectors.toList())
-                ))
+                .map(r -> {
+                    // Mapeo de ejercicios a SearchExerciseForRoutineDto
+                    List<SearchExerciseForRoutineDto> exercises = r.getExercises().stream()
+                            .map(e -> new SearchExerciseForRoutineDto(
+                                    e.getExerciseName(),
+                                    e.getNumeroSeries()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return SearchFullDto.fromRoutine(
+                            r.getId(),
+                            r.getName(),
+                            r.getCreator().getUserName(),
+                            r.getDuration() != null ? r.getDuration().intValue() : null,
+                            exercises
+                    );
+                })
                 .collect(Collectors.toList());
         resultMap.put("routines", routines);
 
+        // Ejercicios
         List<SearchFullDto> exercises = searchDao.findExercisesDetailed(safeText, limit).stream()
                 .filter(e -> noMuscle || e.getGrupoMuscular().name().equalsIgnoreCase(safeMuscle))
                 .map(e -> SearchFullDto.fromExercise(
