@@ -226,6 +226,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		followed.getFollowers().add(newFollower);
+		newFollower.getFollowing().add(followed);
 		userDao.save(followed);
 		return true;
 	}
@@ -235,14 +236,14 @@ public class UserServiceImpl implements UserService {
 		Users follower = permissionChecker.checkUser(followerId);
 		Users followed = permissionChecker.checkUser(followedId);
 
-		if (!follower.getFollowers().contains(followed) || followerId.equals(followedId)) {
-			return false; // Not following or Not follow myself
+		if (!follower.getFollowing().contains(followed) || followerId.equals(followedId)) {
+			return false; // Not following or Not "unfollow" myself
 		}
 
 		follower.getFollowing().remove(followed);
 		userDao.save(follower);
 
-		followed.getFollowers().add(follower);
+		followed.getFollowers().remove(follower);
 		userDao.save(followed);
 		return true;
 	}
