@@ -12,6 +12,8 @@ const CreateExercise = () => {
     const [exerciseDescripcion, setExerciseDescription] = useState("");
     const [grupoMuscular, setGrupoMuscular] = useState("");
     const [numeroSeries, setNumeroSeries] = useState("");
+    const [difficulty, setDifficulty] = useState("");
+    const [equipment, setEquipment] = useState("");
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     const [activePage, setActivePage] = useState('create-exercise')
@@ -19,6 +21,8 @@ const CreateExercise = () => {
     const [exerciseDescriptionErrors, setExerciseDescriptionErrors] = useState(null);
     const [grupoMuscularErrors, setGrupoMuscularErrors] = useState(null);
     const [numeroSeriesErrors, setNumeroSeriesErrors] = useState("");
+    const [difficultyErrors, setDifficultyErrors] = useState(null);
+    const [equipmentErrors, setEquipmentErrors] = useState(null);
 
     let form;
 
@@ -31,7 +35,7 @@ const CreateExercise = () => {
         if(form.checkValidity()){
             try{
                 await backend.exerciseService.addExercise(
-                    exerciseName, exerciseDescripcion, grupoMuscular, numeroSeries,
+                    exerciseName, exerciseDescripcion, grupoMuscular, numeroSeries, difficulty, equipment,
                     (id) => {
                         setSuccess(true)
                         setBackendErrors(null)
@@ -103,6 +107,35 @@ const CreateExercise = () => {
                     errorMessage={grupoMuscularErrors}
                 />
 
+                <MultiSelectList
+                    options={[
+                        { id: 'FACIL', name: 'FACIL' },
+                        { id: 'INTERMEDIO', name: 'INTERMEDIO' },
+                        { id: 'DIFICIL', name: 'DIFICIL' },
+                    ]}
+                    selected={difficulty ? [difficulty] : []}
+                    onChange={(selected) => setDifficulty(selected[0] || "")}
+                    required={true}
+                    label="Dificultad"
+                    errors={difficultyErrors}
+                    errorMessage={difficultyErrors}
+                />
+
+                <MultiSelectList
+                    options={[
+                        { id: 'POLEA_CABLE', name: 'POLEA/CABLE' },
+                        { id: 'MAQUINA', name: 'MAQUINA' },
+                        { id: 'PESO_LIBRE', name: 'PESO LIBRE' },
+                        { id: 'OTROS', name: 'OTROS' },
+                    ]}
+                    selected={equipment ? [equipment] : []}
+                    onChange={(selected) => setEquipment(selected[0] || "")}
+                    required={true}
+                    label="Equipamiento"
+                    errors={equipmentErrors}
+                    errorMessage={equipmentErrors}
+                />
+
                 <SendButton onClick={handleSubmit}></SendButton>
 
             </form>
@@ -115,20 +148,26 @@ const CreateExercise = () => {
         const trimmedExerciseName = exerciseName.trim()
         const trimmedExerciseDescription = exerciseDescripcion.trim()
         const trimmedGrupoMuscular = grupoMuscular.trim()
+        const trimmedDifficulty = difficulty.trim()
+        const trimmedEquipment = equipment.trim()
         const trimmedNumeroSeries = numeroSeries.trim()
         let hasError = false
 
         const exerciseNameErr = !trimmedExerciseName ? 'El nombre del ejercicio es obligatorio' : null
         const exerciseDescriptionErr= !trimmedExerciseDescription ? 'La descripcion del ejercicio es obligatoria' : null
         const grupoMuscularErr = !trimmedGrupoMuscular ? 'El grupo muscular es obligatorio' : null
+        const difficultyErr = !trimmedDifficulty ? 'La dificultad es obligatoria' : null
+        const equipmentErr = !trimmedEquipment ? 'El equipamiento es obligatorio' : null
         const numeroSeriesErr =!trimmedNumeroSeries ? 'Número de series obligatorio' : null
 
-        if(exerciseNameErr || exerciseDescriptionErr || grupoMuscularErr || numeroSeriesErr) hasError = true
+        if(exerciseNameErr || exerciseDescriptionErr || grupoMuscularErr || numeroSeriesErr || difficultyErr || equipmentErr) hasError = true
 
         setExerciseNameErrors(exerciseNameErr)
         setExerciseDescriptionErrors(exerciseDescriptionErr)
         setGrupoMuscularErrors(grupoMuscularErr)
         setNumeroSeriesErrors(numeroSeriesErr)
+        setDifficultyErrors(difficultyErr)
+        setEquipmentErrors(equipmentErr)
 
         return !hasError;
     }
