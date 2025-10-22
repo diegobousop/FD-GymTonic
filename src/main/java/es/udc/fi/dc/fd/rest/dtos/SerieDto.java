@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.Routine;
 import jakarta.validation.constraints.NotNull;
 
 public class SerieDto {
@@ -9,10 +10,10 @@ public class SerieDto {
     private int numeroSerie;
     private int repeticiones;
     private int peso;
-
+    private Routine routine;
     public SerieDto() {}
 
-    public SerieDto(long id, int numeroSerie, int repeticiones, int peso,Exercise exercise) {
+    public SerieDto(long id, int numeroSerie, int repeticiones, int peso,Exercise exercise, Routine routine) {
         this.Id = id;
         this.numeroSerie = numeroSerie;
         this.repeticiones = repeticiones;
@@ -39,4 +40,8 @@ public class SerieDto {
     @NotNull
     public Exercise getExercise() {return exercise;}
     public void setExercise(Exercise exercise) {this.exercise = exercise;}
+
+    @NotNull
+    public Routine getRoutine() {return routine;}
+    public void setRoutine(Routine routine) {this.routine = routine;}
 }

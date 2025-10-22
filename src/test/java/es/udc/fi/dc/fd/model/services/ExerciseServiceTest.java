@@ -6,6 +6,9 @@ import java.util.Optional;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+
+import es.udc.fi.dc.fd.model.entities.*;
+import jakarta.validation.constraints.Null;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -206,7 +209,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty());
+       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty(),1L);
 
         assertEquals(Series.getItems(),serieDao.findByExercise(exercise1).getContent());
     }
@@ -219,7 +222,8 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
+
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(),1L);
 
         exerciseService.editSerie(Series.getItems().get(0),30,100);
         exerciseService.editSerie(Series.getItems().get(1),40,200);
@@ -240,7 +244,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(), 1L);
         Serie serie=exerciseService.getSerie(Series.getItems().get(0).getId());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()),serie);
         assertNotEquals(exerciseService.getSerie(Series.getItems().get(1).getId()),serie);
@@ -256,7 +260,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
         Block<Serie> series= exerciseService.getSeriesByExercise(idExercise);
         assertEquals(true,series.getItems().isEmpty());
-        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty());
+        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty(),1L);
         series= exerciseService.getSeriesByExercise(idExercise);
         assertEquals(series,exerciseService.getSeriesByExercise(idExercise));
 
