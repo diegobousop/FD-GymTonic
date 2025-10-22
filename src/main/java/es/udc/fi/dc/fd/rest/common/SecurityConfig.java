@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/users/following")).hasAnyRole("USER","TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/api/users/follow/{id}")).hasAnyRole("USER","TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/api/users/unfollow/{id}")).hasAnyRole("USER","TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/notifications/**")).hasAnyRole("USER","TRAINER", "ADMIN")
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
                 .requestMatchers("/api/users/allUsers").hasRole("ADMIN")
                 .requestMatchers(antMatcher("/api/users/block/*")).hasRole("ADMIN")

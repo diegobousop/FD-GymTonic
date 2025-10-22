@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS Routine_Exercise CASCADE;
 DROP TABLE IF EXISTS User_Follow CASCADE;
 DROP TABLE IF EXISTS Serie CASCADE;
+DROP TABLE IF EXISTS Notification CASCADE;
 DROP TABLE IF EXISTS Routine CASCADE;
 DROP TABLE IF EXISTS Exercise CASCADE;
 DROP TABLE IF EXISTS Users CASCADE;
@@ -95,5 +96,18 @@ CREATE TABLE User_Follow(
     PRIMARY KEY (follower_id, followed_id),
     FOREIGN KEY (follower_id) REFERENCES Users(id),
     FOREIGN KEY (followed_id) REFERENCES Users(id)
-)
+);
+
+CREATE TABLE Notification (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    receiverId BIGINT NOT NULL,
+    senderId BIGINT,
+    routineId BIGINT,
+    message VARCHAR(255) NOT NULL,
+    isRead BOOLEAN NOT NULL DEFAULT FALSE,
+    date TIMESTAMP NOT NULL,
+    FOREIGN KEY (receiverId) REFERENCES Users(id),
+    FOREIGN KEY (senderId) REFERENCES Users(id),
+    FOREIGN KEY (routineId) REFERENCES Routine(id)
+);
 
