@@ -9,9 +9,7 @@ import FileInput from '../components/common/file-input';
 import { signUp } from '../../../backend/userService';
 import { UserContext } from '../components/common/user-provider';
 
-import { GENERAL_ICONS } from '../../../config/constants'
-
-const imageUrl = 'https://ik.imagekit.io/940wz34p7/tioRunning-background.png?updatedAt=1758618074898'
+import backend from '../../../backend';
 
 
 const RegisterPage = () => {
@@ -24,6 +22,8 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = React.useState('')
   const [role, setRole] = React.useState(null)
   const [file, setFile] = React.useState(null)
+  const [image, setImage] = React.useState([]);
+  const [logo, setLogo] = React.useState(null);
 
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -36,6 +36,27 @@ const RegisterPage = () => {
   const [roleErrors, setRoleErrors] = React.useState(null)
   const [fileErrors, setFileErrors] = React.useState(null)
   const [globalError, setGlobalError] = React.useState(null)
+
+    useEffect(() => {
+      const fetchImages = async () => { 
+        backend.imageService.getImageByName('running',
+          (response) => {
+            setImage(response);
+          }, 
+          (error) => {
+            console.error(error);
+          });
+  
+          backend.imageService.getImageByName('logo',
+          (response) => {
+            setLogo(response);
+          }, 
+          (error) => {
+            console.error(error);
+          });
+      }
+      fetchImages();
+    },[])
 
   useEffect(() => {
         const prevOverflow = document.body.style.overflow;
@@ -97,7 +118,7 @@ const RegisterPage = () => {
         <div className="flex flex-row items-center justify-between h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
           <Link to="/start" className="mr-4"> 
             <img
-              src={GENERAL_ICONS.APP_LOGO}
+              src={logo?.base64}
               alt="logo"
               className="h-12 ml-20"
             />
@@ -113,7 +134,7 @@ const RegisterPage = () => {
 
    
       <div className="flex flex-row">
-        <img src={imageUrl} alt="Imagen" className="w-[37%]" />
+        <img src={image?.base64} alt="Imagen" className="w-[37%]" />
         <div className="ml-[5%] mt-[3%]">
           <h1 className="mb-10">Bienvenido/a a Gym Tonic</h1>
           <form onSubmit={handleRegister}>

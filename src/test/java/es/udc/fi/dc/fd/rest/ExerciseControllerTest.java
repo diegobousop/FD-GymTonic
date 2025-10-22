@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import es.udc.fi.dc.fd.model.entities.Users;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,8 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
+import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -51,6 +52,10 @@ public class ExerciseControllerTest {
         return mapper;
     }
 
+    private ExerciseDto createExerciseDto(String name, String description, grupoMuscular grupo, int numeroSeries) {
+        ExerciseDto dto = new ExerciseDto(name, description, grupo, numeroSeries, Difficulty.FACIL, Equipment.POLEA_CABLE);
+        return dto;
+    }
 
 
     @Test
@@ -62,7 +67,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -81,7 +86,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -100,7 +105,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -131,7 +136,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -168,7 +173,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -199,7 +204,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -224,7 +229,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -255,7 +260,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test 2", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -292,7 +297,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -323,7 +328,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -348,7 +353,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto trainer = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
+        ExerciseDto exerciseToAdd = createExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -386,6 +391,8 @@ public class ExerciseControllerTest {
         exerciseDto.setName("Squat");
         exerciseDto.setNumeroSeries(4);
         exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+        exerciseDto.setDifficulty(Difficulty.FACIL);
+        exerciseDto.setEquipment(Equipment.MAQUINA);
 
 
         // Mockear el comportamiento del servicio
@@ -393,7 +400,7 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series" )
+        mockMvc.perform(post("/api/exercise/Series?routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
@@ -419,6 +426,8 @@ public class ExerciseControllerTest {
         exerciseDto.setName("Squat");
         exerciseDto.setNumeroSeries(4);
         exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+        exerciseDto.setDifficulty(Difficulty.INTERMEDIO);
+        exerciseDto.setEquipment(Equipment.PESO_LIBRE);
 
 
         // Mockear el comportamiento del servicio
@@ -426,7 +435,7 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series?numSeries=3" )
+        mockMvc.perform(post("/api/exercise/Series?numSeries=3&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
@@ -466,7 +475,7 @@ public class ExerciseControllerTest {
         loginParams.setPassword("12345");
 
         AuthenticatedUserDto user = userController.login(loginParams);
-        mockMvc.perform(put("/api/exercise/Series")
+        mockMvc.perform(put("/api/exercise/Series?routineId=1")
                         .param("serieId", "1")
                         .param("repeticiones", "25")
                         .param("peso", "120")

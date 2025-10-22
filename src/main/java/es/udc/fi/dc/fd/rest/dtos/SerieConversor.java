@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
-import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 
 import java.util.List;
@@ -8,12 +7,12 @@ import java.util.List;
 public class SerieConversor {
 
     public static final Serie toSerie(SerieDto serieDto){
-        return new Serie(serieDto.getRepeticiones(), serieDto.getPeso(),serieDto.getNumeroSerie(),serieDto.getExercise());
+        return new Serie(serieDto.getRepeticiones(), serieDto.getPeso(),serieDto.getNumeroSerie(),serieDto.getExercise(),serieDto.getRoutine());
     }
 
 
     public static final SerieDto toSerieDto(Serie serie){
-        return new SerieDto(serie.getId(), serie.getNumeroSerie(), serie.getRepeticiones(), serie.getPeso(),serie.getExercise());
+        return new SerieDto(serie.getId(), serie.getNumeroSerie(), serie.getRepeticiones(), serie.getPeso(),serie.getExercise(), serie.getRoutine());
     }
 
     public static final List<SerieDto> toSerieDtos(List<Serie> serieList){

@@ -82,13 +82,24 @@ const CreateExercise = () => {
 
                 <TextInput
                     name="numeroSeries"
-                    label="Numero series: "
+                    label="Numero series:"
                     value={numeroSeries}
-                    onChange={(e) => setNumeroSeries(e.target.value)}
+                    onChange={(e) => {
+                        const value = Number(e.target.value);
+
+                        if (value >= 0 && value <= 20) {
+                            setNumeroSeries(value);
+                            setNumeroSeriesErrors(null);
+                        } else {
+                            setNumeroSeriesErrors('El número de series debe estar entre 0 y 20');
+                        }
+                    }}
                     errors={numeroSeriesErrors}
                     errorMessage={numeroSeriesErrors}
                     className="h-10 w-full"
                     type="number"
+                    min={0}
+                    max={20}
                 />
                 <MultiSelectList
                     options={[
@@ -150,7 +161,7 @@ const CreateExercise = () => {
         const trimmedGrupoMuscular = grupoMuscular.trim()
         const trimmedDifficulty = difficulty.trim()
         const trimmedEquipment = equipment.trim()
-        const trimmedNumeroSeries = numeroSeries.trim()
+        const numeroSeriesValue = Number(numeroSeries);
         let hasError = false
 
         const exerciseNameErr = !trimmedExerciseName ? 'El nombre del ejercicio es obligatorio' : null
@@ -158,7 +169,10 @@ const CreateExercise = () => {
         const grupoMuscularErr = !trimmedGrupoMuscular ? 'El grupo muscular es obligatorio' : null
         const difficultyErr = !trimmedDifficulty ? 'La dificultad es obligatoria' : null
         const equipmentErr = !trimmedEquipment ? 'El equipamiento es obligatorio' : null
-        const numeroSeriesErr =!trimmedNumeroSeries ? 'Número de series obligatorio' : null
+        let numeroSeriesErr = null;
+        if (isNaN(numeroSeriesValue) || numeroSeriesValue < 0 || numeroSeriesValue > 20)
+            numeroSeriesErr = 'El número de series debe estar entre 0 y 20';
+
 
         if(exerciseNameErr || exerciseDescriptionErr || grupoMuscularErr || numeroSeriesErr || difficultyErr || equipmentErr) hasError = true
 
