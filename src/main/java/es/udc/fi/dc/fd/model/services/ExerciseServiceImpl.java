@@ -3,6 +3,7 @@ package es.udc.fi.dc.fd.model.services;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,12 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
@@ -33,6 +28,9 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Autowired
     private SerieDao serieDao;
+
+    @Autowired
+    private RoutineDao routineDao;
 
     @Override
     public Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
@@ -94,14 +92,15 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Block<Serie> createSeries(Exercise exercise, Optional<Integer> n) throws  InstanceNotFoundException {
+    public Block<Serie> createSeries(Exercise exercise, Optional<Integer> n, long routine) throws  InstanceNotFoundException {
         int aux;
         if (!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
             throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
 
         aux = n.orElseGet(exercise::getNumeroSeries);
+
         for(int i=1;i<=aux;i++){
-            Serie serie = new Serie(20,10,i,exercise);
+            Serie serie = new Serie(20,10,i,exercise, routineDao.getReferenceById(routine));
             serieDao.save(serie);
         }
         Slice<Serie> slice= serieDao.findByExercise(exercise);

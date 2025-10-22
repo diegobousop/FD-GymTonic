@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS Routine_Exercise;
-DROP TABLE IF EXISTS Routine;
 DROP TABLE IF EXISTS Serie;
+DROP TABLE IF EXISTS Routine;
 DROP TABLE IF EXISTS Exercise;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Avatar;
@@ -48,14 +48,7 @@ CREATE TABLE Exercise (
     FOREIGN KEY (validator) REFERENCES Users(id)
 );
 
-CREATE TABLE Serie (
-    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    repeticiones INT NOT NULL,
-    peso INT NOT NULL,
-    numeroSerie INT NOT NULL,
-    exerciseId BIGINT NOT NULL,
-    FOREIGN KEY (exerciseId) REFERENCES Exercise(id)
-);
+
 
 CREATE TABLE Routine (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -75,12 +68,24 @@ CREATE TABLE Routine_Exercise (
     FOREIGN KEY (exercise_id) REFERENCES Exercise(id)
 );
 
+CREATE TABLE Serie (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    repeticiones INT NOT NULL,
+    peso INT NOT NULL,
+    numeroSerie INT NOT NULL,
+    exerciseId BIGINT NOT NULL,
+    routineId BIGINT NOT NULL,
+    FOREIGN KEY (exerciseId) REFERENCES Exercise(id),
+    FOREIGN KEY (routineId) REFERENCES  Routine(id)
+);
+
+-- SOME DATA FOR TESTING PURPOSES
+
 CREATE TABLE Images(
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(60) UNIQUE NOT NULL,
     source MEDIUMTEXT NOT NULL
 );
-
 CREATE TABLE Icons(
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(60) UNIQUE NOT NULL,
