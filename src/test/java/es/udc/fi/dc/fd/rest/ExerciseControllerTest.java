@@ -400,7 +400,7 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series" )
+        mockMvc.perform(post("/api/exercise/Series?routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
@@ -435,7 +435,7 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series?numSeries=3" )
+        mockMvc.perform(post("/api/exercise/Series?numSeries=3&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
@@ -475,7 +475,7 @@ public class ExerciseControllerTest {
         loginParams.setPassword("12345");
 
         AuthenticatedUserDto user = userController.login(loginParams);
-        mockMvc.perform(put("/api/exercise/Series")
+        mockMvc.perform(put("/api/exercise/Series?routineId=1")
                         .param("serieId", "1")
                         .param("repeticiones", "25")
                         .param("peso", "120")
@@ -498,7 +498,7 @@ public class ExerciseControllerTest {
         loginParams.setPassword("12345");
 
         AuthenticatedUserDto user = userController.login(loginParams);
-        mockMvc.perform(get("/api/exercise/exerciseSeries?id=" + 1)
+        mockMvc.perform(get("/api/exercise/exerciseSeries?exerciseId=1&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

@@ -3,6 +3,7 @@ package es.udc.fi.dc.fd.model.services;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -18,13 +19,13 @@ public interface ExerciseService {
 
     Block<Exercise> getUnvalidatedExercises(int page, int size);
 
-    Block<Serie> createSeries(Exercise exercise,  Optional<Integer> n) throws  InstanceNotFoundException;
+    Block<Serie> createSeries(Exercise exercise, Optional<Integer> n, long routine) throws  InstanceNotFoundException;
 
     Serie editSerie(Serie serie,int repeticiones, int peso) throws DuplicateInstanceException;
 
     Serie getSerie(Long serieId);
 
-    Block<Serie>getSeriesByExercise(long exercise);
+    Block<Serie> getSeriesByExerciseAndRoutine(long exercise,long routine);
 
     Exercise validateExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
 

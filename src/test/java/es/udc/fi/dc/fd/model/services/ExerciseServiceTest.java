@@ -1,11 +1,13 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -206,7 +208,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty());
+       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty(),1L);
 
         assertEquals(Series.getItems(),serieDao.findByExercise(exercise1).getContent());
     }
@@ -219,7 +221,8 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
+
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(),1L);
 
         exerciseService.editSerie(Series.getItems().get(0),30,100);
         exerciseService.editSerie(Series.getItems().get(1),40,200);
@@ -240,7 +243,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(), 1L);
         Serie serie=exerciseService.getSerie(Series.getItems().get(0).getId());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()),serie);
         assertNotEquals(exerciseService.getSerie(Series.getItems().get(1).getId()),serie);
@@ -250,15 +253,15 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void getSeriesByExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void getSeriesByExerciseAndRoutineTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
-        Block<Serie> series= exerciseService.getSeriesByExercise(idExercise);
+        Block<Serie> series= exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L);
         assertEquals(true,series.getItems().isEmpty());
-        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty());
-        series= exerciseService.getSeriesByExercise(idExercise);
-        assertEquals(series,exerciseService.getSeriesByExercise(idExercise));
+        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty(),1L);
+        series= exerciseService.getSeriesByExerciseAndRoutine(idExercise,1L );
+        assertEquals(series,exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L));
 
     }
 
