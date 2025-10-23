@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,8 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import es.udc.fi.dc.fd.model.entities.*;
-import jakarta.validation.constraints.Null;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -254,15 +253,15 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void getSeriesByExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void getSeriesByExerciseAndRoutineTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
-        Block<Serie> series= exerciseService.getSeriesByExercise(idExercise);
+        Block<Serie> series= exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L);
         assertEquals(true,series.getItems().isEmpty());
         exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty(),1L);
-        series= exerciseService.getSeriesByExercise(idExercise);
-        assertEquals(series,exerciseService.getSeriesByExercise(idExercise));
+        series= exerciseService.getSeriesByExerciseAndRoutine(idExercise,1L );
+        assertEquals(series,exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L));
 
     }
 

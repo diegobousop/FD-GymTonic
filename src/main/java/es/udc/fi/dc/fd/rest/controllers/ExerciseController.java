@@ -97,8 +97,8 @@ public class ExerciseController {
     }
 
     @GetMapping("/exerciseSeries")
-    public BlockDto <SerieDto> getSeriesByExercise(@RequestParam long id) {
-        return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.getSeriesByExercise(id).getItems()),false);
+    public BlockDto <SerieDto> getSeriesByExercise(@RequestParam long exerciseId, @RequestParam long routineId) {
+        return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.getSeriesByExerciseAndRoutine(exerciseId,routineId).getItems()),false);
     }
 
 
