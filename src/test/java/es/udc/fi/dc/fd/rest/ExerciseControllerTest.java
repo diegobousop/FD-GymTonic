@@ -498,7 +498,7 @@ public class ExerciseControllerTest {
         loginParams.setPassword("12345");
 
         AuthenticatedUserDto user = userController.login(loginParams);
-        mockMvc.perform(get("/api/exercise/exerciseSeries?id=" + 1)
+        mockMvc.perform(get("/api/exercise/exerciseSeries?exerciseId=1&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
