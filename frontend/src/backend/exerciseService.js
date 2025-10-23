@@ -3,10 +3,10 @@ import{
     appFetch,
 }from "./appFetch";
 
-export const addExercise = (name, descripcion, grupoMuscular,numeroSeries, onSuccess, onErrors) => {
+export const addExercise = (name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment, onSuccess, onErrors) => {
     appFetch(
         "/exercise/addExercise",
-        fetchConfig("POST", {name, descripcion, grupoMuscular, numeroSeries}),
+        fetchConfig("POST", {name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment}),
         (addExercise) => onSuccess(addExercise),
         onErrors
     );
