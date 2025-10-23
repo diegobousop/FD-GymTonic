@@ -221,6 +221,13 @@ public class UserServiceImpl implements UserService {
 		Users newFollower = permissionChecker.checkUser(followerId);
 		Users followed = permissionChecker.checkUser(followedId);
 
+		if(followed.getFollowers()==null) {
+			followed.setFollowers(new ArrayList<Users>());
+		}
+		if(newFollower.getFollowing()==null) {
+			newFollower.setFollowing(new ArrayList<Users>());
+		}
+
 		if (followed.getFollowers().contains(newFollower) || followerId.equals(followedId)) {
 			return false; // Already following or trying to follow myself
 		}
@@ -258,6 +265,12 @@ public class UserServiceImpl implements UserService {
 	public Block<Users> getFollowers(Long userId, int page, int size) throws InstanceNotFoundException {
 		Users user = permissionChecker.checkUser(userId);
 		Pageable pageable = PageRequest.of(page, size);
+
+		//Si no tiene seguidores se devuelve una lista vacía
+		if(user.getFollowers() == null) {
+			return new Block<Users>(new ArrayList<Users>(), false);
+		}
+
 		Slice<Users> slice = user.getFollowers().stream()
 				.skip(page * size)
 				.limit(size)
@@ -277,6 +290,12 @@ public class UserServiceImpl implements UserService {
 	public Block<Users> getFollowing(Long userId, int page, int size) throws InstanceNotFoundException {
 		Users user = permissionChecker.checkUser(userId);
 		Pageable pageable = PageRequest.of(page, size);
+
+		//Si no tiene seguidos se devuelve una lista vacía
+		if(user.getFollowing() == null) {
+			return new Block<Users>(new ArrayList<Users>(), false);
+		}
+
 		Slice<Users> slice = user.getFollowing().stream()
 				.skip(page * size)
 				.limit(size)
