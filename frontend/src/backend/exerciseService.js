@@ -68,8 +68,8 @@ export const createSerie = (exercise, numSeries,routineId, onSuccess, onErrors) 
         onSuccess,
         onErrors
     );
-export const getSerieByExercise = (exerciseId, onSuccess, onErrors) =>
-    appFetch(`/exercise/exerciseSeries`,
+export const getSerieByExercise = (exerciseId,routineId, onSuccess, onErrors) =>
+    appFetch(`/exercise/exerciseSeries?exerciseId=${exerciseId}&routineId=${routineId}`,
         fetchConfig("GET"),
         onSuccess,
         onErrors
