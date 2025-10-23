@@ -1,10 +1,14 @@
 DROP TABLE IF EXISTS Routine_Exercise;
+DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS Serie;
+DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Routine;
+DROP TABLE IF EXISTS User_Follow;
+DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Exercise;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Avatar;
-DROP TABLE IF EXISTS BlockUser;
+DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Images;
 DROP TABLE IF EXISTS Icons;
 
@@ -86,9 +90,32 @@ CREATE TABLE Images(
     name VARCHAR(60) UNIQUE NOT NULL,
     source MEDIUMTEXT NOT NULL
 );
+
 CREATE TABLE Icons(
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(60) UNIQUE NOT NULL,
     iconBase64 MEDIUMTEXT NOT NULL
+);
+
+CREATE TABLE User_Follow(
+    follower_id BIGINT NOT NULL,
+    followed_id BIGINT NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, followed_id),
+    FOREIGN KEY (follower_id) REFERENCES Users(id),
+    FOREIGN KEY (followed_id) REFERENCES Users(id)
+);
+
+CREATE TABLE Notification (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    receiverId BIGINT NOT NULL,
+    senderId BIGINT,
+    routineId BIGINT,
+    message VARCHAR(255) NOT NULL,
+    isRead BOOLEAN NOT NULL DEFAULT FALSE,
+    date TIMESTAMP NOT NULL,
+    FOREIGN KEY (receiverId) REFERENCES Users(id),
+    FOREIGN KEY (senderId) REFERENCES Users(id),
+    FOREIGN KEY (routineId) REFERENCES Routine(id)
 );
 

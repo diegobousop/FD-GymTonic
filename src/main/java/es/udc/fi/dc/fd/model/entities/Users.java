@@ -1,5 +1,7 @@
 package es.udc.fi.dc.fd.model.entities;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,6 +9,8 @@ import jakarta.persistence.Id;
 
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 
 /**
  * The Class User.
@@ -48,6 +52,13 @@ public class Users {
 	/** The role. */
 	private RoleType role;
 
+	/** The followers. */
+	private List<Users> followers;
+
+	/** The following. */
+	private List<Users> following;
+
+
 	/**
 	 * Instantiates a new user.
 	 */
@@ -72,6 +83,19 @@ public class Users {
 		this.lastName = lastName;
 		this.email = email;
 		this.avatar = avatar;
+	}
+
+	public Users( String userName, String password, String firstName, String lastName, String email,
+			Avatar avatar, RoleType role, List<Users> followers, List<Users> following) {
+		this.userName = userName;
+		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+		this.avatar = avatar;
+		this.role = role;
+		this.followers = followers;
+		this.following = following;
 	}
 
 	/**
@@ -222,6 +246,27 @@ public class Users {
 	 */
 	public void setRole(RoleType role) {
 		this.role = role;
+	}
+
+	@ManyToMany
+	@JoinTable(name = "User_Follow",
+			joinColumns = @JoinColumn(name = "followed_id"),
+			inverseJoinColumns = @JoinColumn(name = "follower_id")
+	)
+	public List<Users> getFollowers() {
+		return followers;
+	}
+	public void setFollowers(List<Users> followers) {
+		this.followers = followers;
+	}
+
+	@ManyToMany(mappedBy = "followers")
+	public List<Users> getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(List<Users> following) {
+		this.following = following;
 	}
 
 }

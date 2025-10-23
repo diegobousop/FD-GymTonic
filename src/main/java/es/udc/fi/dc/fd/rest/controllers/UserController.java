@@ -34,6 +34,9 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -241,8 +244,26 @@ public class UserController {
 	public BlockDto<ResumeUserDto> getAllUsers(@RequestParam(defaultValue = "0") int page) {
 		return toBlockResumeUserDto(userService.getAllUser(page, 5));
 	}
-	
-	
+
+	@PostMapping("/unfollow/{id}")
+	public boolean unfollowUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
+		return userService.unfollowUser(userId, id);
+	}
+
+	@PostMapping("/follow/{id}")
+	public boolean followUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
+		return userService.followUser(userId, id);
+	}
+
+	@GetMapping("/followers")
+	public BlockDto<ResumeUserDto> getFollowers(@RequestAttribute Long userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
+		return toBlockResumeUserDto(userService.getFollowers(userId, page, size));
+	}
+
+	@GetMapping("/following")
+	public BlockDto<ResumeUserDto> getFollowing(@RequestAttribute Long userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
+		return toBlockResumeUserDto(userService.getFollowing(userId, page, size));
+	}
 
 	/**
 	 * Generate service token.
