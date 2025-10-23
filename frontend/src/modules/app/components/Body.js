@@ -21,6 +21,7 @@ import RoutineDetails from "../pages/routine-details-page";
 import CreateExercise from '../pages/create-exercise-page';
 import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
+import SearchResultsPage from "../pages/search-results-page";
 
 const Body = () => {
 
@@ -41,6 +42,7 @@ const Body = () => {
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
     if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
     if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
+    if (path.startsWith("/search/full")) { setActivePage('search'); return }
 
   }, [location.pathname])
 
@@ -79,6 +81,7 @@ const Body = () => {
             <Route path="/profileUpdate" element={<ProtectedPath path={<UserEdit />} />} />
             <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
             <Route path="/routines/my-routines" element={<ProtectedPath path={<MyRoutines />} />} />
+            <Route path="/search/full" element={<ProtectedPath path={<SearchResultsPage />} />} />
           </Routes>
         </div>
       </div>
