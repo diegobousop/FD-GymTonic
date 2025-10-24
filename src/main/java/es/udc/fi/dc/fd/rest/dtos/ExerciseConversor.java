@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.rest.dtos;
 
 import java.util.List;
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.Serie;
 
 
 
@@ -62,6 +63,20 @@ public class ExerciseConversor {
 
     public static final List<ExerciseSummaryDto> toExerciseSummaryDtos(List<Exercise> exercises){
         return exercises.stream().map(ExerciseConversor::toExerciseSummaryDto).toList();
+    }
+
+    public static final ExerciseRoutineDto toExerciseRoutineDto(Exercise exercise, List<Serie> series){
+        return new ExerciseRoutineDto(
+            exercise.getId(),
+            exercise.getExerciseName(), 
+            exercise.getExerciseDescription(), 
+            exercise.getGrupoMuscular(), 
+            exercise.getNumeroSeries(),
+            exercise.getDifficulty(),
+            exercise.getEquipment(),
+            SerieConversor.toSerieSummaryDtos(series),
+            exercise.getExerciseImageBase64()
+            );
     }
 
     

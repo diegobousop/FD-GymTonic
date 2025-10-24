@@ -21,8 +21,19 @@ public class Routine {
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
     private Boolean isPublic; // true = public, false = private
+    private Difficulty difficulty;
+
+     public enum Difficulty {
+        FACIL,       // 0
+        INTERMEDIO,  // 1
+        DIFICIL      // 2
+    };
 
     public Routine() {
+    }
+
+    public Routine(Long id) {
+        this.id = id;
     }
 
     public Routine(String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
@@ -103,6 +114,14 @@ public class Routine {
 
     public void setIsPublic(Boolean isPublic) {
         this.isPublic = isPublic;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
     }
 
 }

@@ -1,27 +1,41 @@
 package es.udc.fi.dc.fd.model.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 
 @Entity
 public class Exercise {
+    
     private Long id;
+
     private String exerciseName;  
-    private String exerciseDescription;  
+
+    private String exerciseDescription; 
+    
     private grupoMuscular grupoMuscular;
+
     private int numeroSeries;
+
     private Users creator;
+
     private boolean validated;
+
     private Users validator;
+
     private Difficulty difficulty;
+
     private Equipment equipment;
+
+    private String exerciseImageBase64;
 
     public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
     
@@ -39,6 +53,11 @@ public class Exercise {
     };
 
     public Exercise() {}
+
+    public Exercise(long id) {
+        this.id=id;
+    }
+
     public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
@@ -158,5 +177,15 @@ public class Exercise {
         if (this.equipment == null) {
             this.equipment = Equipment.OTROS;
         }
+    }
+
+    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
+    public String getExerciseImageBase64() {
+        return exerciseImageBase64;
+    }
+
+    public void setExerciseImageBase64(String exerciseImageBase64) {
+        this.exerciseImageBase64 = exerciseImageBase64;
     }
 }
