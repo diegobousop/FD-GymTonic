@@ -30,4 +30,6 @@ public interface ExerciseService {
     Exercise validateExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
 
     void declineExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
+
+    void blockExercise(Long userId, Long exerciseId2) throws InstanceNotFoundException;
 } 
