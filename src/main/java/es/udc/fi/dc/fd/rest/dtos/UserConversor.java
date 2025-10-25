@@ -8,6 +8,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.Users;
 
 
 /**
@@ -29,7 +30,7 @@ public class UserConversor {
 	 */
 	public static final UserDto toUserDto(Users user) {
 		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), 
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()));
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked());
 	}
 
 	/**
@@ -63,13 +64,13 @@ public class UserConversor {
 
 	}
 
-	public static final ResumeUserDto toResumeUserDto(Users user){
-		return new ResumeUserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole().toString());
-	}
+	public static final BlockDto<UserDto> toBlockUserDto(Block<Users> users ){
 
-	public static final BlockDto toBlockResumeUserDto(Block<Users> userBlock){
-		List<ResumeUserDto> list = userBlock.getItems().stream().map(u -> toResumeUserDto(u)).collect(Collectors.toList());
-		return new BlockDto<ResumeUserDto>(list ,userBlock.getExistMoreItems());
+		List<Users> listOfUsers = users.getItems();
+
+		List<UserDto> listOfUserDto =  listOfUsers.stream().map(u -> toUserDto(u)).collect(Collectors.toList()); 
+
+		return new BlockDto<>(listOfUserDto, users.getExistMoreItems());
 	}
 
 }

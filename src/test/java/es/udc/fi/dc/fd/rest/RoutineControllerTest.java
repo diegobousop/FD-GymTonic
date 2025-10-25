@@ -32,6 +32,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 
 @RunWith(SpringRunner.class)
@@ -64,7 +65,7 @@ public class RoutineControllerTest {
     }
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
-			throws IncorrectLoginException {
+			throws LoginUserBlockedException, IncorrectLoginException {
         Optional<Avatar> avatar = avatarDao.findByName("default");
 		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 

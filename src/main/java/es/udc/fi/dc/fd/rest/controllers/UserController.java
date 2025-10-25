@@ -3,7 +3,7 @@ package es.udc.fi.dc.fd.rest.controllers;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toAuthenticatedUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUser;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
-import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
+import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
 
 import java.net.URI;
 import java.util.Locale;
@@ -22,7 +22,9 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.common.JwtGenerator;
@@ -31,9 +33,9 @@ import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+
 
 
 
@@ -52,6 +54,12 @@ public class UserController {
 
 	/** The constant ALREADY_BLOCKED_EXCEPTION_CODE. */
 	private static final String ALREADY_BLOCKED_EXCEPTION = "project.exceptions.AlreadyBlockedException";
+
+	/** The constant ALREADY_BLOCKED_EXCEPTION_CODE. */
+	private static final String SELF_BLOCKED_EXCEPTION = "project.exceptions.SelfBlockedException";
+
+	private static final String LOGIN_BLOCK_EXCEPTION = "project.exceptions.LoginBlockException";
+
 
 
 	/** The message source. */
@@ -84,6 +92,18 @@ public class UserController {
 		return new ErrorsDto(errorMessage);
 
 	}
+
+	@ExceptionHandler(LoginUserBlockedException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ErrorsDto handleLoginUserBlockedException(LoginUserBlockedException exception, Locale locale){
+
+		String errorMessage = messageSource.getMessage(LOGIN_BLOCK_EXCEPTION, null,
+		LOGIN_BLOCK_EXCEPTION, locale);
+
+		return new ErrorsDto(errorMessage);
+	}
+
 
 	/**
 	 * Handle incorrect password exception.
@@ -121,6 +141,24 @@ public class UserController {
 		return new ErrorsDto(errorMessage);
 	}
 
+
+	/**
+	 * Handle already block exception.
+	 *
+	 * @param exception the exception
+	 * @param locale    the locale
+	 * @return the errors dto
+	 */
+	@ExceptionHandler(SelfBlockException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ErrorsDto handleSelfBlockException(SelfBlockException exception, Locale locale){
+		String errorMessage = messageSource.getMessage(SELF_BLOCKED_EXCEPTION, null,
+		SELF_BLOCKED_EXCEPTION, locale);
+
+		return new ErrorsDto(errorMessage);
+	}
+
 	/**
 	 * Sign up.
 	 *
@@ -152,7 +190,7 @@ public class UserController {
 	 * @throws IncorrectLoginException the incorrect login exception
 	 */
 	@PostMapping("/login")
-	public AuthenticatedUserDto login(@Validated @RequestBody LoginParamsDto params) throws IncorrectLoginException {
+	public AuthenticatedUserDto login(@Validated @RequestBody LoginParamsDto params) throws LoginUserBlockedException ,IncorrectLoginException {
 
 		Users user = userService.login(params.getUserName(), params.getPassword());
 
@@ -233,15 +271,14 @@ public class UserController {
 	}
 
 	@PostMapping("/block/{id}")
-	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
+	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
 		userService.blockUser(userId, id);
 	}
 
-	@GetMapping("/allUsers")
-	public BlockDto<ResumeUserDto> getAllUsers(@RequestParam(defaultValue = "0") int page) {
-		return toBlockResumeUserDto(userService.getAllUser(page, 5));
+	@GetMapping("/getUsers")
+	public BlockDto<UserDto> getMethodName(@RequestParam(defaultValue = "0") int page) {
+		return toBlockUserDto(userService.getAllUser(page, 5));
 	}
-	
 	
 
 	/**

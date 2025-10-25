@@ -30,7 +30,8 @@ CREATE TABLE Users (
     email VARCHAR(60) NOT NULL,
     avatar BIGINT,
     role TINYINT NOT NULL, /*0 User, 1 Trainer. 2 Admin*/
-    FOREIGN KEY (avatar) REFERENCES Avatar(id)
+    FOREIGN KEY (avatar) REFERENCES Avatar(id),
+    blocked BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE Exercise (

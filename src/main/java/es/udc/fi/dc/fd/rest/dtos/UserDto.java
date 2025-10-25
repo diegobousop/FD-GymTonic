@@ -43,6 +43,8 @@ public class UserDto {
 	/** The avatar. */
 	private AvatarDto avatar;
 
+	private Boolean blocked;
+
 	/**
 	 * Instantiates a new user dto.
 	 */
@@ -58,7 +60,7 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -67,6 +69,7 @@ public class UserDto {
 		this.email = email.trim();
 		this.role = role;
 		this.avatar = avatar;
+		this.blocked = blocked;
 	} 
 	/**
 	 * Gets the id.
@@ -226,5 +229,13 @@ public class UserDto {
 		this.avatar = avatar;
 	}
 
+
+	public Boolean getBlocked(){
+		return blocked;
+	}
+
+	public void setBlocked(Boolean blocked){
+		this.blocked = blocked;
+	}
 }
 

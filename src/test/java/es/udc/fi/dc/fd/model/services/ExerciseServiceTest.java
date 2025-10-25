@@ -28,6 +28,7 @@ import es.udc.fi.dc.fd.model.entities.SerieDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
@@ -59,7 +60,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void addExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
         Exercise ex1 = new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1);
         ex1.setDifficulty(Difficulty.FACIL);
@@ -84,7 +85,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExercisePermissionExceptionTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void addExercisePermissionExceptionTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("user1", "12345");
         assertThrows(PermissionException.class, () -> {
             exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -93,7 +94,7 @@ public class ExerciseServiceTest {
 
 
     @Test
-    public void addDuplicateExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void addDuplicateExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
 
         Long idExercise = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -103,7 +104,7 @@ public class ExerciseServiceTest {
     }
 
     @Test 
-    public void getExercices() throws IncorrectLoginException{
+    public void getExercices() throws LoginUserBlockedException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
 
         Exercise exercise1 = createExercise(
@@ -160,7 +161,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseAsTrainerTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException{
+    public void addExerciseAsTrainerTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException{
         Users creator = userService.login("trainer1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
@@ -174,7 +175,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseAsAdminTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void addExerciseAsAdminTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
@@ -189,7 +190,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void getExercicesValidatedExercises() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void getExercicesValidatedExercises() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("trainer1", "12345");
         //Creamos un ejercio sin validar
         exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -200,7 +201,7 @@ public class ExerciseServiceTest {
         assertFalse(returned.getExistMoreItems());
     }
     @Test
-    public void createSeriesTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void createSeriesTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -213,7 +214,7 @@ public class ExerciseServiceTest {
 
 
     @Test
-    public void EditSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void EditSerieTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
@@ -234,7 +235,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void  GetSerieTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void  GetSerieTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
@@ -250,7 +251,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void getSeriesByExerciseTest() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void getSeriesByExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
@@ -264,7 +265,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void validateExerciseSuccessTest() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
 
         Users trainer = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
@@ -281,7 +282,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void validateExerciseAlreadyValidatedExceptionTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    public void validateExerciseAlreadyValidatedExceptionTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users trainer = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
 
@@ -299,7 +300,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void validateExercisePermissionExceptionTest() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users trainer = userService.login("trainer1", "12345");
 
 
@@ -314,7 +315,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void validateExercisePermissionException2Test() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users trainer = userService.login("trainer1", "12345");
         Users user1 = userService.login("user1", "12345");
 
@@ -330,7 +331,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExerciseSuccessTest() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
 
         Users trainer = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
@@ -349,7 +350,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExerciseAlreadyValidatedExceptionTest() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users trainer = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
 
@@ -367,7 +368,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExercisePermissionExceptionTest() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users trainer = userService.login("trainer1", "12345");
 
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
@@ -381,7 +382,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExercisePermissionException2Test() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users trainer = userService.login("trainer1", "12345");
         Users user1 = userService.login("user1", "12345");
 
@@ -396,7 +397,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExerciseInstanceNotFoundExceptionTest() 
-    throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users admin = userService.login("admin1", "12345");
 
         Long nonExistentExerciseId = 99999L;

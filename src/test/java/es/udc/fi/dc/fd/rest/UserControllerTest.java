@@ -28,6 +28,7 @@ import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
@@ -75,7 +76,7 @@ public class UserControllerTest {
 	 * @throws IncorrectLoginException the incorrect login exception
 	 */
 	private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
-			throws IncorrectLoginException {
+			throws LoginUserBlockedException ,IncorrectLoginException {
 		Optional<Avatar> avatar = avatarDao.findByName("default");
 		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 
@@ -162,7 +163,7 @@ public class UserControllerTest {
 		// Crear DTO de usuario con datos actualizados
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
 				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()));
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked());
 
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -190,7 +191,7 @@ public class UserControllerTest {
 
 		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
 				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()));
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -210,7 +211,7 @@ public class UserControllerTest {
 
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
 				"","email-invalido",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()));
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -302,7 +303,7 @@ public class UserControllerTest {
 	public void testGetAllUsers() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 
-		mockMvc.perform(get("/api/users/allUsers", 1)
+		mockMvc.perform(get("/api/users/getUsers", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken())
 		).andExpect(status().isOk());
 	}
