@@ -15,4 +15,6 @@ public interface SerieDao extends JpaRepository<Serie, Long> {
 
     @Query("SELECT s FROM Serie s WHERE s.routine = :routine AND s.exercise = :exercise AND s.training IS NULL")
     List<Serie> findByRoutineAndExercise(Routine routine, Exercise exercise);
+    
+    List<Serie> findByTrainingId(Long trainingId);
 }

@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
 import java.util.List;
+
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 
@@ -75,7 +76,7 @@ public class ExerciseConversor {
             exercise.getDifficulty(),
             exercise.getEquipment(),
             SerieConversor.toSerieSummaryDtos(series),
-            exercise.getExerciseImageBase64()
+            exercise.getIcon().getIconBase64()
             );
     }
 

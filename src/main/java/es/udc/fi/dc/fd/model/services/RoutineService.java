@@ -9,6 +9,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -31,5 +32,5 @@ public interface RoutineService {
 
     List<Serie> getDefaultRoutineSeries(Long routineId, Long exerciseId) throws InstanceNotFoundException;
 
-    void createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException;
+    Training createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException;
 }

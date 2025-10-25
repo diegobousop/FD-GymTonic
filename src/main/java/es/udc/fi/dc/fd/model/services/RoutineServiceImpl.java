@@ -250,7 +250,7 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
-    public void createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
+    public Training createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
         Users user = permissionChecker.checkUser(userId);
 
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
@@ -291,6 +291,7 @@ public class RoutineServiceImpl implements RoutineService {
         }
 
         trainingDao.save(training);
-
+        
+        return training;
     }
 }

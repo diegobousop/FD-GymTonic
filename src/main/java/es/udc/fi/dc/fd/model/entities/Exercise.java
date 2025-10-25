@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.model.entities;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 
@@ -35,9 +33,9 @@ public class Exercise {
 
     private Equipment equipment;
 
-    private String exerciseImageBase64;
+    private Icon icon;
 
-    public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
+    public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBRO, BRAZO, ABDOMEN, FULLBODY};
     
     public enum Difficulty {
         FACIL,       // 0
@@ -78,12 +76,13 @@ public class Exercise {
     }
 
     
-    public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries, Users creator) {
+    public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries, Users creator, Icon icon) {
         this.id=id;
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
         this.grupoMuscular = grupo;
         this.numeroSeries = numeroSeries;
+        this.icon = icon;
         this.validated = false;
         this.validator=null;
         this.creator=creator;
@@ -179,13 +178,15 @@ public class Exercise {
         }
     }
 
-    @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
-    public String getExerciseImageBase64() {
-        return exerciseImageBase64;
+    @ManyToOne
+    @JoinColumn(name="iconId")
+    public Icon getIcon() {
+        return icon;
     }
 
-    public void setExerciseImageBase64(String exerciseImageBase64) {
-        this.exerciseImageBase64 = exerciseImageBase64;
+    public void setIcon(Icon icon) {
+        this.icon = icon;
     }
+
+    
 }

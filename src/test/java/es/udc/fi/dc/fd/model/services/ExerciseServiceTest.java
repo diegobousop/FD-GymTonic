@@ -6,9 +6,6 @@ import java.util.Optional;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-
-import es.udc.fi.dc.fd.model.entities.*;
-import jakarta.validation.constraints.Null;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
+import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.SerieDao;
@@ -133,12 +130,20 @@ public class ExerciseServiceTest {
             grupoMuscular.PIERNA,1
         );
     
+        // Añadir Burpees que también está en data.sql
         Exercise exercise5 = createExercise(
+            "Burpees",
+            "El burpee es un ejercicio fullbody que combina sentadilla, plancha y salto para trabajar fuerza, resistencia y cardio.",
+            grupoMuscular.FULLBODY,1
+        );
+    
+        Exercise exercise6 = createExercise(
             "Shoulder Press",
             "An upper body exercise that targets the shoulders and triceps.",
-            grupoMuscular.HOMBROS,1
+            grupoMuscular.HOMBRO,1  // Cambiar HOMBRO a HOMBROS
         );
 
+        // Primera página: 4 primeros ejercicios
         List<Exercise> exercises = List.of(exercise1, exercise2, exercise3, exercise4);
 
         Block<Exercise> returned = exerciseService.getValidatedExercises(0, 4);
@@ -150,8 +155,8 @@ public class ExerciseServiceTest {
 
         assertTrue(returned.getExistMoreItems());
 
-        List<Exercise> exercises2 = List.of(exercise5);
-
+        // Segunda página: Burpees y Shoulder Press
+        List<Exercise> exercises2 = List.of(exercise5, exercise6);
 
         Block<Exercise> returned2 = exerciseService.getValidatedExercises(1, 4);
 
@@ -199,7 +204,7 @@ public class ExerciseServiceTest {
 
         Block<Exercise> returned = exerciseService.getValidatedExercises(0, 10);
 
-        assertEquals(returned.getItems().size(), 5);
+        assertEquals(returned.getItems().size(), 6);
         assertFalse(returned.getExistMoreItems());
     }
     @Test
