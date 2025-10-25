@@ -73,5 +73,15 @@ public class UserConversor {
 		return new BlockDto<>(listOfUserDto, users.getExistMoreItems());
 	}
 
+	public static final ResumeUserDto toResumeUserDto(Users user){
+		return new ResumeUserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole().toString());
+	}
+
+	public static final BlockDto toBlockResumeUserDto(Block<Users> userBlock){
+		List<ResumeUserDto> list = userBlock.getItems().stream().map(u -> toResumeUserDto(u)).collect(Collectors.toList());
+		return new BlockDto<ResumeUserDto>(list ,userBlock.getExistMoreItems());
+	}
+
+
 }
 

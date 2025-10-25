@@ -88,4 +88,38 @@ public interface UserService {
 
 	Block<Users> getAllUser (int page, int size);
 
+	/**
+	 * Follow a user
+	 * @param idFollower id of the follower
+	 * @param idFollowed id of the user to follow
+	 * @return true if the user was followed, false if already following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	boolean followUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException;
+
+	/**
+	 * Unfollow a user
+	 * @param idFollower id of the follower
+	 * @param idFollowed id of the user to unfollow
+	 * @return true if the user was unfollowed, false if not following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	boolean unfollowUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException;
+
+	/**
+	 * Get followers of a user
+	 * @param id the id
+	 * @return list of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	Block<Users> getFollowers(Long id, int page, int size) throws InstanceNotFoundException;
+
+	/**
+	 * Get following of a user
+	 * @param id the id
+	 * @return list of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
+
 }

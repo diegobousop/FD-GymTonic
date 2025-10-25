@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
+import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.SerieDao;
@@ -131,10 +132,17 @@ public class ExerciseServiceTest {
             grupoMuscular.PIERNA,1
         );
     
+        // Añadir Burpees que también está en data.sql
         Exercise exercise5 = createExercise(
+            "Burpees",
+            "El burpee es un ejercicio fullbody que combina sentadilla, plancha y salto para trabajar fuerza, resistencia y cardio.",
+            grupoMuscular.FULLBODY,1
+        );
+    
+        Exercise exercise6 = createExercise(
             "Shoulder Press",
             "An upper body exercise that targets the shoulders and triceps.",
-            grupoMuscular.HOMBROS,1
+            grupoMuscular.HOMBRO,1  // Cambiar HOMBRO a HOMBROS
         );
 
         List<Exercise> exercises = List.of(exercise1, exercise2, exercise3, exercise4);
@@ -148,8 +156,8 @@ public class ExerciseServiceTest {
 
         assertTrue(returned.getExistMoreItems());
 
-        List<Exercise> exercises2 = List.of(exercise5);
-
+        // Segunda página: Burpees y Shoulder Press
+        List<Exercise> exercises2 = List.of(exercise5, exercise6);
 
         Block<Exercise> returned2 = exerciseService.getValidatedExercises(1, 4);
 
@@ -197,7 +205,7 @@ public class ExerciseServiceTest {
 
         Block<Exercise> returned = exerciseService.getValidatedExercises(0, 10);
 
-        assertEquals(returned.getItems().size(), 5);
+        assertEquals(returned.getItems().size(), 6);
         assertFalse(returned.getExistMoreItems());
     }
     @Test
@@ -207,7 +215,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty());
+       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty(),1L);
 
         assertEquals(Series.getItems(),serieDao.findByExercise(exercise1).getContent());
     }
@@ -220,7 +228,8 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
+
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(),1L);
 
         exerciseService.editSerie(Series.getItems().get(0),30,100);
         exerciseService.editSerie(Series.getItems().get(1),40,200);
@@ -241,7 +250,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty());
+        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(), 1L);
         Serie serie=exerciseService.getSerie(Series.getItems().get(0).getId());
         assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()),serie);
         assertNotEquals(exerciseService.getSerie(Series.getItems().get(1).getId()),serie);
@@ -251,15 +260,15 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void getSeriesByExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public void getSeriesByExerciseAndRoutineTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
         Users creator = userService.login("trainer1", "12345");
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
-        Block<Serie> series= exerciseService.getSeriesByExercise(idExercise);
+        Block<Serie> series= exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L);
         assertEquals(true,series.getItems().isEmpty());
-        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty());
-        series= exerciseService.getSeriesByExercise(idExercise);
-        assertEquals(series,exerciseService.getSeriesByExercise(idExercise));
+        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty(),1L);
+        series= exerciseService.getSeriesByExerciseAndRoutine(idExercise,1L );
+        assertEquals(series,exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L));
 
     }
 
@@ -405,13 +414,70 @@ public class ExerciseServiceTest {
         assertThrows(InstanceNotFoundException.class, () -> exerciseService.declineExercise(admin.getId(), nonExistentExerciseId));
     }
 
-    
+    @Test
+    public void addBlockedExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+        Users creator = userService.login("admin1", "12345");
+        Exercise ex1 = new Exercise("ejercicio bloqueado", "ejercicio bloqueado de prueba", grupoMuscular.PECHO,1);
+        ex1.setDifficulty(Difficulty.FACIL);
+        ex1.setEquipment(Equipment.POLEA_CABLE);
+        Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
 
-    
+        exerciseService.blockExercise(creator.getId(), idExercise);
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+
+        assertEquals(exercise1.getExerciseName(), "ejercicio bloqueado");
+        assertFalse(exercise1.isValidated());
+    }
+
+    @Test
+    public void exerciseBlockedDefaultsToFalseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+        Users creator = userService.login("admin1", "12345");
+        Users creator2 = userService.login("trainer1", "12345");
+
+        Exercise ex1 = new Exercise("ejercicio no bloqueado", "ejercicio de prueba", grupoMuscular.PECHO,1);
+        ex1.setDifficulty(Difficulty.FACIL);
+        ex1.setEquipment(Equipment.POLEA_CABLE);
+
+        Exercise ex2 = new Exercise("ejercicio entrenador", "ejercicio de prueba", grupoMuscular.PECHO,1);
+        ex2.setDifficulty(Difficulty.FACIL);
+        ex2.setEquipment(Equipment.POLEA_CABLE);
+        // No se establece blocked explícitamente
+        Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
+        Long idExercise2 = exerciseService.addExercise(creator2.getId(), ex2);
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise2 = exerciseDao.getById(idExercise2);
+
+        assertEquals(exercise1.getExerciseName(), "ejercicio no bloqueado");
+        assertTrue(exercise1.isValidated());
+
+        assertFalse(exercise2.isValidated());
+        assertNull(exercise2.getValidator());
+    }
+
+    @Test
+    public void updateExerciseBlockedStatusTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+        Users creator = userService.login("admin1", "12345");
+        Exercise ex1 = new Exercise("ejercicio para bloquear", "ejercicio de prueba", grupoMuscular.PECHO,1);
+        ex1.setDifficulty(Difficulty.FACIL);
+        ex1.setEquipment(Equipment.POLEA_CABLE);
+
+        Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        assertTrue(exercise1.isValidated());
+
+        // Bloquear el ejercicio
+        exerciseService.blockExercise(creator.getId(), idExercise);
+
+        assertFalse(exercise1.isValidated());
+        assertEquals(exercise1.getValidator(), creator);
+
+        // Desbloquear el ejercicio
+        exercise1 = exerciseService.validateExercise(creator.getId(), idExercise);
+        assertTrue(exercise1.isValidated());
 
 
-
-
-
-
+    }
 }

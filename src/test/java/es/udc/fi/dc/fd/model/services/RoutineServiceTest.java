@@ -1,11 +1,14 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
@@ -46,6 +49,9 @@ public class RoutineServiceTest {
     
     @Autowired
     private AvatarDao avatarDao;
+
+    @Autowired
+    private SerieDao serieDao;
 
     private Users createUser(String userName) {
         Optional<Avatar> avatar = avatarDao.findByName("default");
@@ -155,7 +161,7 @@ public class RoutineServiceTest {
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise3.getId());}}, (long) 90, true);
             
-        assertEquals(Arrays.asList(routine1, routine2), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routineDao.findById(1L).get(),routine1, routine2), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
 
     }
 
@@ -173,12 +179,12 @@ public class RoutineServiceTest {
         routine3 = routineService.createRoutine(creator.getId(), routine3.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
-        assertEquals(Arrays.asList(routine1, routine2, routine3), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
+        assertEquals(Stream.of(routineDao.findById(1L).get(),routine1, routine2, routine3).toList(), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
     }
     
     @Test
     public void testViewAllRoutinesWithoutRoutines() throws LoginUserBlockedException, InstanceNotFoundException, IncorrectLoginException {
-        Users user = userService.login("admin1", "12345");
+        Users user = userService.login("trainer1", "12345");
         assertEquals(Arrays.asList(), routineService.viewAllRoutines(user.getId(), PageRequest.of(0, 10)).getContent());
     }
 
@@ -198,7 +204,7 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testGetRoutineByIdNonExistent() throws LoginUserBlockedException, InstanceNotFoundException, PermissionException, IncorrectLoginException {
         Users user = userService.login("admin1", "12345");
-        Long id = 1L;
+        Long id = 2L;
         routineService.getRoutineById(id, user.getId());
     } 
 
@@ -351,7 +357,7 @@ public class RoutineServiceTest {
         Routine routine3 = createRoutine("routine3", creator2);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         
-        assertEquals(Arrays.asList(), routineService.findByFilters(creator2.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());        
+        assertEquals(Arrays.asList(), routineService.findByFilters(creator1.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());
 
         routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
@@ -361,7 +367,7 @@ public class RoutineServiceTest {
             new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
         assertEquals(Arrays.asList(routine1, routine2), routineService.findByFilters(creator1.getId(), creator1.getId(), null,PageRequest.of(0, 10)).getContent());
-        assertEquals(Arrays.asList(routine3), routineService.findByFilters(creator2.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());
+        assertEquals(Arrays.asList(routineDao.findById(1L).get(),routine3), routineService.findByFilters(creator2.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());
     }
 
 
@@ -404,4 +410,87 @@ public class RoutineServiceTest {
         (creator2.getId(), creator2.getId(), "P",PageRequest.of(0, 10)).getContent());
     }
 
+    @Test
+    public void testCreateTrainingFromRoutineSuccess() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            creator.getId(),
+            routine.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series
+        );
+
+        assertEquals("Training 1", createdTraining.getName());
+        assertEquals("Description of training", createdTraining.getDescription());
+        assertEquals(45L, createdTraining.getDuration());
+        assertTrue(createdTraining.getIsPublic());
+
+        serieDao.findByTrainingId(createdTraining.getId()).forEach(serie -> {
+            assertEquals(createdTraining, serie.getTraining());
+            assertEquals(exercise1, serie.getExercise());
+        });
+
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testCreateTrainingFromRoutineWithInvalidUser() throws Exception {
+        routineService.createTrainingFromRoutine(
+            999999L,
+            1L,
+            "Training",
+            "Description",
+            30L,
+            true,
+            new ArrayList<Serie>()
+        );
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testCreateTrainingFromRoutineWithInvalidRoutine() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        
+        routineService.createTrainingFromRoutine(
+            creator.getId(),
+            999999L,
+            "Training",
+            "Description",
+            30L,
+            true,
+            new ArrayList<Serie>()
+        );
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testCreateTrainingFromRoutineWithInvalidExercise() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", new ArrayList<Long>(), 60L, true);
+        
+        Serie serie = new Serie();
+        Exercise invalidExercise = new Exercise();
+        invalidExercise.setId(999999L);
+        serie.setExercise(invalidExercise);
+        serie.setRepeticiones(10);
+        serie.setPeso(50);
+        serie.setNumeroSerie(0);
+        
+        routineService.createTrainingFromRoutine(
+            creator.getId(),
+            routine.getId(),
+            "Training",
+            "Description",
+            30L,
+            true,
+            new ArrayList<Serie>(){{add(serie);}}
+        );
+    }
 }

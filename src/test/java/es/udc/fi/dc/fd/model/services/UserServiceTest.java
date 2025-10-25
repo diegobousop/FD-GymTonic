@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -222,4 +223,95 @@ public class UserServiceTest {
         assertEquals(RoleType.USER, result.getItems().get(2).getRole());
 	}
 
+	@Test
+	public void testFollowUser() throws InstanceNotFoundException, DuplicateInstanceException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+
+		assertEquals(user2.getFollowers().size(), 1);
+		assertEquals(user2.getFollowers().get(0), user1);
+		assertEquals(user1.getFollowing().size(), 1);
+		assertEquals(user1.getFollowing().get(0), user2);
+
+	}
+
+	@Test
+	public void testUnfollowUser() throws InstanceNotFoundException, DuplicateInstanceException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertEquals(user2.getFollowers().size(), 1);
+		assertEquals(user2.getFollowers().get(0), user1);
+		assertEquals(user1.getFollowing().size(), 1);
+		assertEquals(user1.getFollowing().get(0), user2);
+
+		assertTrue(userService.unfollowUser(user1.getId(), user2.getId()));
+
+		assertEquals(user2.getFollowers().size(), 0);
+		assertEquals(user1.getFollowing().size(), 0);
+	}
+
+	@Test
+	public void testFollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertFalse(userService.followUser(user1.getId(), user2.getId()));
+
+	}
+
+	@Test
+	public void testUnfollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+
+		assertTrue(userService.unfollowUser(user1.getId(), user2.getId()));
+		assertFalse(userService.unfollowUser(user1.getId(), user2.getId()));
+
+	}
+
+	@Test
+	public void testGetFollowers() throws InstanceNotFoundException, DuplicateInstanceException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");	
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertFalse(userService.followUser(user1.getId(), user2.getId()));
+
+		Block<Users> followers = userService.getFollowers(user2.getId(), 0,5);
+
+		assertEquals(user1, followers.getItems().get(0));
+
+	}
+
+	@Test
+	public void testGetFollowing() throws InstanceNotFoundException, DuplicateInstanceException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertFalse(userService.followUser(user1.getId(), user2.getId()));
+
+		Block<Users> following = userService.getFollowing(user1.getId(), 0,5);
+
+		assertEquals(user2, following.getItems().get(0));
+	}
 }

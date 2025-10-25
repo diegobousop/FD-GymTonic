@@ -80,4 +80,6 @@ public class ExerciseSummaryDto {
     public void setOwnerAvatar(AvatarDto ownerAvatar) {
         this.ownerAvatar = ownerAvatar;
     }
+
+
 }
