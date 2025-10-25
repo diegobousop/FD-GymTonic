@@ -18,7 +18,7 @@ public class Exercise {
     private grupoMuscular grupoMuscular;
     private int numeroSeries;
     private Users creator;
-    private boolean validated;
+    private boolean validated; //false si está sin validar o bloqueado, true si está validado
     private Users validator;
     private Difficulty difficulty;
     private Equipment equipment;
