@@ -510,4 +510,40 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.items[1].peso").value(150))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
+
+    @Test
+    public void addBlockedExerciseTest() throws Exception{
+        
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("blocked exercise test", "blocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE, true);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    public void addUnblockedExerciseTest() throws Exception{
+        
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("unblocked exercise test", "unblocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE, false);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+    }
 }
