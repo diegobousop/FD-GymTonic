@@ -3,8 +3,9 @@ import * as userService from "./userService";
 import * as routineService from "./routineService";
 import * as exerciseService from "./exerciseService";
 import * as imageService from "./imageService";
+import * as notificationService from "./notificationService";
 
 
 export { default as NetworkError } from "./NetworkError";
 
-export default { init, userService, routineService, exerciseService, imageService };
+export default { init, userService, routineService, exerciseService, imageService, notificationService };

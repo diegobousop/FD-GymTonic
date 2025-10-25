@@ -10,9 +10,7 @@ import java.util.List;
 
 public class SerieConversor {
 
-    public static final Serie toSerie(SerieDto serieDto){
-        return new Serie(serieDto.getRepeticiones(), serieDto.getPeso(),serieDto.getNumeroSerie(),serieDto.getExercise(),serieDto.getRoutine());
-    }
+
 
 
     public static final SerieDto toSerieDto(Serie serie){
@@ -23,9 +21,7 @@ public class SerieConversor {
         return serieList.stream().map(SerieConversor::toSerieDto).toList();
     }
 
-    public static final List<Serie> toSeries(List<SerieDto> serieDtos){
-        return serieDtos.stream().map(SerieConversor::toSerie).toList();
-    }
+
 
     
 

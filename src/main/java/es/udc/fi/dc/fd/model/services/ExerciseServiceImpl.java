@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -123,13 +124,17 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Block<Serie> getSeriesByExercise(long exercise) {
+    public Block<Serie> getSeriesByExerciseAndRoutine(long exercise, long routine)  {
 
-        if (exerciseDao.findById( exercise).isEmpty())
+        if (exerciseDao.findById( exercise).isEmpty() || routineDao.findById(routine).isEmpty())
             throw new NoSuchElementException("project.entities.serie");
         else{
             Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
-        return new Block<>(slice.getContent(), slice.hasNext());
+            List<Serie> filtered = slice.getContent().stream()
+                    .filter(serie -> serie.getRoutine() != null
+                            && serie.getRoutine().getId() == routine)
+                    .toList();
+            return new Block<>(filtered, slice.hasNext());
         }
     }
 

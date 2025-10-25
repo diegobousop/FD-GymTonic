@@ -25,7 +25,7 @@ public interface ExerciseService {
 
     Serie getSerie(Long serieId);
 
-    Block<Serie>getSeriesByExercise(long exercise);
+    Block<Serie> getSeriesByExerciseAndRoutine(long exercise,long routine);
 
     Exercise validateExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
 

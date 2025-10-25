@@ -45,6 +45,9 @@ public class RoutineServiceImpl implements RoutineService {
     @Autowired
     private TrainingDao trainingDao;
 
+    @Autowired
+    private NotificationService notificationService;
+    
     @Override
     public Routine createRoutine( Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws DuplicateInstanceException,
         InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException {
@@ -69,6 +72,10 @@ public class RoutineServiceImpl implements RoutineService {
             isPublic = true;
         }
         Routine routine = new Routine(name, found, creator, duration, LocalDateTime.now().withNano(0), isPublic);
+        
+        if(isPublic && creator.getFollowers()!=null) {
+            notificationService.notifyFollowers(creatorId, routine);
+        }
 
         routineDao.save(routine);
 
@@ -152,8 +159,9 @@ public class RoutineServiceImpl implements RoutineService {
         routine.setName(name);
         routine.setExercises(foundExercises);
         routine.setDuration(duration);
-        if (isPublic != null) {
+        if (isPublic != null && creator.getFollowers() != null) {
             routine.setIsPublic(isPublic);
+            notificationService.notifyFollowers(routine.getCreator().getId(), routine);
         }
         routine.setModificationDate(LocalDateTime.now().withNano(0));
         
