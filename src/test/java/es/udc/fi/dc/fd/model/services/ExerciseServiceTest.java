@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -57,7 +58,6 @@ public class ExerciseServiceTest {
         Exercise exercise = new Exercise(name, description, grupo, numeroSeries);
         exercise.setDifficulty(Difficulty.FACIL);
         exercise.setEquipment(Equipment.POLEA_CABLE);
-        exercise.setBlocked(false);
         return exercise;
     }
 
@@ -67,13 +67,11 @@ public class ExerciseServiceTest {
         Exercise ex1 = new Exercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1);
         ex1.setDifficulty(Difficulty.FACIL);
         ex1.setEquipment(Equipment.POLEA_CABLE);
-        ex1.setBlocked(false);
         Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
 
         Exercise ex2 = new Exercise("ejercicio de prueba 2", "ejercicio de prueba", grupoMuscular.PECHO,1);
         ex2.setDifficulty(Difficulty.INTERMEDIO);
         ex2.setEquipment(Equipment.MAQUINA);
-        ex2.setBlocked(false);
         Long idExercise2 = exerciseService.addExercise(creator.getId(), ex2);
 
         //los ejercicios deberian insertarse uno detras de otro
@@ -147,7 +145,8 @@ public class ExerciseServiceTest {
             grupoMuscular.ABDOMEN,3
         );
         exercise6.setDifficulty(Difficulty.INTERMEDIO);
-        exercise6.setBlocked(true);
+        exercise6.setValidated(true);
+        exercise6.setValidator(creator);
 
         List<Exercise> exercises = List.of(exercise1, exercise2, exercise3, exercise4);
 
@@ -160,7 +159,7 @@ public class ExerciseServiceTest {
 
         assertTrue(returned.getExistMoreItems());
 
-        List<Exercise> exercises2 = List.of(exercise5, exercise6);
+        List<Exercise> exercises2 = List.of(exercise5);
 
 
         Block<Exercise> returned2 = exerciseService.getValidatedExercises(1, 4);
@@ -209,7 +208,7 @@ public class ExerciseServiceTest {
 
         Block<Exercise> returned = exerciseService.getValidatedExercises(0, 10);
 
-        assertEquals(returned.getItems().size(), 6);
+        assertEquals(returned.getItems().size(), 5);
         assertFalse(returned.getExistMoreItems());
     }
     @Test
@@ -424,54 +423,64 @@ public class ExerciseServiceTest {
         Exercise ex1 = new Exercise("ejercicio bloqueado", "ejercicio bloqueado de prueba", grupoMuscular.PECHO,1);
         ex1.setDifficulty(Difficulty.FACIL);
         ex1.setEquipment(Equipment.POLEA_CABLE);
-        ex1.setBlocked(true);
         Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
+
+        exerciseService.blockExercise(creator.getId(), idExercise);
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
 
         assertEquals(exercise1.getExerciseName(), "ejercicio bloqueado");
-        assertTrue(exercise1.isBlocked());
+        assertFalse(exercise1.isValidated());
     }
 
     @Test
     public void exerciseBlockedDefaultsToFalseTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
+        Users creator2 = userService.login("trainer1", "12345");
+
         Exercise ex1 = new Exercise("ejercicio no bloqueado", "ejercicio de prueba", grupoMuscular.PECHO,1);
         ex1.setDifficulty(Difficulty.FACIL);
         ex1.setEquipment(Equipment.POLEA_CABLE);
+
+        Exercise ex2 = new Exercise("ejercicio entrenador", "ejercicio de prueba", grupoMuscular.PECHO,1);
+        ex2.setDifficulty(Difficulty.FACIL);
+        ex2.setEquipment(Equipment.POLEA_CABLE);
         // No se establece blocked explícitamente
         Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
+        Long idExercise2 = exerciseService.addExercise(creator2.getId(), ex2);
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise2 = exerciseDao.getById(idExercise2);
 
         assertEquals(exercise1.getExerciseName(), "ejercicio no bloqueado");
-        assertFalse(exercise1.isBlocked());
+        assertTrue(exercise1.isValidated());
+
+        assertFalse(exercise2.isValidated());
+        assertNull(exercise2.getValidator());
     }
 
     @Test
-    public void updateExerciseBlockedStatusTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void updateExerciseBlockedStatusTest() throws IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
         Users creator = userService.login("admin1", "12345");
         Exercise ex1 = new Exercise("ejercicio para bloquear", "ejercicio de prueba", grupoMuscular.PECHO,1);
         ex1.setDifficulty(Difficulty.FACIL);
         ex1.setEquipment(Equipment.POLEA_CABLE);
-        ex1.setBlocked(false);
+
         Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
 
         Exercise exercise1 = exerciseDao.getById(idExercise);
-        assertFalse(exercise1.isBlocked());
+        assertTrue(exercise1.isValidated());
 
         // Bloquear el ejercicio
-        exercise1.setBlocked(true);
-        exerciseDao.save(exercise1);
+        exerciseService.blockExercise(creator.getId(), idExercise);
 
-        Exercise exercise2 = exerciseDao.getById(idExercise);
-        assertTrue(exercise2.isBlocked());
+        assertFalse(exercise1.isValidated());
+        assertEquals(exercise1.getValidator(), creator);
 
         // Desbloquear el ejercicio
-        exercise2.setBlocked(false);
-        exerciseDao.save(exercise2);
+        exercise1 = exerciseService.validateExercise(creator.getId(), idExercise);
+        assertTrue(exercise1.isValidated());
 
-        Exercise exercise3 = exerciseDao.getById(idExercise);
-        assertFalse(exercise3.isBlocked());
+
     }
 }

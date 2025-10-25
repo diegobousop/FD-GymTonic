@@ -512,7 +512,7 @@ public class ExerciseControllerTest {
     }
 
     @Test
-    public void addBlockedExerciseTest() throws Exception{
+    public void testBlockExercise() throws Exception{
         
         LoginParamsDto loginParams = new LoginParamsDto();
         loginParams.setUserName("admin1");
@@ -520,12 +520,17 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("blocked exercise test", "blocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE, true);
+        ExerciseDto exerciseToAdd = new ExerciseDto("blocked exercise test", "blocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE);
 
         ObjectMapper mapper = new ObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
         .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        String exerciseId = response.andReturn().getResponse().getContentAsString();
+
+        mockMvc.perform(post("/api/exercise/blockExercise/" + exerciseId).header("Authorization", "Bearer " + user.getServiceToken()))
         .andExpect(status().isOk());
     }
 
@@ -538,7 +543,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         
-        ExerciseDto exerciseToAdd = new ExerciseDto("unblocked exercise test", "unblocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE, false);
+        ExerciseDto exerciseToAdd = new ExerciseDto("unblocked exercise test", "unblocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE);
 
         ObjectMapper mapper = new ObjectMapper();
 

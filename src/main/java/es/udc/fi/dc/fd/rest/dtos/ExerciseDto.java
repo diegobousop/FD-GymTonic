@@ -13,7 +13,6 @@ public class ExerciseDto {
     private int numeroSeries;
     private Difficulty difficulty;
     private Equipment equipment;
-    private boolean blocked;
 
     public ExerciseDto() {}
 
@@ -31,17 +30,6 @@ public class ExerciseDto {
         this.numeroSeries = numeroSeries;
         this.difficulty = difficulty;
         this.equipment = equipment;
-        this.blocked = false;
-    }
-
-    public ExerciseDto(String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment, boolean blocked) {
-        this.name = name;
-        this.descripcion = descripcion;
-        this.grupoMuscular = grupoMuscular;
-        this.numeroSeries = numeroSeries;
-        this.difficulty = difficulty;
-        this.equipment = equipment;
-        this.blocked = blocked;
     }
 
     public ExerciseDto(Long id, String name, String descripcion,  grupoMuscular grupoMuscular, int numeroSeries) {
@@ -50,7 +38,6 @@ public class ExerciseDto {
         this.descripcion = descripcion;
         this.grupoMuscular = grupoMuscular;
         this.numeroSeries = numeroSeries;
-        this.blocked = false;
     }
 
     public ExerciseDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment) {
@@ -61,7 +48,6 @@ public class ExerciseDto {
         this.numeroSeries = numeroSeries;
         this.difficulty = difficulty;
         this.equipment = equipment;
-        this.blocked = false;
     }
 
     public ExerciseDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment, boolean blocked) {
@@ -72,7 +58,6 @@ public class ExerciseDto {
         this.numeroSeries = numeroSeries;
         this.difficulty = difficulty;
         this.equipment = equipment;
-        this.blocked = blocked;
     }
 
     @NotNull
@@ -137,11 +122,4 @@ public class ExerciseDto {
         this.equipment = equipment;
     }
 
-    public boolean isBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
 }

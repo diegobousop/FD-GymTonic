@@ -10,7 +10,6 @@ public class ExerciseSummaryDto {
     private grupoMuscular grupoMuscular;
     private String ownerName;
     private AvatarDto ownerAvatar;
-    private boolean blocked;
 
 
 
@@ -23,17 +22,6 @@ public class ExerciseSummaryDto {
         this.grupoMuscular = grupoMuscular;
         this.ownerName = ownerName;
         this.ownerAvatar = ownerAvatar;
-        this.blocked = false;
-    }
-
-    public ExerciseSummaryDto(Long id, String name, String descripcion,  grupoMuscular grupoMuscular, String ownerName, AvatarDto ownerAvatar, boolean blocked) {
-        this.id = id; 
-        this.name = name;
-        this.descripcion = descripcion;
-        this.grupoMuscular = grupoMuscular;
-        this.ownerName = ownerName;
-        this.ownerAvatar = ownerAvatar;
-        this.blocked = blocked;
     }
 
     @NotNull
@@ -93,11 +81,5 @@ public class ExerciseSummaryDto {
         this.ownerAvatar = ownerAvatar;
     }
 
-    public boolean isBlocked() {
-        return blocked;
-    }
 
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
 }

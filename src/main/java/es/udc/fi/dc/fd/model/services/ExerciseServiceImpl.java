@@ -182,5 +182,17 @@ public class ExerciseServiceImpl implements ExerciseService {
         exerciseDao.delete(foundExercise.get());
     }
 
+    @Override
+    public void blockExercise(Long userId, Long exerciseId) throws InstanceNotFoundException {
+
+        Optional<Exercise> foundExercise = exerciseDao.findById(exerciseId);
+        Users blocker = userDao.findById(userId).get();
+        if (foundExercise.isEmpty())
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+
+        foundExercise.get().setValidated(false);
+        foundExercise.get().setValidator(blocker); // para saber quien lo ha bloqueado
+        exerciseDao.save(foundExercise.get());
+    }
 
 }

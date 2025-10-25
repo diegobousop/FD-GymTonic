@@ -18,11 +18,10 @@ public class Exercise {
     private grupoMuscular grupoMuscular;
     private int numeroSeries;
     private Users creator;
-    private boolean validated;
+    private boolean validated; //false si está sin validar o bloqueado, true si está validado
     private Users validator;
     private Difficulty difficulty;
     private Equipment equipment;
-    private boolean blocked;
 
     public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
     
@@ -149,14 +148,6 @@ public class Exercise {
 
     public void setEquipment(Equipment equipment) {
         this.equipment = equipment;
-    }
-
-    public boolean isBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
     }
 
     @PrePersist

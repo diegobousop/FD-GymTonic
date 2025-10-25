@@ -16,7 +16,6 @@ public class ExerciseConversor {
             exerciseDto.getNumeroSeries());
         exercise.setDifficulty(exerciseDto.getDifficulty());
         exercise.setEquipment(exerciseDto.getEquipment());
-        exercise.setBlocked(exerciseDto.isBlocked());
         return exercise;
     }
     public static final Exercise toExerciseId(ExerciseDto exerciseDto){
@@ -28,7 +27,6 @@ public class ExerciseConversor {
             exerciseDto.getNumeroSeries());
         exercise.setDifficulty(exerciseDto.getDifficulty());
         exercise.setEquipment(exerciseDto.getEquipment());
-        exercise.setBlocked(exerciseDto.isBlocked());
         return exercise;
     }
 
@@ -41,8 +39,7 @@ public class ExerciseConversor {
             exercise.getGrupoMuscular(), 
             exercise.getNumeroSeries(),
             exercise.getDifficulty(),
-            exercise.getEquipment(),
-            exercise.isBlocked());
+            exercise.getEquipment());
     }
 
     public static final List<ExerciseDto> toExerciseDtos(List<Exercise> exercises){
@@ -60,8 +57,7 @@ public class ExerciseConversor {
             exercise.getExerciseDescription(), 
             exercise.getGrupoMuscular(), 
             exercise.getCreator().getUserName(), 
-            new AvatarDto(exercise.getCreator().getAvatar().getName(), exercise.getCreator().getAvatar().getAvatarBase64()),
-            exercise.isBlocked());
+            new AvatarDto(exercise.getCreator().getAvatar().getName(), exercise.getCreator().getAvatar().getAvatarBase64()));
     }
 
     public static final List<ExerciseSummaryDto> toExerciseSummaryDtos(List<Exercise> exercises){

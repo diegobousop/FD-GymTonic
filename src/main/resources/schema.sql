@@ -48,7 +48,6 @@ CREATE TABLE Exercise (
     validator BIGINT,
     difficulty TINYINT NOT NULL DEFAULT 0, /*0 Easy, 1 Medium, 2 Hard*/
     equipment TINYINT NOT NULL DEFAULT 3, /*0 Polea/cable, 1 Maquina, 2 Peso_Libre, 3 Otros*/
-    blocked BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (creator) REFERENCES Users(id),
     FOREIGN KEY (validator) REFERENCES Users(id)
 );

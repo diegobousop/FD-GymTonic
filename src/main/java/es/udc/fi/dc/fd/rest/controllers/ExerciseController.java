@@ -59,10 +59,10 @@ public class ExerciseController {
     }
 
     @GetMapping("/getValidatedExercises")
-    public BlockDto<ExerciseDto> getValidatedExercises(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "0") int size){
+    public BlockDto<ExerciseSummaryDto> getValidatedExercises(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "0") int size){
         Block<Exercise> returned = exerciseService.getValidatedExercises(page, size);
-        return new BlockDto<>(ExerciseConversor.toExerciseDtos(returned.getItems()), returned.getExistMoreItems());
-    }    
+        return new BlockDto<>(ExerciseConversor.toExerciseSummaryDtos(returned.getItems()), returned.getExistMoreItems());
+    }
 
     @GetMapping("/getUnvalidatedExercises")
     public BlockDto<ExerciseSummaryDto> getUnvalidatedExercises(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "0") int size){
@@ -108,6 +108,10 @@ public class ExerciseController {
         exerciseService.declineExercise(userId, exerciseId);
     }
 
+    @PostMapping("/blockExercise/{exerciseId}")
+    public void blockExercise(@RequestAttribute Long userId, @PathVariable Long exerciseId) throws InstanceNotFoundException {
+        exerciseService.blockExercise(userId, exerciseId);
+    }
 
 
 }
