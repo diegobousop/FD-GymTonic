@@ -15,7 +15,8 @@ const PAGE_TITLES = {
   createExercise: 'Crear Ejercicio',
   'change-password': 'Cambiar Contraseña',
   validateExercises: 'Validar Ejercicios',
-  search: 'Resultados de Búsqueda'
+  search: 'Resultados de Búsqueda',
+  blockExercises: 'Bloquear Ejercicios'
 };
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');

@@ -49,7 +49,9 @@ const SideMenu = ({ activePage, setActivePage }) => {
       { user && user.role === 'ADMIN' &&
         <MenuItem title="Validar Ejercicios" activePage={isActive} page={'validateExercises'} onClick={() => go('validateExercises', '/admin/validateExercises')} icon={CreateExerciseIcon} />
       }
-      
+      { user && user.role === 'ADMIN' &&
+        <MenuItem title="Bloquear Ejercicios" activePage={isActive} page={'blockExercises'} onClick={() => go('blockExercises', '/admin/blockExercises')} icon={CreateExerciseIcon} />
+      }
     </div>
   )
 }
