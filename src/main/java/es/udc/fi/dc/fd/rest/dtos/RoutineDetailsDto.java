@@ -6,14 +6,13 @@ import java.util.List;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-
-public class RoutineDto {
+public class RoutineDetailsDto {
 
     private Long id;
 
     private String name;
 
-    private List<ExerciseDto> exercises;
+    private List<ExerciseRoutineDto> exercises;
 
     private String creator;
 
@@ -22,29 +21,19 @@ public class RoutineDto {
     private Long duration; // Duration in minutes
 
     private LocalDateTime modificationDate;
-
+    
     private Boolean isPublic;
 
-    public RoutineDto() {
+    public RoutineDetailsDto() {
     }
 
-    public RoutineDto(Long id, String name, List<ExerciseDto> exercises, String creator, String creatorAvatarBase64, Long duration,
+    public RoutineDetailsDto(Long id, String name, List<ExerciseRoutineDto> exercises, String creator, String creatorAvatarBase64, Long duration,
             LocalDateTime modificationDate, Boolean isPublic) {
         this.id = id;
         this.name = name;
         this.exercises = exercises;
         this.creator = creator;
-        this.duration = duration;
-        this.modificationDate = modificationDate;
-        this.isPublic = isPublic;
         this.creatorAvatarBase64 = creatorAvatarBase64;
-    }
-
-    public RoutineDto(Long id, String name, List<ExerciseDto> exercises,  Long duration,
-            LocalDateTime modificationDate, Boolean isPublic) {
-        this.id = id;
-        this.name = name;
-        this.exercises = exercises;
         this.duration = duration;
         this.modificationDate = modificationDate;
         this.isPublic = isPublic;
@@ -67,10 +56,10 @@ public class RoutineDto {
     }
     
     @NotNull
-    public List<ExerciseDto> getExercises() {
+    public List<ExerciseRoutineDto> getExercises() {
         return exercises;
     }
-    public void setExercises(List<ExerciseDto> exercises) {
+    public void setExercises(List<ExerciseRoutineDto> exercises) {
         this.exercises = exercises;
     }
 
@@ -107,6 +96,7 @@ public class RoutineDto {
         this.isPublic = isPublic;
     }
 
+    @NotNull
     public String getCreatorAvatarBase64() {
         return creatorAvatarBase64;
     }
@@ -114,5 +104,4 @@ public class RoutineDto {
     public void setCreatorAvatarBase64(String creatorAvatarBase64) {
         this.creatorAvatarBase64 = creatorAvatarBase64;
     }
-
 }

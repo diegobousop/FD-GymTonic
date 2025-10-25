@@ -1,9 +1,9 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,16 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineDao;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.SerieDao;
+import es.udc.fi.dc.fd.model.entities.Training;
+import es.udc.fi.dc.fd.model.entities.TrainingDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
-import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
-
-import es.udc.fi.dc.fd.model.entities.RoutineDao;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-
-import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
 @Service
@@ -36,6 +38,13 @@ public class RoutineServiceImpl implements RoutineService {
     private RoutineDao routineDao;
     @Autowired
     private ExerciseDao exerciseDao;
+
+    @Autowired
+    private SerieDao serieDao;
+
+    @Autowired
+    private TrainingDao trainingDao;
+
     @Autowired
     private NotificationService notificationService;
     
@@ -69,6 +78,19 @@ public class RoutineServiceImpl implements RoutineService {
         }
 
         routineDao.save(routine);
+
+        for (Exercise exercise : found) {
+            for(int i = 0; i < exercise.getNumeroSeries(); i++) {
+                Serie serie = new Serie();
+                serie.setExercise(exercise);
+                serie.setPeso(40);
+                serie.setRepeticiones(8);
+                serie.setNumeroSerie(i);
+                serie.setRoutine(routine); 
+                serieDao.save(serie);
+            }
+        }
+
         return routine;
     }
 
@@ -188,5 +210,96 @@ public class RoutineServiceImpl implements RoutineService {
         }
 
         return routineDao.findAll(spec, pageable);
+    }
+
+    @Override
+    public void createTraining(Long userId, Long routineId, String trainingName, String trainingDescription, Boolean isPublic) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
+
+        Training training = new Training();
+        training.setName(trainingName);
+        training.setDescription(trainingDescription);
+        training.setCreationDate(LocalDateTime.now().withNano(0));
+        training.setIsPublic(isPublic != null ? isPublic : true);
+        training.setUser(user);
+        training.setRoutine(routine);
+
+        trainingDao.save(training);
+    }
+
+    @Override
+    public List<Serie> getDefaultRoutineSeries(Long routineId, Long exerciseId) throws InstanceNotFoundException {
+        
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
+
+        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
+
+        if (optionalExercise.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        }
+
+        Exercise exercise = optionalExercise.get();
+
+        List<Serie> exerciseSeries = serieDao.findByRoutineAndExercise(routine, exercise);
+
+        return exerciseSeries;
+    }
+
+    @Override
+    public Training createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
+
+        Training training = new Training();
+        training.setName(trainingName);
+        training.setDescription(trainingDescription);
+        training.setCreationDate(LocalDateTime.now().withNano(0));
+        training.setIsPublic(isPublic != null ? isPublic : true);
+        training.setUser(user);
+        training.setRoutine(routine);
+        training.setCreationDate(LocalDateTime.now().withNano(0));
+        training.setDuration(duration);
+
+
+        for (Serie serie : series) {
+
+            Serie newSerie = new Serie();
+            newSerie.setRepeticiones(serie.getRepeticiones());
+            newSerie.setPeso(serie.getPeso());
+            newSerie.setNumeroSerie(serie.getNumeroSerie());
+
+            Optional<Exercise> optionalExercise = exerciseDao.findById(serie.getExercise().getId());
+            if (optionalExercise.isEmpty()) {
+                throw new InstanceNotFoundException("project.entities.exercise", serie.getExercise().getId());
+            }
+
+            newSerie.setExercise(optionalExercise.get());
+            newSerie.setRoutine(routine);
+            serie.setTraining(training);
+
+            serieDao.save(serie);
+        }
+
+        trainingDao.save(training);
+        
+        return training;
     }
 }

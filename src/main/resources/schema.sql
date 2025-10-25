@@ -1,6 +1,8 @@
+
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS Serie;
+DROP TABLE IF EXISTS Training;
 DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Routine;
 DROP TABLE IF EXISTS User_Follow;
@@ -48,6 +50,7 @@ CREATE TABLE Exercise (
     validator BIGINT,
     difficulty TINYINT NOT NULL DEFAULT 0, /*0 Easy, 1 Medium, 2 Hard*/
     equipment TINYINT NOT NULL DEFAULT 3, /*0 Polea/cable, 1 Maquina, 2 Peso_Libre, 3 Otros*/
+    iconId BIGINT,
     FOREIGN KEY (creator) REFERENCES Users(id),
     FOREIGN KEY (validator) REFERENCES Users(id)
 );
@@ -60,6 +63,7 @@ CREATE TABLE Routine (
     creator BIGINT, 
     duration BIGINT,
     modificationDate TIMESTAMP,
+    difficulty TINYINT DEFAULT 0,
     isPublic BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (creator) REFERENCES Users(id)
 );
@@ -72,6 +76,18 @@ CREATE TABLE Routine_Exercise (
     FOREIGN KEY (exercise_id) REFERENCES Exercise(id)
 );
 
+CREATE TABLE Training (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(60) NOT NULL,
+    description VARCHAR(255),
+    creationDate TIMESTAMP NOT NULL,
+    isPublic BOOLEAN DEFAULT TRUE,
+    userId BIGINT NOT NULL,
+    routineId BIGINT NOT NULL,
+    FOREIGN KEY (userId) REFERENCES Users(id),
+    FOREIGN KEY (routineId) REFERENCES Routine(id)
+);
+
 CREATE TABLE Serie (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     repeticiones INT NOT NULL,
@@ -79,11 +95,13 @@ CREATE TABLE Serie (
     numeroSerie INT NOT NULL,
     exerciseId BIGINT NOT NULL,
     routineId BIGINT NOT NULL,
+    trainingId BIGINT,
     FOREIGN KEY (exerciseId) REFERENCES Exercise(id),
-    FOREIGN KEY (routineId) REFERENCES  Routine(id)
+    FOREIGN KEY (routineId) REFERENCES  Routine(id),
+    FOREIGN KEY (trainingId) REFERENCES Training(id)
 );
 
--- SOME DATA FOR TESTING PURPOSES
+
 
 CREATE TABLE Images(
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
