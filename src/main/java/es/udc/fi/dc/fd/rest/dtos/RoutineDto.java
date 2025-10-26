@@ -15,6 +15,7 @@ public class RoutineDto {
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
     private Boolean isPublic;
+    private Boolean isFollowing;
 
     public RoutineDto() {
     }
@@ -97,4 +98,11 @@ public class RoutineDto {
         this.isPublic = isPublic;
     }
 
+    public Boolean getIsFollowing() { 
+        return isFollowing;
+    }
+
+    public void setIsFollowing(Boolean isFollowing) {
+        this.isFollowing = isFollowing;
+    }
 }
