@@ -86,7 +86,7 @@ export const blockExercise = (exerciseId, onSuccess, onErrors) =>
 
 export const createSerie = (exerciseId,routineId, onSuccess, onErrors) =>
     appFetch(
-        `/exercise/Series/create?exerciseId=${exerciseId}routineId=${routineId}`,
+        `/exercise/Series/create?exerciseId=${exerciseId}&routineId=${routineId}`,
         fetchConfig("POST"),
         onSuccess,
         onErrors
