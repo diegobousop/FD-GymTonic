@@ -7,7 +7,9 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 
 /**
@@ -32,7 +34,7 @@ public interface UserService {
 	 * @return the user
 	 * @throws IncorrectLoginException the incorrect login exception
 	 */
-	Users login(String userName, String password) throws IncorrectLoginException;
+	Users login(String userName, String password) throws LoginUserBlockedException ,IncorrectLoginException;
 	
 	/**
 	 * Login from id.
@@ -82,16 +84,7 @@ public interface UserService {
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
 	 */
-	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException;	
-	
-	
-	/**
-	* Check if a user is blocked 
-	* @param idBlocker id who blocks
-	* @param idBlocked id of user who might be block
-	* @throws AlreadyBlockException the user was already blocked
-	*/
-	boolean checkUserIsBlocked(Long idBlocker, Long idBlocked) throws AlreadyBlockException;
+	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
 
 	Block<Users> getAllUser (int page, int size);
 
@@ -128,4 +121,5 @@ public interface UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
+
 }

@@ -27,7 +27,9 @@ import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -108,7 +110,7 @@ public class UserServiceTest {
 	}
 
     @Test
-    public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
+    public void testChangePassword() throws LoginUserBlockedException ,DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
 
         Users user = createUser("userChange");
         userService.signUp(user, Users.RoleType.USER);
@@ -143,16 +145,19 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testBlockUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
+	public void testBlockUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.ADMIN);
 
-		userService.blockUser(user.getId(), 1L);
-		assertTrue(userService.checkUserIsBlocked(user.getId(), 1L));
+		Users userTest = createUser("userTest");
+		userService.signUp(userTest, Users.RoleType.USER);
+
+		userService.blockUser(user.getId(), userTest.getId());
+		assertTrue(userTest.getBlocked());
 	}
 
 	@Test
-	public void testBlockUserBlocked() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBlockUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.ADMIN);
 
@@ -167,9 +172,12 @@ public class UserServiceTest {
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.USER);
 
+		Users userTest = createUser("userTest");
+		userService.signUp(userTest, Users.RoleType.USER);
+
 
 		assertThrows(PermissionException.class, () -> {
-			userService.blockUser(user.getId(), 1L);
+			userService.blockUser(user.getId(), userTest.getId());
 		});
 	}
 

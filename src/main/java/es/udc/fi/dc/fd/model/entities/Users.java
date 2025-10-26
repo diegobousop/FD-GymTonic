@@ -3,7 +3,6 @@ package es.udc.fi.dc.fd.model.entities;
 import java.util.List;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -53,6 +52,10 @@ public class Users {
 	/** The role. */
 	private RoleType role;
 
+
+	/** Ban */
+	private Boolean blocked;
+
 	/** The followers. */
 	private List<Users> followers;
 
@@ -84,6 +87,7 @@ public class Users {
 		this.lastName = lastName;
 		this.email = email;
 		this.avatar = avatar;
+		this.blocked = false;
 	}
 
 	public Users( String userName, String password, String firstName, String lastName, String email,
@@ -248,6 +252,27 @@ public class Users {
 	public void setRole(RoleType role) {
 		this.role = role;
 	}
+
+
+		/**
+	 * Gets if is blocked.
+	 *
+	 * @return the bool
+	 */
+	public Boolean getBlocked() {
+		return blocked;
+	}
+
+	/**
+	 * Sets the role.
+	 *
+	 * @param role the new role
+	 */
+	public void setBlocked(Boolean blocked) {
+		this.blocked = blocked;
+	}
+
+
 
 	@ManyToMany
 	@JoinTable(name = "User_Follow",

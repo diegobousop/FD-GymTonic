@@ -24,6 +24,8 @@ public class RoutineDto {
     private LocalDateTime modificationDate;
 
     private Boolean isPublic;
+    
+    private Boolean isFollowing;
 
     public RoutineDto() {
     }
@@ -113,6 +115,14 @@ public class RoutineDto {
 
     public void setCreatorAvatarBase64(String creatorAvatarBase64) {
         this.creatorAvatarBase64 = creatorAvatarBase64;
+    }
+
+    public Boolean getIsFollowing() { 
+        return isFollowing;
+    }
+
+    public void setIsFollowing(Boolean isFollowing) {
+        this.isFollowing = isFollowing;
     }
 
 }

@@ -1,19 +1,8 @@
 package es.udc.fi.dc.fd.rest;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
-
 import java.util.Optional;
 
-import es.udc.fi.dc.fd.model.entities.*;
-
-import es.udc.fi.dc.fd.rest.dtos.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +14,34 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
-
+import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
+import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
+import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.TrainingParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseRoutineParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.SerieParamsDto;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -68,7 +76,7 @@ public class RoutineControllerTest {
     }
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
-			throws IncorrectLoginException {
+			throws LoginUserBlockedException, IncorrectLoginException {
         Optional<Avatar> avatar = avatarDao.findByName("default");
 		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 
@@ -704,4 +712,82 @@ public class RoutineControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void testFollowAndUnfollowRoutine() throws Exception {
+        // Crear un usuario entrenador
+        AuthenticatedUserDto trainer = createAuthenticatedUser("trainer_" + System.currentTimeMillis(), RoleType.TRAINER);
+
+        // Crear rutina pública con nombre único
+        RoutineParamsDto routineParams = new RoutineParamsDto();
+        routineParams.setName("Rutina_" + System.currentTimeMillis());
+        routineParams.setDuration(90L);
+        routineParams.setExercises(new ArrayList<>());
+        routineParams.setIsPublic(true);
+
+        ObjectMapper mapper = createObjectMapper();
+
+        MvcResult result = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + trainer.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(routineParams)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        RoutineDto createdRoutine = mapper.readValue(result.getResponse().getContentAsString(), RoutineDto.class);
+        Long routineId = createdRoutine.getId();
+
+        // Crear un usuario normal
+        AuthenticatedUserDto user = createAuthenticatedUser("user_" + System.currentTimeMillis(), RoleType.USER);
+
+        // FOLLOW
+        mockMvc.perform(post("/api/routines/" + routineId + "/follow")
+                .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNoContent());
+
+        // UNFOLLOW
+        mockMvc.perform(delete("/api/routines/" + routineId + "/unfollow")
+                .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void testGetFollowersByRoutine() throws Exception {
+        // Crear un usuario entrenador
+        AuthenticatedUserDto trainer = createAuthenticatedUser("trainer_" + System.currentTimeMillis(), RoleType.TRAINER);
+
+        // Crear rutina pública con nombre único
+        RoutineParamsDto routineParams = new RoutineParamsDto();
+        routineParams.setName("RutinaFollowers_" + System.currentTimeMillis());
+        routineParams.setDuration(60L);
+        routineParams.setExercises(new ArrayList<>());
+        routineParams.setIsPublic(true);
+
+        ObjectMapper mapper = createObjectMapper();
+
+        MvcResult result = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + trainer.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(routineParams)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        RoutineDto createdRoutine = mapper.readValue(result.getResponse().getContentAsString(), RoutineDto.class);
+        Long routineId = createdRoutine.getId();
+
+        // Crear un usuario que seguirá la rutina
+        AuthenticatedUserDto user = createAuthenticatedUser("user_" + System.currentTimeMillis(), RoleType.USER);
+
+        mockMvc.perform(post("/api/routines/" + routineId + "/follow")
+                .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNoContent());
+
+        // Consultar seguidores con el entrenador
+        mockMvc.perform(get("/api/routines/" + routineId + "/followers")
+                .header("Authorization", "Bearer " + trainer.getServiceToken())
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].userName").value(user.getUserDto().getUserName()))
+                .andExpect(jsonPath("$.existMoreItems").value(false));
+    }
 }
