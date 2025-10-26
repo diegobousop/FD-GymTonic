@@ -53,6 +53,9 @@ public class RoutineServiceTest {
     @Autowired
     private SerieDao serieDao;
 
+    @Autowired
+    private RoutineFollowDao routineFollowDao;
+
     private Users createUser(String userName) {
         Optional<Avatar> avatar = avatarDao.findByName("default");
         return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
@@ -492,5 +495,64 @@ public class RoutineServiceTest {
             true,
             new ArrayList<Serie>(){{add(serie);}}
         );
+    }
+
+    @Test
+    public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException {
+        // Crear usuario y rutina con nombres únicos
+        Users user = createUser("user_" + System.currentTimeMillis());
+        userService.signUp(user, Users.RoleType.USER);
+
+        Users trainer = userService.login("admin1", "12345");
+        Routine routine = createRoutine("routine_" + System.currentTimeMillis(), trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<>(), routine.getDuration(), true);
+
+        // Inicialmente no sigue la rutina
+        assertEquals(false, routineFollowDao.existsByUserIdAndRoutineId(user.getId(), routine.getId()));
+
+        // Seguir rutina
+        boolean followed = routineService.followRoutine(user.getId(), routine.getId());
+        assertEquals(true, followed);
+        assertEquals(true, routineFollowDao.existsByUserIdAndRoutineId(user.getId(), routine.getId()));
+
+        // Intentar seguir de nuevo -> debería devolver false
+        boolean followedAgain = routineService.followRoutine(user.getId(), routine.getId());
+        assertEquals(false, followedAgain);
+
+        // Dejar de seguir rutina
+        boolean unfollowed = routineService.unfollowRoutine(user.getId(), routine.getId());
+        assertEquals(true, unfollowed);
+        assertEquals(false, routineFollowDao.existsByUserIdAndRoutineId(user.getId(), routine.getId()));
+
+        // Intentar dejar de seguir de nuevo -> debería devolver false
+        boolean unfollowedAgain = routineService.unfollowRoutine(user.getId(), routine.getId());
+        assertEquals(false, unfollowedAgain);
+    }
+
+    @Test
+    public void testGetFollowersByRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException {
+        // Crear entrenador y rutina con nombres únicos
+        Users trainer = userService.login("trainer1", "12345");
+        Routine routine = createRoutine("routine_" + System.currentTimeMillis(), trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<>(), routine.getDuration(), true);
+
+        Users user1 = createUser("user1_" + System.currentTimeMillis());
+        Users user2 = createUser("user2_" + System.currentTimeMillis());
+        userService.signUp(user1, Users.RoleType.USER);
+        userService.signUp(user2, Users.RoleType.USER);
+
+        routineService.followRoutine(user1.getId(), routine.getId());
+        routineService.followRoutine(user2.getId(), routine.getId());
+
+        // Obtener seguidores
+        PageRequest pageable = PageRequest.of(0, 10);
+        Block<Users> followersBlock = routineService.getFollowersByRoutine(routine.getId(), trainer.getId(), pageable);
+
+        assertEquals(2, followersBlock.getItems().size());
+        assertEquals(false, followersBlock.getExistMoreItems());
+
+        // Verificar que los seguidores correctos están presentes
+        assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user1.getId())));
+        assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user2.getId())));
     }
 }

@@ -1,5 +1,6 @@
 
 DROP TABLE IF EXISTS Routine_Exercise;
+DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS Serie;
 DROP TABLE IF EXISTS Training;
@@ -75,6 +76,14 @@ CREATE TABLE Routine_Exercise (
     PRIMARY KEY (routine_id, exercise_id),
     FOREIGN KEY (routine_id) REFERENCES Routine(id),
     FOREIGN KEY (exercise_id) REFERENCES Exercise(id)
+);
+
+CREATE TABLE Routine_Follow (
+    user_id BIGINT NOT NULL,
+    routine_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id, routine_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (routine_id) REFERENCES Routine(id)
 );
 
 CREATE TABLE Training (
