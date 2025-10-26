@@ -21,7 +21,10 @@ import RoutineDetails from "../pages/routine-details-page";
 import CreateExercise from '../pages/create-exercise-page';
 import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
+import ViewAllUsers from '../pages/viewAllUsers-page';
 import SearchResultsPage from "../pages/search-results-page";
+import BlockExercises from '../pages/block-exercises-page';
+import CreateTraining from '../pages/create-training-page';
 import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
 
 const Body = () => {
@@ -43,8 +46,12 @@ const Body = () => {
     if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
     if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
     if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
+    if (path.startsWith("/admin/seeUsers")) { setActivePage('viewAllUsers'); return }
     if (path.startsWith("/search/full")) { setActivePage('search'); return }
+    if (path.startsWith("/admin/blockExercises")) { setActivePage('blockExercises'); return }
+    if (path.startsWith("/trainings/create-training")) { setActivePage('createTraining'); return }
     if (path.startsWith("/routines/my-followers")) { setActivePage('myFollowers'); return }
+
   }, [location.pathname])
 
   const showNavAndMenu = activePage !== 'intro' && activePage !== 'login' && activePage !== 'register';
@@ -76,6 +83,12 @@ const Body = () => {
             <Route path="/admin/validateExercises" element={
               <ProtectedPath role={["ADMIN","TRAINER"]} path={<ValidateExercises />} />
             } />
+            <Route path="/admin/seeUsers" element={
+              <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
+            } />
+            <Route path="/admin/seeUsers" element={
+              <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
+            } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />
             } />
@@ -83,6 +96,7 @@ const Body = () => {
             <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
             <Route path="/routines/my-routines" element={<ProtectedPath path={<MyRoutines />} />} />
             <Route path="/search/full" element={<ProtectedPath path={<SearchResultsPage />} />} />
+            <Route path="/trainings/create-training" element={<ProtectedPath path={<CreateTraining />} />} />
             <Route path="/routines/my-followers" element={<ProtectedPath role={["TRAINER"]} path={<MyRoutineFollowersPage />} />} />
           </Routes>
         </div>

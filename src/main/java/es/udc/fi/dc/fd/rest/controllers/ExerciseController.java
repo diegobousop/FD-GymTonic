@@ -77,11 +77,23 @@ public class ExerciseController {
     }
 
     @PostMapping("/Series")
-    public BlockDto<SerieDto> CreateSerie(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
+    public BlockDto<SerieDto> CreateSeries(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
             throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
 
         return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise), Optional.ofNullable(numSeries),routineId ).getItems()),false);
 
+    }
+
+    @PostMapping("/Series/create")
+    public SerieDto CreateSerie(@RequestParam long exerciseId, @RequestParam long routineId)
+        throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        return SerieConversor.toSerieDto((exerciseService.createSerie(exerciseId,routineId)));
+    }
+
+    @DeleteMapping("/Series/{serieId}")
+
+    public Boolean removeSerie(@PathVariable long serieId) throws InstanceNotFoundException {
+        return (exerciseService.removeSerie(serieId));
     }
 
     @PutMapping("/Series")

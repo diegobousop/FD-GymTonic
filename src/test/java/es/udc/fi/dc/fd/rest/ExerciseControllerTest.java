@@ -2,8 +2,7 @@ package es.udc.fi.dc.fd.rest;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Test;
@@ -378,7 +377,7 @@ public class ExerciseControllerTest {
 
 
     @Test
-    public void testCreateSerie_Ok() throws Exception {
+    public void testCreateSeries_Ok() throws Exception {
         // Crear usuario autenticado
         LoginParamsDto loginParams = new LoginParamsDto();
         loginParams.setUserName("admin1");
@@ -413,7 +412,7 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
-    public void testCreateSerieWithNumber_Ok() throws Exception {
+    public void testCreateSeriesWithNumber_Ok() throws Exception {
         // Crear usuario autenticado
         LoginParamsDto loginParams = new LoginParamsDto();
         loginParams.setUserName("admin1");
@@ -510,6 +509,51 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.items[1].peso").value(150))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
+
+
+
+    @Test
+    public void testCreateSerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        // Crear ExerciseDto de ejemplo
+
+
+
+        // Mockear el comportamiento del servicio
+
+
+        ObjectMapper mapper = createObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/Series/create?exerciseId=1&routineId=1" )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repeticiones").value(0))
+                .andExpect(jsonPath("$.peso").value(0));
+
+    }
+
+
+    @Test
+    public void testDeleteSerie_Ok() throws Exception {
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+
+        mockMvc.perform(delete("/api/exercise/Series/1" )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(content().string("true"));
+    }
+
 
     @Test
     public void testBlockExercise() throws Exception{

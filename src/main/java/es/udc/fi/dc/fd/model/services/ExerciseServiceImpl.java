@@ -101,17 +101,38 @@ public class ExerciseServiceImpl implements ExerciseService {
     @Override
     public Block<Serie> createSeries(Exercise exercise, Optional<Integer> n, long routine) throws  InstanceNotFoundException {
         int aux;
+        int aux2;
         if (!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
             throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
 
         aux = n.orElseGet(exercise::getNumeroSeries);
-
+        aux2=getSeriesByExerciseAndRoutine(exercise.getId(), routine).getItems().size();
         for(int i=1;i<=aux;i++){
-            Serie serie = new Serie(20,10,i,exercise, routineDao.getReferenceById(routine));
+            Serie serie = new Serie(20,10,i+aux2,exercise, routineDao.getReferenceById(routine));
             serieDao.save(serie);
         }
         Slice<Serie> slice= serieDao.findByExercise(exercise);
         return new Block<>(slice.getContent(), slice.hasNext());
+    }
+
+    @Override
+    public Serie createSerie(long exercise, long routine) throws InstanceNotFoundException {
+        int aux;
+        if(exerciseDao.findById(exercise).isEmpty())
+            throw new InstanceNotFoundException("project.entities.exercise", exercise);
+        if (!routineDao.existsById(routine))
+            throw new InstanceNotFoundException("project.entities.routine", routine);
+        aux=getSeriesByExerciseAndRoutine(exercise, routine).getItems().size();
+        Serie serie= new Serie(0,0,aux+1,exerciseDao.findById(exercise).get(),routineDao.getReferenceById(routine));
+        serieDao.save(serie);
+        return serie;
+    }
+
+    @Override
+    public Boolean removeSerie(long SerieId) throws InstanceNotFoundException {
+        if(!serieDao.existsById(SerieId)) throw new InstanceNotFoundException("project.entities.serie", SerieId);
+        serieDao.deleteById(SerieId);
+        return (!serieDao.existsById(SerieId));
     }
 
     @Override

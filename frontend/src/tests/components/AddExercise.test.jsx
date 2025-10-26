@@ -37,12 +37,11 @@ describe('AddExercise', () => {
         expect(screen.getByText(/Numero series/i)).toBeInTheDocument();
         expect(screen.getByText(/Dificultad/i)).toBeInTheDocument();
         expect(screen.getByText(/Equipamiento/i)).toBeInTheDocument();
-        fireEvent.click(screen.getByText(/Grupo Muscular/i));
 
-        expect(screen.getByText('PECHO')).toBeInTheDocument();
-        expect(screen.getByText('PIERNA')).toBeInTheDocument();
-        expect(screen.getByText('BRAZOS')).toBeInTheDocument();
-        
+        expect(screen.getByText('Pecho')).toBeInTheDocument();
+        expect(screen.getByText('Pierna')).toBeInTheDocument();
+        expect(screen.getByText('Brazo')).toBeInTheDocument();
+
     });
 
     test('completa los campos de forma correcta', async () => {
@@ -71,17 +70,14 @@ describe('AddExercise', () => {
             target: { value: 1 },
         });
 
-        fireEvent.click(categoriaInput);
-        await waitFor(() => expect(screen.getByLabelText('PECHO')).toBeInTheDocument());
-        fireEvent.click(screen.getByLabelText('PECHO'));
+        await waitFor(() => expect(screen.getByLabelText('Pecho')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('Pecho'));
 
-        fireEvent.click(difficultyInput);
         await waitFor(() => expect(screen.getByLabelText('FACIL')).toBeInTheDocument());
         fireEvent.click(screen.getByLabelText('FACIL'));
 
-        fireEvent.click(equipmentInput);
-        await waitFor(() => expect(screen.getByLabelText('MAQUINA')).toBeInTheDocument());
-        fireEvent.click(screen.getByLabelText('MAQUINA'));
+        await waitFor(() => expect(screen.getByLabelText('Máquina')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('Máquina'));
 
         fireEvent.submit(screen.getByRole('button', {name: /enviar/i}));
 

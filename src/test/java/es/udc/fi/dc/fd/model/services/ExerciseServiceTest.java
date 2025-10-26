@@ -273,6 +273,54 @@ public class ExerciseServiceTest {
     }
 
     @Test
+    public void createSerieTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        Users creator = userService.login("trainer1", "12345");
+        long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Serie serie = exerciseService.createSerie(exercise1.getId(), 1L);
+
+        assertEquals(serie,serieDao.findByExercise(exercise1).getContent().get(0));
+    }
+
+    @Test
+    public void createSerieTestFailRoutine() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        Users creator = userService.login("trainer1", "12345");
+        long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        assertThrows(InstanceNotFoundException.class,()->exerciseService.createSerie(exercise1.getId(), 100L));
+
+    }
+
+    @Test
+    public void createSerieTestFailExercise() {
+
+
+        assertThrows(InstanceNotFoundException.class,()->exerciseService.createSerie(10L, 1L));
+
+    }
+
+    @Test
+    public void removeSerieTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+
+        Users creator = userService.login("trainer1", "12345");
+        long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,1));
+
+        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Serie serie = exerciseService.createSerie(exercise1.getId(), 1L);
+        assertEquals(true, exerciseService.removeSerie(serie.getId()));
+    }
+
+    @Test
+    public void removeSerieTestFail() {
+        assertThrows(InstanceNotFoundException.class, ()->exerciseService.removeSerie(100L));
+    }
+
+    @Test
     public void validateExerciseSuccessTest() 
     throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
 

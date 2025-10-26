@@ -17,6 +17,7 @@ const PAGE_TITLES = {
   validateExercises: 'Validar Ejercicios',
   search: 'Resultados de Búsqueda',
   blockExercises: 'Bloquear Ejercicios',
+  createTraining: 'Crear Entrenamiento',
   myFollowers: 'Control de Seguidores'
 };
 

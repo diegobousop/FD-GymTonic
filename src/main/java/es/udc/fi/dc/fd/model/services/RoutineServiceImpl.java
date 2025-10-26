@@ -84,7 +84,7 @@ public class RoutineServiceImpl implements RoutineService {
         routineDao.save(routine);
 
         for (Exercise exercise : found) {
-            for(int i = 0; i < exercise.getNumeroSeries(); i++) {
+            for(int i = 1; i <= exercise.getNumeroSeries(); i++) {
                 Serie serie = new Serie();
                 serie.setExercise(exercise);
                 serie.setPeso(40);
