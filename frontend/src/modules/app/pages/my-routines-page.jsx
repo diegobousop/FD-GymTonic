@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import backend from "../../../backend";
 import { UserContext } from "../components/common/user-provider";
 import Pager from '../components/common/pager';
-import Routine from '../components/common/routine';
-import { getProfile } from "../../../backend/userService"
+import RoutineCard from '../components/routine/routine-card';
 
 
 const MyRoutines = () => {
@@ -13,7 +12,6 @@ const MyRoutines = () => {
   const [routines, setRoutines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [profile, setProfile] = useState(null);
   
   const size = 4;
 
@@ -48,7 +46,7 @@ const MyRoutines = () => {
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10">
       <div className="flex flex-col space-y-4">
         {routines.map(routine => (
-          <Routine Routine routine={routine} key={routine.id}/>
+          <RoutineCard Routine routine={routine} key={routine.id}/>
         ))}
       </div>
 
