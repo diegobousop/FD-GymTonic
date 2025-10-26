@@ -15,6 +15,22 @@ const processLoginSignUp = (authenticatedUser, reauthenticationCallback, onSucce
   }
 };
 
+export const viewAllUsers = ({page, size}, onSuccess, onErrors) => 
+  appFetch(
+    `/users/getUsers?page=${page}`, 
+    fetchConfig("GET"),
+    onSuccess, 
+    onErrors
+  );
+
+export const blockUser = (userId, onSuccess, onErrors) => 
+  appFetch(
+    `/users/block/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+
 export const login = (
   userName,
   password,
