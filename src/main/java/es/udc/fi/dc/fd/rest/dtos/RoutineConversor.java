@@ -8,9 +8,15 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 public class RoutineConversor {
 
     public static RoutineDto toRoutineDto(Routine routine) {
-        RoutineDto routineDto = new RoutineDto(routine.getId(), routine.getName(),
-                ExerciseConversor.toExerciseDtos(routine.getExercises()), routine.getCreator().getUserName(), routine.getDuration(),
-                routine.getModificationDate(), routine.getIsPublic());
+        RoutineDto routineDto = new RoutineDto(
+            routine.getId(), 
+            routine.getName(),
+            ExerciseConversor.toExerciseDtos(routine.getExercises()), 
+            routine.getCreator().getUserName(), 
+            routine.getCreator().getAvatar().getAvatarBase64(),
+            routine.getDuration(),
+            routine.getModificationDate(), 
+            routine.getIsPublic());
         return routineDto;
     }
 

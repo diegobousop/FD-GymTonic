@@ -102,3 +102,33 @@ export const changePassword = (user, oldPassword, newPassword, onSuccess, onErro
     }
   );
 };
+
+export const followUser = (userId, onSuccess, onErrors) =>
+  appFetch(
+    `/users/follow/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+
+export const unfollowUser = (userId, onSuccess, onErrors) =>
+  appFetch(
+    `/users/unfollow/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowers = ({page,size}, onSuccess, onErrors) =>
+  appFetch(
+    `/users/followers?page=${page}&size=${size}`,
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowing = ({page,size}, onSuccess, onErrors) =>
+  appFetch(
+    `/users/following?page=${page}&size=${size}`,
+    onSuccess,
+    onErrors
+  );

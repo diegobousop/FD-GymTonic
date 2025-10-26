@@ -23,6 +23,7 @@ import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
 import ViewAllUsers from '../pages/viewAllUsers-page';
 import SearchResultsPage from "../pages/search-results-page";
+import BlockExercises from '../pages/block-exercises-page';
 
 const Body = () => {
 
@@ -45,6 +46,7 @@ const Body = () => {
     if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
     if (path.startsWith("/admin/seeUsers")) { setActivePage('viewAllUsers'); return }
     if (path.startsWith("/search/full")) { setActivePage('search'); return }
+    if (path.startsWith("/admin/blockExercises")) { setActivePage('blockExercises'); return }
   }, [location.pathname])
 
   const showNavAndMenu = activePage !== 'intro' && activePage !== 'login' && activePage !== 'register';
@@ -74,7 +76,10 @@ const Body = () => {
               <ProtectedPath role={["ADMIN","TRAINER"]} path={<CreateExercise />} />
             } />
             <Route path="/admin/validateExercises" element={
-              <ProtectedPath role={["ADMIN","TRAINER"]} path={<ValidateExercises />} />
+              <ProtectedPath role={["ADMIN"]} path={<ValidateExercises />} />
+            } />
+            <Route path="/admin/blockExercises" element={
+              <ProtectedPath role={["ADMIN"]} path={<BlockExercises />} />
             } />
             <Route path="/admin/seeUsers" element={
               <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />

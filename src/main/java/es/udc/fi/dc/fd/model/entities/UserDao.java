@@ -21,6 +21,9 @@ public interface UserDao extends JpaRepository<Users, Long> {
 	 */
 	boolean existsByUserName(String userName);
 
+
+	boolean existsByEmail(String email);
+
 	/**
 	 * Find by user name.
 	 *
@@ -30,5 +33,6 @@ public interface UserDao extends JpaRepository<Users, Long> {
 	Optional<Users> findByUserName(String userName);
 
 	Slice<Users> findAllByOrderByIdAsc(Pageable pageable);
+
 
 }

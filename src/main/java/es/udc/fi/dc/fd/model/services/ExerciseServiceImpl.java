@@ -1,8 +1,10 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,12 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
@@ -33,6 +29,12 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Autowired
     private SerieDao serieDao;
+
+    @Autowired
+    private RoutineDao routineDao;
+
+    @Autowired
+    private IconDao iconDao;
 
     @Override
     public Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
@@ -68,6 +70,9 @@ public class ExerciseServiceImpl implements ExerciseService {
             exercise.setValidated(false);
         }
 
+        Icon icon = iconDao.findByName(exercise.getGrupoMuscular().toString());
+        exercise.setIcon(icon);
+
         exerciseDao.save(exercise);
         return exercise.getId();
     }
@@ -94,14 +99,15 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Block<Serie> createSeries(Exercise exercise, Optional<Integer> n) throws  InstanceNotFoundException {
+    public Block<Serie> createSeries(Exercise exercise, Optional<Integer> n, long routine) throws  InstanceNotFoundException {
         int aux;
         if (!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
             throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
 
         aux = n.orElseGet(exercise::getNumeroSeries);
+
         for(int i=1;i<=aux;i++){
-            Serie serie = new Serie(20,10,i,exercise);
+            Serie serie = new Serie(20,10,i,exercise, routineDao.getReferenceById(routine));
             serieDao.save(serie);
         }
         Slice<Serie> slice= serieDao.findByExercise(exercise);
@@ -124,13 +130,17 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Block<Serie> getSeriesByExercise(long exercise) {
+    public Block<Serie> getSeriesByExerciseAndRoutine(long exercise, long routine)  {
 
-        if (exerciseDao.findById( exercise).isEmpty())
+        if (exerciseDao.findById( exercise).isEmpty() || routineDao.findById(routine).isEmpty())
             throw new NoSuchElementException("project.entities.serie");
         else{
             Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
-        return new Block<>(slice.getContent(), slice.hasNext());
+            List<Serie> filtered = slice.getContent().stream()
+                    .filter(serie -> serie.getRoutine() != null
+                            && serie.getRoutine().getId() == routine)
+                    .toList();
+            return new Block<>(filtered, slice.hasNext());
         }
     }
 
@@ -178,5 +188,17 @@ public class ExerciseServiceImpl implements ExerciseService {
         exerciseDao.delete(foundExercise.get());
     }
 
+    @Override
+    public void blockExercise(Long userId, Long exerciseId) throws InstanceNotFoundException {
+
+        Optional<Exercise> foundExercise = exerciseDao.findById(exerciseId);
+        Users blocker = userDao.findById(userId).get();
+        if (foundExercise.isEmpty())
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+
+        foundExercise.get().setValidated(false);
+        foundExercise.get().setValidator(blocker); // para saber quien lo ha bloqueado
+        exerciseDao.save(foundExercise.get());
+    }
 
 }

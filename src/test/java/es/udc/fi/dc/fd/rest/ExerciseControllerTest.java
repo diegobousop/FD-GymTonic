@@ -400,7 +400,7 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series" )
+        mockMvc.perform(post("/api/exercise/Series?routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
@@ -435,7 +435,7 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series?numSeries=3" )
+        mockMvc.perform(post("/api/exercise/Series?numSeries=3&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
@@ -475,7 +475,7 @@ public class ExerciseControllerTest {
         loginParams.setPassword("12345");
 
         AuthenticatedUserDto user = userController.login(loginParams);
-        mockMvc.perform(put("/api/exercise/Series")
+        mockMvc.perform(put("/api/exercise/Series?routineId=1")
                         .param("serieId", "1")
                         .param("repeticiones", "25")
                         .param("peso", "120")
@@ -498,7 +498,7 @@ public class ExerciseControllerTest {
         loginParams.setPassword("12345");
 
         AuthenticatedUserDto user = userController.login(loginParams);
-        mockMvc.perform(get("/api/exercise/exerciseSeries?id=" + 1)
+        mockMvc.perform(get("/api/exercise/exerciseSeries?exerciseId=1&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -509,5 +509,46 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.items[1].repeticiones").value(30))
                 .andExpect(jsonPath("$.items[1].peso").value(150))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
+    }
+
+    @Test
+    public void testBlockExercise() throws Exception{
+        
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("blocked exercise test", "blocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        ResultActions response = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
+
+        String exerciseId = response.andReturn().getResponse().getContentAsString();
+
+        mockMvc.perform(post("/api/exercise/blockExercise/" + exerciseId).header("Authorization", "Bearer " + user.getServiceToken()))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    public void addUnblockedExerciseTest() throws Exception{
+        
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        
+        ExerciseDto exerciseToAdd = new ExerciseDto("unblocked exercise test", "unblocked exercise test", grupoMuscular.PIERNA, 1, Difficulty.FACIL, Equipment.POLEA_CABLE);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+        .andExpect(status().isOk());
     }
 }

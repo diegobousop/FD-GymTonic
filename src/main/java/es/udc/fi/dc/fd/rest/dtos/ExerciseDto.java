@@ -50,6 +50,16 @@ public class ExerciseDto {
         this.equipment = equipment;
     }
 
+    public ExerciseDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment, boolean blocked) {
+        this.id = id;
+        this.name = name;
+        this.descripcion = descripcion;
+        this.grupoMuscular = grupoMuscular;
+        this.numeroSeries = numeroSeries;
+        this.difficulty = difficulty;
+        this.equipment = equipment;
+    }
+
     @NotNull
     public Long getId() {
         return id;
@@ -111,4 +121,5 @@ public class ExerciseDto {
     public void setEquipment(Equipment equipment) {
         this.equipment = equipment;
     }
+
 }

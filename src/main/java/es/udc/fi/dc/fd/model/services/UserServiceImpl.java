@@ -1,5 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +18,13 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 
 /**
  * The Class UserServiceImpl.
@@ -46,9 +48,6 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private AvatarDao avatarDao;
 
-	@Autowired 
-	private BlockUserDao blockUserDao;
-
 	/**
 	 * Sign up.
 	 *
@@ -62,8 +61,15 @@ public class UserServiceImpl implements UserService {
 			throw new DuplicateInstanceException("project.entities.user", user.getUserName());
 		}
 
+		if (userDao.existsByEmail(user.getEmail())) {
+			throw new DuplicateInstanceException("project.entities.user", user.getEmail());
+		}
+
+
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+		user.setFollowers(new ArrayList<Users>());
+		user.setFollowing(new ArrayList<Users>());
 		if(user.getAvatar() == null) user.setAvatar(avatarDao.findByName("default").get());
 
 		userDao.save(user);
@@ -80,13 +86,16 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@Transactional(readOnly = true)
-	public Users login(String userName, String password) throws IncorrectLoginException {
+	public Users login(String userName, String password) throws LoginUserBlockedException ,IncorrectLoginException {
 
 		Optional<Users> user = userDao.findByUserName(userName);
 
 		if (!user.isPresent()) {
 			throw new IncorrectLoginException(userName, password);
 		}
+
+		if(user.get().getBlocked())
+			throw new LoginUserBlockedException();
 
 		if (!passwordEncoder.matches(password, user.get().getPassword())) {
 			throw new IncorrectLoginException(userName, password);
@@ -172,33 +181,41 @@ public class UserServiceImpl implements UserService {
 	 * @param idBlocker id who blocks
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
+	 * @throws SelfBlockException the user cant block him self
 	 */
-	@Override
-	public void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
-		if (blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked))
+		@Override
+		public void blockUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
+
+		if (!userDao.existsById(idBlocked)) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocked);
+
+		if (!userDao.existsById(idBlocker)) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocker);
+			
+		Users user = userDao.findById(idBlocked).get();
+
+		if (user.getBlocked())
 			throw new AlreadyBlockException();
 
-		if (userDao.findById(idBlocked).isEmpty()) 
-			throw new InstanceNotFoundException("project.entities.users", idBlocked);
 		
-		if (userDao.getById(idBlocker).getRole() != RoleType.ADMIN)
+		if (userDao.findById(idBlocker).get().getRole() != RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocker);
-		
-		
-		BlockUser block = new BlockUser(idBlocker, idBlocked);
 
-		blockUserDao.save(block);
+		if(idBlocker == idBlocked)
+			throw new SelfBlockException();
+		
+		
+		
+		
+		user.setBlocked(Boolean.valueOf(true));
+		
+		userDao.save(user);
 	}
 
 	@Override
 	public Users getUserById(Long id) throws InstanceNotFoundException {
 		if (!userDao.existsById(id)) throw new InstanceNotFoundException("project.entities.user", id);
 		return userDao.findById(id).get();
-	}
-
-	@Override
-	public boolean checkUserIsBlocked(Long idBlocker, Long idBlocked) throws AlreadyBlockException{
-		return blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked);
 	}
 
 	@Override
@@ -213,4 +230,93 @@ public class UserServiceImpl implements UserService {
 		return block;
 	}
 
+	@Override
+	public boolean followUser(Long followerId, Long followedId) throws InstanceNotFoundException {
+		Users newFollower = permissionChecker.checkUser(followerId);
+		Users followed = permissionChecker.checkUser(followedId);
+
+		if(followed.getFollowers()==null) {
+			followed.setFollowers(new ArrayList<Users>());
+		}
+		if(newFollower.getFollowing()==null) {
+			newFollower.setFollowing(new ArrayList<Users>());
+		}
+
+		if (followed.getFollowers().contains(newFollower) || followerId.equals(followedId)) {
+			return false; // Already following or trying to follow myself
+		}
+
+		followed.getFollowers().add(newFollower);
+		newFollower.getFollowing().add(followed);
+		userDao.save(followed);
+		return true;
+	}
+
+	@Override
+	public boolean unfollowUser(Long followerId, Long followedId) throws InstanceNotFoundException {
+		Users follower = permissionChecker.checkUser(followerId);
+		Users followed = permissionChecker.checkUser(followedId);
+
+		if (!follower.getFollowing().contains(followed) || followerId.equals(followedId)) {
+			return false; // Not following or Not "unfollow" myself
+		}
+
+		follower.getFollowing().remove(followed);
+		userDao.save(follower);
+
+		followed.getFollowers().remove(follower);
+		userDao.save(followed);
+		return true;
+	}
+
+	/**
+	 * Get followers of a user
+	 * @param id the userId 
+	 * @return list of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	@Override
+	public Block<Users> getFollowers(Long userId, int page, int size) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		Pageable pageable = PageRequest.of(page, size);
+
+		//Si no tiene seguidores se devuelve una lista vacía
+		if(user.getFollowers() == null) {
+			return new Block<Users>(new ArrayList<Users>(), false);
+		}
+
+		Slice<Users> slice = user.getFollowers().stream()
+				.skip(page * size)
+				.limit(size)
+				.collect(java.util.stream.Collectors.collectingAndThen(
+						java.util.stream.Collectors.toList(),
+						list -> new org.springframework.data.domain.SliceImpl<>(list, pageable, list.size() == size)
+				));
+		return new Block<>(slice.getContent(), slice.hasNext());
+	}
+	/**
+	 * Get following of a user
+	 * @param userId the userId
+	 * @return list of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	@Override
+	public Block<Users> getFollowing(Long userId, int page, int size) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		Pageable pageable = PageRequest.of(page, size);
+
+		//Si no tiene seguidos se devuelve una lista vacía
+		if(user.getFollowing() == null) {
+			return new Block<Users>(new ArrayList<Users>(), false);
+		}
+
+		Slice<Users> slice = user.getFollowing().stream()
+				.skip(page * size)
+				.limit(size)
+				.collect(java.util.stream.Collectors.collectingAndThen(
+						java.util.stream.Collectors.toList(),
+						list -> new org.springframework.data.domain.SliceImpl<>(list, pageable, list.size() == size)
+				));
+		return new Block<>(slice.getContent(), slice.hasNext());
+	}
 }

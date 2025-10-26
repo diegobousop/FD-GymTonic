@@ -2,6 +2,7 @@ import { useEffect, useContext, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import SearchBar from './searchbar';
 import { UserContext } from './user-provider';
+import NotificationBell from '../notification/NotificationBell';
 import PropTypes from 'prop-types';
 import backend from '../../../../backend';
 
@@ -14,7 +15,8 @@ const PAGE_TITLES = {
   createExercise: 'Crear Ejercicio',
   'change-password': 'Cambiar Contraseña',
   validateExercises: 'Validar Ejercicios',
-  search: 'Resultados de Búsqueda'
+  search: 'Resultados de Búsqueda',
+  blockExercises: 'Bloquear Ejercicios'
 };
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
@@ -74,6 +76,9 @@ const Navbar = ({ activePage }) => {
             setFilters={setFilters}
             onSearch={handleSearch}
           />
+
+          {user && <NotificationBell />}
+
           {user && (
             <Link to="/profile">
               <img src={user.avatar.avatarBase64} alt="user avatar" className="w-[52px] h-auto" />

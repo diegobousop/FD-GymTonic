@@ -52,7 +52,9 @@ const SideMenu = ({ activePage, setActivePage }) => {
       { user && user.role === 'ADMIN' &&
         <MenuItem title="Ver Usuarios" activePage={isActive} page={'seeUsers'} onClick={() => go('seeUsers', '/admin/seeUsers')} icon={ProfileIcon} />
       }
-      
+      { user && user.role === 'ADMIN' &&
+        <MenuItem title="Bloquear Ejercicios" activePage={isActive} page={'blockExercises'} onClick={() => go('blockExercises', '/admin/blockExercises')} icon={CreateExerciseIcon} />
+      }
     </div>
   )
 }

@@ -3,10 +3,10 @@ import{
     appFetch,
 }from "./appFetch";
 
-export const addExercise = (name, descripcion, grupoMuscular,numeroSeries, onSuccess, onErrors) => {
+export const addExercise = (name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment, onSuccess, onErrors) => {
     appFetch(
         "/exercise/addExercise",
-        fetchConfig("POST", {name, descripcion, grupoMuscular, numeroSeries}),
+        fetchConfig("POST", {name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment}),
         (addExercise) => onSuccess(addExercise),
         onErrors
     );
@@ -61,16 +61,24 @@ export const modifySerie = (serieId, repeticiones, peso, onSuccess, onErrors) =>
         onSuccess,
         onErrors
     );
-export const createSerie = (exercise, numSeries, onSuccess, onErrors) =>
+export const createSerie = (exercise, numSeries,routineId, onSuccess, onErrors) =>
     appFetch(
-        `/exercise/Series?numSeries=${numSeries}`,
+        `/exercise/Series?numSeries=${numSeries}&routineId=${routineId}`,
         fetchConfig("POST", exercise),
         onSuccess,
         onErrors
     );
-export const getSerieByExercise = (exerciseId, onSuccess, onErrors) =>
-    appFetch(`/exercise/exerciseSeries`,
+export const getSerieByExercise = (exerciseId,routineId, onSuccess, onErrors) =>
+    appFetch(`/exercise/exerciseSeries?exerciseId=${exerciseId}&routineId=${routineId}`,
         fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
+
+export const blockExercise = (exerciseId, onSuccess, onErrors) => 
+    appFetch(
+        `/exercise/blockExercise/${exerciseId}`,
+        fetchConfig("POST"),
         onSuccess,
         onErrors
     );
