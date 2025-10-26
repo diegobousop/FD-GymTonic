@@ -83,10 +83,16 @@ export const blockExercise = (exerciseId, onSuccess, onErrors) =>
         onErrors
     );
 
-export const createSerie = (exercise,routineId, onSuccess, onErrors) =>
+export const createSerie = (exerciseId,routineId, onSuccess, onErrors) =>
     appFetch(
-        `/exercise/Series?routineId=${routineId}`,
-        fetchConfig("POST", exercise),
+        `/exercise/Series/create?exerciseId=${exerciseId}routineId=${routineId}`,
+        fetchConfig("POST"),
         onSuccess,
         onErrors
     );
+
+export const deleteSerie = (serieId, onSuccess, onErrors) =>
+    appFetch(`/exercise/Series/${serieId}`,
+        fetchConfig("DELETE"),
+        onSuccess,
+        onErrors)

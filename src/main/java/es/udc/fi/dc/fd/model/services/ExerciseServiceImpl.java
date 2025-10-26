@@ -116,16 +116,23 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Serie createSerie(Exercise exercise, long routine) throws InstanceNotFoundException {
+    public Serie createSerie(long exercise, long routine) throws InstanceNotFoundException {
         int aux;
-        if(!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
-            throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
+        if(exerciseDao.findById(exercise).isEmpty())
+            throw new InstanceNotFoundException("project.entities.exercise", exercise);
         if (!routineDao.existsById(routine))
             throw new InstanceNotFoundException("project.entities.routine", routine);
-        aux=getSeriesByExerciseAndRoutine(exercise.getId(), routine).getItems().size();
-        Serie serie= new Serie(0,0,aux+1,exercise,routineDao.getReferenceById(routine));
+        aux=getSeriesByExerciseAndRoutine(exercise, routine).getItems().size();
+        Serie serie= new Serie(0,0,aux+1,exerciseDao.findById(exercise).get(),routineDao.getReferenceById(routine));
         serieDao.save(serie);
         return serie;
+    }
+
+    @Override
+    public Boolean removeSerie(long SerieId) throws InstanceNotFoundException {
+        if(!serieDao.existsById(SerieId)) throw new InstanceNotFoundException("project.entities.serie", SerieId);
+        serieDao.deleteById(SerieId);
+        return (!serieDao.existsById(SerieId));
     }
 
     @Override
