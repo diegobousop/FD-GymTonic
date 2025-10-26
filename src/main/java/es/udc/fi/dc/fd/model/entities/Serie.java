@@ -1,6 +1,11 @@
 package es.udc.fi.dc.fd.model.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 @Entity
 public class Serie {
 
@@ -10,8 +15,15 @@ public class Serie {
     private int numeroSerie;
     private Exercise exercise;
     private Routine routine;
+    private Training training;
 
     public Serie() {}
+
+    public Serie( int repeticiones, int peso, int numeroSerie ) {
+        this.repeticiones = repeticiones;
+        this.peso = peso;
+        this.numeroSerie = numeroSerie;
+    }
 
     public Serie( int repeticiones, int peso, int numeroSerie, Exercise exercise, Routine routine ) {
         this.repeticiones = repeticiones;
@@ -64,5 +76,10 @@ public class Serie {
     @JoinColumn(name = "routineId")
     public Routine getRoutine() { return routine; }
     public void setRoutine(Routine routine) { this.routine = routine; }
+
+    @ManyToOne
+    @JoinColumn(name = "trainingId")
+    public Training getTraining() { return training; }
+    public void setTraining(Training training) { this.training = training; }
 }
 

@@ -11,14 +11,14 @@ public class RoutineConversor {
     // Método original
     public static RoutineDto toRoutineDto(Routine routine) {
         RoutineDto routineDto = new RoutineDto(
-            routine.getId(),
+            routine.getId(), 
             routine.getName(),
-            ExerciseConversor.toExerciseDtos(routine.getExercises()),
-            routine.getCreator().getUserName(),
+            ExerciseConversor.toExerciseDtos(routine.getExercises()), 
+            routine.getCreator().getUserName(), 
+            routine.getCreator().getAvatar().getAvatarBase64(),
             routine.getDuration(),
-            routine.getModificationDate(),
-            routine.getIsPublic()
-        );
+            routine.getModificationDate(), 
+            routine.getIsPublic());
         return routineDto;
     }
 
@@ -29,6 +29,7 @@ public class RoutineConversor {
             routine.getName(),
             ExerciseConversor.toExerciseDtos(routine.getExercises()),
             routine.getCreator().getUserName(),
+            routine.getCreator().getAvatar() != null ? routine.getCreator().getAvatar().getAvatarBase64() : null,
             routine.getDuration(),
             routine.getModificationDate(),
             routine.getIsPublic()

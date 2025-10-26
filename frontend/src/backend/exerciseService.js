@@ -74,3 +74,11 @@ export const getSerieByExercise = (exerciseId,routineId, onSuccess, onErrors) =>
         onSuccess,
         onErrors
     );
+
+export const blockExercise = (exerciseId, onSuccess, onErrors) => 
+    appFetch(
+        `/exercise/blockExercise/${exerciseId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );

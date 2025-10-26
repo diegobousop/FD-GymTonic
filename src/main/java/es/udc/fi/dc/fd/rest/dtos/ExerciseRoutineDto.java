@@ -1,63 +1,45 @@
 package es.udc.fi.dc.fd.rest.dtos;
-import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+
+import java.util.List;
+
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
+import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class ExerciseDto {
+public class ExerciseRoutineDto {
+
     private Long id;
+
     private String name;
+
     private String descripcion;
+
     private grupoMuscular grupoMuscular;
+
     private int numeroSeries;
+
     private Difficulty difficulty;
+
     private Equipment equipment;
+    
+    private List<SerieSummaryDto> series;
 
-    public ExerciseDto() {}
+    private String exerciseImageBase64;
 
-    public ExerciseDto(String name, String descripcion,  grupoMuscular grupoMuscular, int numeroSeries) {
-        this.name = name;
-        this.descripcion = descripcion;
-        this.grupoMuscular = grupoMuscular;
-        this.numeroSeries = numeroSeries;
-    }
 
-    public ExerciseDto(String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment) {
-        this.name = name;
-        this.descripcion = descripcion;
-        this.grupoMuscular = grupoMuscular;
-        this.numeroSeries = numeroSeries;
-        this.difficulty = difficulty;
-        this.equipment = equipment;
-    }
-
-    public ExerciseDto(Long id, String name, String descripcion,  grupoMuscular grupoMuscular, int numeroSeries) {
+    public ExerciseRoutineDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment,
+            List<SerieSummaryDto> series, String exerciseImageBase64) {
         this.id = id;
         this.name = name;
         this.descripcion = descripcion;
         this.grupoMuscular = grupoMuscular;
         this.numeroSeries = numeroSeries;
-    }
-
-    public ExerciseDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment) {
-        this.id = id;
-        this.name = name;
-        this.descripcion = descripcion;
-        this.grupoMuscular = grupoMuscular;
-        this.numeroSeries = numeroSeries;
+        this.exerciseImageBase64 = exerciseImageBase64;
         this.difficulty = difficulty;
         this.equipment = equipment;
-    }
-
-    public ExerciseDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment, boolean blocked) {
-        this.id = id;
-        this.name = name;
-        this.descripcion = descripcion;
-        this.grupoMuscular = grupoMuscular;
-        this.numeroSeries = numeroSeries;
-        this.difficulty = difficulty;
-        this.equipment = equipment;
+        this.series = series;
     }
 
     @NotNull
@@ -122,4 +104,19 @@ public class ExerciseDto {
         this.equipment = equipment;
     }
 
+    public List<SerieSummaryDto> getSeries() {
+        return series;
+    }
+
+    public void setSeries(List<SerieSummaryDto> series) {
+        this.series = series;
+    }
+
+    public String getExerciseImageBase64() {
+        return exerciseImageBase64;
+    }
+
+    public void setExerciseImageBase64(String exerciseImageBase64) {
+        this.exerciseImageBase64 = exerciseImageBase64;
+    }
 }

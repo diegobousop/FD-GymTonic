@@ -37,6 +37,7 @@ import es.udc.fi.dc.fd.model.services.NotificationService;
 import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.NotificationController;
 import es.udc.fi.dc.fd.rest.controllers.RoutineController;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
@@ -78,7 +79,7 @@ public class NotificationControllerTest {
     private static final String PASSWORD = "12345";
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
-			throws IncorrectLoginException {
+			throws LoginUserBlockedException, IncorrectLoginException {
         Optional<Avatar> avatar = avatarDao.findByName("default");
 		Users user = new Users(userName, PASSWORD, "gimenez", "gimenez", "manoli@test.com", avatar.orElse(null));
 

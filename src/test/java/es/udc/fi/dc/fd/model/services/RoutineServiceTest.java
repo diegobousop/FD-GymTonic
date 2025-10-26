@@ -1,10 +1,12 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -24,6 +26,7 @@ import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 @RunWith(SpringRunner.class)
@@ -46,6 +49,9 @@ public class RoutineServiceTest {
     
     @Autowired
     private AvatarDao avatarDao;
+
+    @Autowired
+    private SerieDao serieDao;
 
     @Autowired
     private RoutineFollowDao routineFollowDao;
@@ -80,7 +86,7 @@ public class RoutineServiceTest {
 	}
 
     @Test
-    public void testCreateEmptyRoutine() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testCreateEmptyRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
         routine = routineService.createRoutine(creator.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
@@ -96,7 +102,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testCreateRoutineWithExercises() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testCreateRoutineWithExercises() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -117,7 +123,7 @@ public class RoutineServiceTest {
     }
 
     @Test(expected = InvalidRoutineNameException.class)
-    public void createInvalidNameRoutine() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+    public void createInvalidNameRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -127,7 +133,7 @@ public class RoutineServiceTest {
 
 
     @Test(expected = InvalidRoutineDurationException.class)
-    public void createInvalidDurationRoutine1() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+    public void createInvalidDurationRoutine1() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("X", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -137,7 +143,7 @@ public class RoutineServiceTest {
     }
 
     @Test(expected = InvalidRoutineDurationException.class)
-    public void createInvalidDurationRoutine2() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+    public void createInvalidDurationRoutine2() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("X", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -146,7 +152,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testViewAllRoutines() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testViewAllRoutines() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
@@ -163,7 +169,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testViewAllRoutinesInOrder() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testViewAllRoutinesInOrder() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
@@ -180,13 +186,13 @@ public class RoutineServiceTest {
     }
     
     @Test
-    public void testViewAllRoutinesWithoutRoutines() throws InstanceNotFoundException, IncorrectLoginException {
+    public void testViewAllRoutinesWithoutRoutines() throws LoginUserBlockedException, InstanceNotFoundException, IncorrectLoginException {
         Users user = userService.login("trainer1", "12345");
         assertEquals(Arrays.asList(), routineService.viewAllRoutines(user.getId(), PageRequest.of(0, 10)).getContent());
     }
 
     @Test
-    public void testGetRoutineById() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException{
+    public void testGetRoutineById() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -199,7 +205,7 @@ public class RoutineServiceTest {
 
     
     @Test(expected = InstanceNotFoundException.class)
-    public void testGetRoutineByIdNonExistent() throws InstanceNotFoundException, PermissionException, IncorrectLoginException {
+    public void testGetRoutineByIdNonExistent() throws LoginUserBlockedException, InstanceNotFoundException, PermissionException, IncorrectLoginException {
         Users user = userService.login("admin1", "12345");
         Long id = 2L;
         routineService.getRoutineById(id, user.getId());
@@ -346,7 +352,7 @@ public class RoutineServiceTest {
 
 
     @Test
-    public void testFindRoutinesByCreator() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testFindRoutinesByCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator1 = userService.login("trainer1", "12345");
         Users creator2 = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator1);
@@ -369,7 +375,7 @@ public class RoutineServiceTest {
 
 
     @Test
-    public void testFindRoutinesByName() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testFindRoutinesByName() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator1 = userService.login("trainer1", "12345");
         Routine routine1 = createRoutine("routine1", creator1);
         Routine routine2 = createRoutine("routine2", creator1);
@@ -385,7 +391,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testFindRoutinesByNameAndCreator() throws IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testFindRoutinesByNameAndCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
         Users creator1 = userService.login("trainer1", "12345");
         Users creator2 = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("Pecho", creator1);
@@ -408,7 +414,91 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException {
+    public void testCreateTrainingFromRoutineSuccess() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            creator.getId(),
+            routine.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series
+        );
+
+        assertEquals("Training 1", createdTraining.getName());
+        assertEquals("Description of training", createdTraining.getDescription());
+        assertEquals(45L, createdTraining.getDuration());
+        assertTrue(createdTraining.getIsPublic());
+
+        serieDao.findByTrainingId(createdTraining.getId()).forEach(serie -> {
+            assertEquals(createdTraining, serie.getTraining());
+            assertEquals(exercise1, serie.getExercise());
+        });
+
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testCreateTrainingFromRoutineWithInvalidUser() throws Exception {
+        routineService.createTrainingFromRoutine(
+            999999L,
+            1L,
+            "Training",
+            "Description",
+            30L,
+            true,
+            new ArrayList<Serie>()
+        );
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testCreateTrainingFromRoutineWithInvalidRoutine() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        
+        routineService.createTrainingFromRoutine(
+            creator.getId(),
+            999999L,
+            "Training",
+            "Description",
+            30L,
+            true,
+            new ArrayList<Serie>()
+        );
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void testCreateTrainingFromRoutineWithInvalidExercise() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", new ArrayList<Long>(), 60L, true);
+        
+        Serie serie = new Serie();
+        Exercise invalidExercise = new Exercise();
+        invalidExercise.setId(999999L);
+        serie.setExercise(invalidExercise);
+        serie.setRepeticiones(10);
+        serie.setPeso(50);
+        serie.setNumeroSerie(0);
+        
+        routineService.createTrainingFromRoutine(
+            creator.getId(),
+            routine.getId(),
+            "Training",
+            "Description",
+            30L,
+            true,
+            new ArrayList<Serie>(){{add(serie);}}
+        );
+    }
+
+    @Test
+    public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException {
         // Crear usuario y rutina con nombres únicos
         Users user = createUser("user_" + System.currentTimeMillis());
         userService.signUp(user, Users.RoleType.USER);
@@ -440,7 +530,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testGetFollowersByRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException {
+    public void testGetFollowersByRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException {
         // Crear entrenador y rutina con nombres únicos
         Users trainer = userService.login("trainer1", "12345");
         Routine routine = createRoutine("routine_" + System.currentTimeMillis(), trainer);
@@ -465,5 +555,4 @@ public class RoutineServiceTest {
         assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user1.getId())));
         assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user2.getId())));
     }
-
 }
