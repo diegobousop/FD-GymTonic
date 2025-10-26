@@ -20,6 +20,14 @@ export const findRoutineById = (routineId, onSuccess, onErrors) =>
     onErrors
   );
 
+export const findRoutineDetails = (routineId, onSuccess, onErrors) =>
+  appFetch(
+    `/routines/getRoutineDetailsById/${routineId}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
 export const viewAllRoutines = ({ page, size }, onSuccess, onErrors) =>
   appFetch(
     `/routines/viewAllRoutines?page=${page}&size=${size}`,
@@ -52,3 +60,12 @@ export const searchRoutines = (creatorId, name, { page, size }, onSuccess, onErr
     onErrors
   );
 
+export const createTraining = (routineId, name, description, duration, visibility, exercises, 
+onSuccess, onErrors) => {
+  appFetch(
+    "/routines/createTraining",
+    fetchConfig("POST", { routineId, name, description, duration, visibility, exercises }),
+    (createdTraining) => onSuccess(createdTraining),
+    onErrors
+  );
+};

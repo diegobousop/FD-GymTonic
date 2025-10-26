@@ -59,10 +59,10 @@ public class ExerciseController {
     }
 
     @GetMapping("/getValidatedExercises")
-    public BlockDto<ExerciseDto> getValidatedExercises(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "0") int size){
+    public BlockDto<ExerciseSummaryDto> getValidatedExercises(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "0") int size){
         Block<Exercise> returned = exerciseService.getValidatedExercises(page, size);
-        return new BlockDto<>(ExerciseConversor.toExerciseDtos(returned.getItems()), returned.getExistMoreItems());
-    }    
+        return new BlockDto<>(ExerciseConversor.toExerciseSummaryDtos(returned.getItems()), returned.getExistMoreItems());
+    }
 
     @GetMapping("/getUnvalidatedExercises")
     public BlockDto<ExerciseSummaryDto> getUnvalidatedExercises(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "0") int size){
@@ -77,10 +77,23 @@ public class ExerciseController {
     }
 
     @PostMapping("/Series")
-    public BlockDto<SerieDto> CreateSerie(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries) throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public BlockDto<SerieDto> CreateSeries(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
+            throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
 
-        return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise), Optional.ofNullable(numSeries) ).getItems()),false);
+        return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise), Optional.ofNullable(numSeries),routineId ).getItems()),false);
 
+    }
+
+    @PostMapping("/Series/create")
+    public SerieDto CreateSerie(@RequestParam long exerciseId, @RequestParam long routineId)
+        throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        return SerieConversor.toSerieDto((exerciseService.createSerie(exerciseId,routineId)));
+    }
+
+    @DeleteMapping("/Series/{serieId}")
+
+    public Boolean removeSerie(@PathVariable long serieId) throws InstanceNotFoundException {
+        return (exerciseService.removeSerie(serieId));
     }
 
     @PutMapping("/Series")
@@ -96,8 +109,8 @@ public class ExerciseController {
     }
 
     @GetMapping("/exerciseSeries")
-    public BlockDto <SerieDto> getSeriesByExercise(@RequestParam long id) {
-        return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.getSeriesByExercise(id).getItems()),false);
+    public BlockDto <SerieDto> getSeriesByExercise(@RequestParam long exerciseId, @RequestParam long routineId) {
+        return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.getSeriesByExerciseAndRoutine(exerciseId,routineId).getItems()),false);
     }
 
 
@@ -107,6 +120,10 @@ public class ExerciseController {
         exerciseService.declineExercise(userId, exerciseId);
     }
 
+    @PostMapping("/blockExercise/{exerciseId}")
+    public void blockExercise(@RequestAttribute Long userId, @PathVariable Long exerciseId) throws InstanceNotFoundException {
+        exerciseService.blockExercise(userId, exerciseId);
+    }
 
 
 }

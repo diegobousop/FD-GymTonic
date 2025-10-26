@@ -8,21 +8,54 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 
 @Entity
 public class Exercise {
+    
     private Long id;
+
     private String exerciseName;  
-    private String exerciseDescription;  
+
+    private String exerciseDescription; 
+    
     private grupoMuscular grupoMuscular;
+
     private int numeroSeries;
+
     private Users creator;
-    private boolean validated;
+
+    private boolean validated; //false si está sin validar o bloqueado, true si está validado
+    
     private Users validator;
 
-    public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBROS, BRAZOS, ABDOMEN};
+    private Difficulty difficulty;
+
+    private Equipment equipment;
+
+    private Icon icon;
+
+    public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBRO, BRAZO, ABDOMEN, FULLBODY};
+    
+    public enum Difficulty {
+        FACIL,       // 0
+        INTERMEDIO,  // 1
+        DIFICIL      // 2
+    };
+    
+    public enum Equipment {
+        POLEA_CABLE,  // 0
+        MAQUINA,      // 1
+        PESO_LIBRE,   // 2
+        OTROS         // 3
+    };
 
     public Exercise() {}
+
+    public Exercise(long id) {
+        this.id=id;
+    }
+
     public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries) {
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
@@ -43,12 +76,13 @@ public class Exercise {
     }
 
     
-    public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries, Users creator) {
+    public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries, Users creator, Icon icon) {
         this.id=id;
         this.exerciseName = exerciseName;
         this.exerciseDescription = exerciseDescripcion;
         this.grupoMuscular = grupo;
         this.numeroSeries = numeroSeries;
+        this.icon = icon;
         this.validated = false;
         this.validator=null;
         this.creator=creator;
@@ -115,4 +149,44 @@ public class Exercise {
     public void setValidator(Users validator) {
         this.validator = validator;
     }
+
+    @Enumerated(EnumType.ORDINAL)
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    @Enumerated(EnumType.ORDINAL)
+    public Equipment getEquipment() {
+        return equipment;
+    }
+
+    public void setEquipment(Equipment equipment) {
+        this.equipment = equipment;
+    }
+
+    @PrePersist
+    private void applyDefaultsBeforePersist() {
+        if (this.difficulty == null) {
+            this.difficulty = Difficulty.FACIL;
+        }
+        if (this.equipment == null) {
+            this.equipment = Equipment.OTROS;
+        }
+    }
+
+    @ManyToOne
+    @JoinColumn(name="iconId")
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Icon icon) {
+        this.icon = icon;
+    }
+
+    
 }

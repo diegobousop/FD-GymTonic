@@ -12,6 +12,7 @@ const ParagraphInput = ({
   name,
   errors,
   errorMessage = '',
+  placeholder,
 }) => {
   const [internalValue, setInternalValue] = useState(initialValue)
   const [showPassword, setShowPassword] = useState(false)
@@ -47,6 +48,7 @@ const ParagraphInput = ({
           onChange={handleChange}
           maxLength={maxLength}
           rows={5}
+          placeholder={placeholder}
           className={
             "bg-[#262626] w-full h-40 text-[#f4f4f4] text-xs px-4 py-4 pr-10 focus:outline-none border-b mb-2 max-h-32 resize-none" +
             (errors ? 'border border-[#ff0000] focus:border-[#ff0000]' : 'border-transparent focus:border focus:border-[#ff0000]')

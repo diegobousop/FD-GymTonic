@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const MultiChecklist = ({ options, selected, onChange, label, page=0, 
   setPage, existMoreItems=false, errors, errorMessage='', required=false }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const handleToggle = (id) => {
     if (selected.includes(id)) {
@@ -15,13 +15,13 @@ const MultiChecklist = ({ options, selected, onChange, label, page=0,
   
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 mt-3">
       <button
         type="button"
-        className="font-semibold mb-2 text-white"
+        className="text-xs text-start"
         onClick={() => setOpen(!open)}
       >
-        {label}
+        <p>{label}</p>
       </button>
       {open && (
         <div>
@@ -47,24 +47,26 @@ const MultiChecklist = ({ options, selected, onChange, label, page=0,
             ))}
           </ul>
 
-          <div className="flex justify-between mt-2">
-            <button
-              type="button"
-              className="text-white px-2 py-1 rounded bg-gray-700 disabled:opacity-50"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 0}
-            >
-              Anterior
-            </button>
-            <button
-              type="button"
-              className="text-white px-2 py-1 rounded bg-gray-700 disabled:opacity-50"
-              onClick={() => setPage(page + 1)}
-              disabled={!existMoreItems}
-            >
-              Siguiente
-            </button>
-          </div>
+          {setPage && (
+            <div className="flex justify-between mt-2">
+              <button
+                type="button"
+                className="text-white px-2 py-1 rounded bg-gray-700 disabled:opacity-50"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 0}
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                className="text-white px-2 py-1 rounded bg-gray-700 disabled:opacity-50"
+                onClick={() => setPage(page + 1)}
+                disabled={!existMoreItems}
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
         </div>
       )}
       {errors && (

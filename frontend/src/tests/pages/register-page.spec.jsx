@@ -125,10 +125,8 @@ describe('RegisterPage', () => {
         fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Test' } });
         fireEvent.change(screen.getByLabelText('Apellidos'), { target: { value: 'User' } });
 
-        fireEvent.click(screen.getByRole('button', { name: /rol/i }));
-        await waitFor(() => {
-            expect(screen.getByLabelText('USER')).toBeInTheDocument();
-        });
+        expect(screen.getByLabelText('USER')).toBeInTheDocument();
+
         fireEvent.click(screen.getByLabelText('USER'));
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));

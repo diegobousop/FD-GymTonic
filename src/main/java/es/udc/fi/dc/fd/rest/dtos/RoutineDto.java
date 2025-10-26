@@ -8,18 +8,29 @@ import jakarta.validation.constraints.Positive;
 
 
 public class RoutineDto {
+
     private Long id;
+
     private String name;
+
     private List<ExerciseDto> exercises;
+
     private String creator;
+
+    private String creatorAvatarBase64;
+
     private Long duration; // Duration in minutes
+
     private LocalDateTime modificationDate;
+
     private Boolean isPublic;
+    
+    private Boolean isFollowing;
 
     public RoutineDto() {
     }
 
-    public RoutineDto(Long id, String name, List<ExerciseDto> exercises, String creator, Long duration,
+    public RoutineDto(Long id, String name, List<ExerciseDto> exercises, String creator, String creatorAvatarBase64, Long duration,
             LocalDateTime modificationDate, Boolean isPublic) {
         this.id = id;
         this.name = name;
@@ -28,6 +39,7 @@ public class RoutineDto {
         this.duration = duration;
         this.modificationDate = modificationDate;
         this.isPublic = isPublic;
+        this.creatorAvatarBase64 = creatorAvatarBase64;
     }
 
     public RoutineDto(Long id, String name, List<ExerciseDto> exercises,  Long duration,
@@ -95,6 +107,22 @@ public class RoutineDto {
     }
     public void setIsPublic(Boolean isPublic) {
         this.isPublic = isPublic;
+    }
+
+    public String getCreatorAvatarBase64() {
+        return creatorAvatarBase64;
+    }
+
+    public void setCreatorAvatarBase64(String creatorAvatarBase64) {
+        this.creatorAvatarBase64 = creatorAvatarBase64;
+    }
+
+    public Boolean getIsFollowing() { 
+        return isFollowing;
+    }
+
+    public void setIsFollowing(Boolean isFollowing) {
+        this.isFollowing = isFollowing;
     }
 
 }

@@ -20,13 +20,17 @@ const ExerciseCard = ({exercise, onValidate, onDecline}) => {
         <p className="w-[40%] line-clamp-3">{exercise.descripcion}</p>
 
         <div className="w-[20%] flex justify-center gap-5">
-            <button onClick={onValidate} className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
-                <SVG_ICONS.AcceptIcon  className="w-[30px] h-auto text-white"/>
-            </button>
+            {onValidate && (
+              <button onClick={onValidate} aria-label="Validate Exercise" className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
+                  <SVG_ICONS.AcceptIcon  className="w-[30px] h-auto text-white"/>
+              </button>
+            )}
 
-            <button onClick={onDecline}  className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
-                <SVG_ICONS.CancelIcon  className="w-[30px] h-auto text-white"/>
-            </button>
+            {onDecline && (
+              <button onClick={onDecline} aria-label="Block Exercise" className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
+                  <SVG_ICONS.CancelIcon  className="w-[30px] h-auto text-white"/>
+              </button>
+            )}
         </div>
     </div>
   )

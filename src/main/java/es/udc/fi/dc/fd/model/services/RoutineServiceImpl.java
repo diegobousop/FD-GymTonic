@@ -1,9 +1,9 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,16 +14,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineDao;
+import es.udc.fi.dc.fd.model.entities.RoutineFollow;
+import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.SerieDao;
+import es.udc.fi.dc.fd.model.entities.Training;
+import es.udc.fi.dc.fd.model.entities.TrainingDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
-import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;  
-
-import es.udc.fi.dc.fd.model.entities.RoutineDao;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-
-import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
 @Service
@@ -36,6 +40,17 @@ public class RoutineServiceImpl implements RoutineService {
     private RoutineDao routineDao;
     @Autowired
     private ExerciseDao exerciseDao;
+
+    @Autowired
+    private SerieDao serieDao;
+
+    @Autowired
+    private TrainingDao trainingDao;
+
+    @Autowired
+    private RoutineFollowDao routineFollowDao;
+    @Autowired
+    private NotificationService notificationService;
     
     @Override
     public Routine createRoutine( Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws DuplicateInstanceException,
@@ -61,8 +76,25 @@ public class RoutineServiceImpl implements RoutineService {
             isPublic = true;
         }
         Routine routine = new Routine(name, found, creator, duration, LocalDateTime.now().withNano(0), isPublic);
+        
+        if(isPublic && creator.getFollowers()!=null) {
+            notificationService.notifyFollowers(creatorId, routine);
+        }
 
         routineDao.save(routine);
+
+        for (Exercise exercise : found) {
+            for(int i = 1; i <= exercise.getNumeroSeries(); i++) {
+                Serie serie = new Serie();
+                serie.setExercise(exercise);
+                serie.setPeso(40);
+                serie.setRepeticiones(8);
+                serie.setNumeroSerie(i);
+                serie.setRoutine(routine); 
+                serieDao.save(serie);
+            }
+        }
+
         return routine;
     }
 
@@ -131,8 +163,9 @@ public class RoutineServiceImpl implements RoutineService {
         routine.setName(name);
         routine.setExercises(foundExercises);
         routine.setDuration(duration);
-        if (isPublic != null) {
+        if (isPublic != null && creator.getFollowers() != null) {
             routine.setIsPublic(isPublic);
+            notificationService.notifyFollowers(routine.getCreator().getId(), routine);
         }
         routine.setModificationDate(LocalDateTime.now().withNano(0));
         
@@ -158,6 +191,7 @@ public class RoutineServiceImpl implements RoutineService {
         routineDao.delete(routine);
     }
 
+    @Override
     public Page<Routine> findByFilters(Long userId, Long creatorId, String name, Pageable pageable) throws InstanceNotFoundException {
         Users user = permissionChecker.checkUser(userId);
         Specification<Routine> spec = Specification.where(null);
@@ -182,4 +216,150 @@ public class RoutineServiceImpl implements RoutineService {
 
         return routineDao.findAll(spec, pageable);
     }
+
+    public void createTraining(Long userId, Long routineId, String trainingName, String trainingDescription, Boolean isPublic) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
+
+        Training training = new Training();
+        training.setName(trainingName);
+        training.setDescription(trainingDescription);
+        training.setCreationDate(LocalDateTime.now().withNano(0));
+        training.setIsPublic(isPublic != null ? isPublic : true);
+        training.setUser(user);
+        training.setRoutine(routine);
+
+        trainingDao.save(training);
+    }
+
+    @Override
+    public List<Serie> getDefaultRoutineSeries(Long routineId, Long exerciseId) throws InstanceNotFoundException {
+        
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
+
+        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
+
+        if (optionalExercise.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        }
+
+        Exercise exercise = optionalExercise.get();
+
+        List<Serie> exerciseSeries = serieDao.findByRoutineAndExercise(routine, exercise);
+
+        return exerciseSeries;
+    }
+
+    @Override
+    public Training createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
+
+        Training training = new Training();
+        training.setName(trainingName);
+        training.setDescription(trainingDescription);
+        training.setCreationDate(LocalDateTime.now().withNano(0));
+        training.setIsPublic(isPublic != null ? isPublic : true);
+        training.setUser(user);
+        training.setRoutine(routine);
+        training.setCreationDate(LocalDateTime.now().withNano(0));
+        training.setDuration(duration);
+
+
+        for (Serie serie : series) {
+
+            Serie newSerie = new Serie();
+            newSerie.setRepeticiones(serie.getRepeticiones());
+            newSerie.setPeso(serie.getPeso());
+            newSerie.setNumeroSerie(serie.getNumeroSerie());
+
+            Optional<Exercise> optionalExercise = exerciseDao.findById(serie.getExercise().getId());
+            if (optionalExercise.isEmpty()) {
+                throw new InstanceNotFoundException("project.entities.exercise", serie.getExercise().getId());
+            }
+
+            newSerie.setExercise(optionalExercise.get());
+            newSerie.setRoutine(routine);
+            serie.setTraining(training);
+
+            serieDao.save(serie);
+        }
+
+        trainingDao.save(training);
+        
+        return training;
+    }
+
+    @Override
+    public boolean followRoutine(Long userId, Long routineId) 
+            throws InstanceNotFoundException, PermissionException {
+
+        Users user = permissionChecker.checkUser(userId);
+        Routine routine = routineDao.findById(routineId)
+            .orElseThrow(() -> new InstanceNotFoundException("project.entities.routine", routineId));
+
+        if (!routine.getIsPublic()) {
+            throw new PermissionException("project.entities.routine", routineId);
+        }
+
+        // Evitar seguir dos veces
+        if (routineFollowDao.existsByUserIdAndRoutineId(userId, routineId)) {
+            return false;
+        }
+
+        routineFollowDao.save(new RoutineFollow(user, routine));
+        return true;
+    }
+
+    @Override
+    public boolean unfollowRoutine(Long userId, Long routineId) 
+            throws InstanceNotFoundException {
+
+        if (!routineFollowDao.existsByUserIdAndRoutineId(userId, routineId)) {
+            return false;
+        }
+
+        routineFollowDao.deleteByUserIdAndRoutineId(userId, routineId);
+        return true;
+    }
+
+    @Override
+    public Block<Users> getFollowersByRoutine(Long routineId, Long trainerId, Pageable pageable) 
+            throws InstanceNotFoundException, PermissionException {
+
+        Users trainer = permissionChecker.checkUser(trainerId);
+        Routine routine = routineDao.findById(routineId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.routine", routineId));
+
+        if (!routine.getCreator().getId().equals(trainerId)) {
+            throw new PermissionException("project.entities.routine", routineId);
+        }
+
+        if (!trainer.getRole().equals(Users.RoleType.TRAINER)) {
+            throw new PermissionException("project.entities.routine", routineId);
+        }
+
+        Page<RoutineFollow> followsPage = routineFollowDao.findByRoutineId(routineId, pageable);
+        List<Users> followers = followsPage.map(RoutineFollow::getUser).toList();
+
+        return new Block<>(followers, followsPage.hasNext());
+    }
+
 }

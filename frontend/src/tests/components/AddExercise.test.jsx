@@ -35,16 +35,17 @@ describe('AddExercise', () => {
         expect(screen.getByLabelText(/Descripcion/i)).toBeInTheDocument();
         expect(screen.getByText(/Grupo Muscular/i)).toBeInTheDocument();
         expect(screen.getByText(/Numero series/i)).toBeInTheDocument();
-        fireEvent.click(screen.getByText(/Grupo Muscular/i));
+        expect(screen.getByText(/Dificultad/i)).toBeInTheDocument();
+        expect(screen.getByText(/Equipamiento/i)).toBeInTheDocument();
 
-        expect(screen.getByText('PECHO')).toBeInTheDocument();
-        expect(screen.getByText('PIERNA')).toBeInTheDocument();
-        expect(screen.getByText('BRAZOS')).toBeInTheDocument();
-        
+        expect(screen.getByText('Pecho')).toBeInTheDocument();
+        expect(screen.getByText('Pierna')).toBeInTheDocument();
+        expect(screen.getByText('Brazo')).toBeInTheDocument();
+
     });
 
     test('completa los campos de forma correcta', async () => {
-        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular,numeroSeries, onSuccess, onError) => {
+        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment, onSuccess, onError) => {
             onSuccess({
                 "id":6
             });
@@ -56,6 +57,8 @@ describe('AddExercise', () => {
         const DescripcionInput = screen.getByLabelText(/Descripcion/i);
         const numeroInput=screen.getByLabelText(/Numero series/i);
         const categoriaInput = screen.getByText('Grupo Muscular');
+        const difficultyInput = screen.getByText('Dificultad');
+        const equipmentInput = screen.getByText('Equipamiento');
 
         fireEvent.change(nameInput, {
             target: { value: 'ejercicio 1' },
@@ -67,10 +70,15 @@ describe('AddExercise', () => {
             target: { value: 1 },
         });
 
-        fireEvent.click(categoriaInput);
-        await waitFor(() => expect(screen.getByLabelText('PECHO')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByLabelText('Pecho')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('Pecho'));
 
-        fireEvent.click(screen.getByLabelText('PECHO'));
+        await waitFor(() => expect(screen.getByLabelText('FACIL')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('FACIL'));
+
+        await waitFor(() => expect(screen.getByLabelText('Máquina')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('Máquina'));
+
         fireEvent.submit(screen.getByRole('button', {name: /enviar/i}));
 
         await waitFor(() =>
