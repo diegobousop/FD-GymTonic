@@ -22,7 +22,7 @@ import CreateExercise from '../pages/create-exercise-page';
 import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
 import SearchResultsPage from "../pages/search-results-page";
-import BlockExercises from '../pages/block-exercises-page';
+import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
 
 const Body = () => {
 
@@ -44,8 +44,7 @@ const Body = () => {
     if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
     if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
     if (path.startsWith("/search/full")) { setActivePage('search'); return }
-    if (path.startsWith("/admin/blockExercises")) { setActivePage('blockExercises'); return }
-
+    if (path.startsWith("/routines/my-followers")) { setActivePage('myFollowers'); return }
   }, [location.pathname])
 
   const showNavAndMenu = activePage !== 'intro' && activePage !== 'login' && activePage !== 'register';
@@ -75,10 +74,7 @@ const Body = () => {
               <ProtectedPath role={["ADMIN","TRAINER"]} path={<CreateExercise />} />
             } />
             <Route path="/admin/validateExercises" element={
-              <ProtectedPath role={["ADMIN"]} path={<ValidateExercises />} />
-            } />
-            <Route path="/admin/blockExercises" element={
-              <ProtectedPath role={["ADMIN"]} path={<BlockExercises />} />
+              <ProtectedPath role={["ADMIN","TRAINER"]} path={<ValidateExercises />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />
@@ -87,6 +83,7 @@ const Body = () => {
             <Route path="/change-password" element={<ProtectedPath path={<ChangePasswordPage />} />} />
             <Route path="/routines/my-routines" element={<ProtectedPath path={<MyRoutines />} />} />
             <Route path="/search/full" element={<ProtectedPath path={<SearchResultsPage />} />} />
+            <Route path="/routines/my-followers" element={<ProtectedPath role={["TRAINER"]} path={<MyRoutineFollowersPage />} />} />
           </Routes>
         </div>
       </div>

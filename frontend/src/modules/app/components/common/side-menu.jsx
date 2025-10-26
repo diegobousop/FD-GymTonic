@@ -1,19 +1,16 @@
-import React, { useEffect,useContext } from 'react'
+import React, { useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { SVG_ICONS } from '../../../../config/constants'
 import MenuItem from './menu-item'
-import { UserContext } from "./user-provider";
-
+import { UserContext } from "./user-provider"
 
 const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon } = SVG_ICONS
 
-
-
-
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
-  const {user} = useContext(UserContext)
+  const { user } = useContext(UserContext)
+
   // Leer la última página activa de localStorage al montar
   useEffect(() => {
     const lastPage = localStorage.getItem('sideMenuActivePage')
@@ -30,28 +27,91 @@ const SideMenu = ({ activePage, setActivePage }) => {
     if (path) navigate(path)
   }
 
-
   return (
     <div className="fixed left-0 flex flex-col w-[270px] border-r border-[#ff0000] h-full items-center px-4 py-20">
-      <MenuItem title="Inicio" activePage={isActive} page={'home'} onClick={() => go('home', '/home')} icon={HomeIcon} />
-      <MenuItem title="Ver perfil" activePage={isActive} page={'profile'} onClick={() => go('profile', '/profile')} icon={ProfileIcon} />
-      
-      { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
-        <MenuItem title="Crear rutina" activePage={isActive} page={'createRoutine'} onClick={() => go('createRoutine', '/routines/create-routine')} icon={CreateRoutineIcon} />
-      }
-      { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
-        <MenuItem title="Ver mis rutinas" activePage={isActive} page={'myRoutines'} onClick={() => go('myRoutines', '/routines/my-routines')} icon={ProfileIcon} />
-      }
-      <MenuItem title="Editar perfil" activePage={isActive} page={'userEdit'} onClick={() => go('userEdit', '/profileUpdate')} icon={ProfileIcon} />
-      { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
-        <MenuItem title="Crear Ejercicio" activePage={isActive} page={'createExercise'} onClick={() => go('createExercise', '/admin/addExercise')} icon={CreateRoutineIcon} />
-      }
-      { user && user.role === 'ADMIN' &&
-        <MenuItem title="Validar Ejercicios" activePage={isActive} page={'validateExercises'} onClick={() => go('validateExercises', '/admin/validateExercises')} icon={CreateExerciseIcon} />
-      }
-      { user && user.role === 'ADMIN' &&
-        <MenuItem title="Bloquear Ejercicios" activePage={isActive} page={'blockExercises'} onClick={() => go('blockExercises', '/admin/blockExercises')} icon={CreateExerciseIcon} />
-      }
+      <MenuItem
+        title="Inicio"
+        activePage={isActive}
+        page="home"
+        onClick={() => go('home', '/home')}
+        icon={HomeIcon}
+      />
+
+      <MenuItem
+        title="Ver perfil"
+        activePage={isActive}
+        page="profile"
+        onClick={() => go('profile', '/profile')}
+        icon={ProfileIcon}
+      />
+
+      {user && (user.role === 'ADMIN' || user.role === 'TRAINER') && (
+        <MenuItem
+          title="Crear rutina"
+          activePage={isActive}
+          page="createRoutine"
+          onClick={() => go('createRoutine', '/routines/create-routine')}
+          icon={CreateRoutineIcon}
+        />
+      )}
+
+      {user && (user.role === 'ADMIN' || user.role === 'TRAINER') && (
+        <MenuItem
+          title="Ver mis rutinas"
+          activePage={isActive}
+          page="myRoutines"
+          onClick={() => go('myRoutines', '/routines/my-routines')}
+          icon={ProfileIcon}
+        />
+      )}
+
+      {/* 🔹 Actualizado: título cambiado a "Seguidores" (solo TRAINER) */}
+      {user && user.role === 'TRAINER' && (
+        <MenuItem
+          title="Seguidores"
+          activePage={isActive}
+          page="myFollowers"
+          onClick={() => go('myFollowers', '/routines/my-followers')}
+          icon={ProfileIcon}
+        />
+      )}
+
+      <MenuItem
+        title="Editar perfil"
+        activePage={isActive}
+        page="userEdit"
+        onClick={() => go('userEdit', '/profileUpdate')}
+        icon={ProfileIcon}
+      />
+
+      {user && (user.role === 'ADMIN' || user.role === 'TRAINER') && (
+        <MenuItem
+          title="Crear Ejercicio"
+          activePage={isActive}
+          page="createExercise"
+          onClick={() => go('createExercise', '/admin/addExercise')}
+          icon={CreateRoutineIcon}
+        />
+      )}
+
+      {user && user.role === 'ADMIN' && (
+        <>
+          <MenuItem
+            title="Validar Ejercicios"
+            activePage={isActive}
+            page="validateExercises"
+            onClick={() => go('validateExercises', '/admin/validateExercises')}
+            icon={CreateExerciseIcon}
+          />
+          <MenuItem
+            title="Bloquear Ejercicios"
+            activePage={isActive}
+            page="blockExercises"
+            onClick={() => go('blockExercises', '/admin/blockExercises')}
+            icon={CreateExerciseIcon}
+          />
+        </>
+      )}
     </div>
   )
 }

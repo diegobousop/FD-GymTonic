@@ -1,14 +1,11 @@
-import {
-  fetchConfig,
-  appFetch,
-} from "./appFetch";
+import { fetchConfig, appFetch } from "./appFetch";
 
 export const createRoutine = (name, exercises, duration, isPublic, onSuccess, onErrors) => {
   appFetch(
     "/routines/createRoutine",
     fetchConfig("POST", { name, exercises, duration, isPublic }),
-    (createdRoutine) => onSuccess(createdRoutine),
-    onErrors 
+    onSuccess,
+    onErrors
   );
 };
 
@@ -52,3 +49,41 @@ export const searchRoutines = (creatorId, name, { page, size }, onSuccess, onErr
     onErrors
   );
 
+// 🔹 Seguir una rutina
+export const followRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/follow`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+};
+
+// 🔹 Dejar de seguir una rutina
+export const unfollowRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/unfollow`,
+    fetchConfig("DELETE"),
+    onSuccess,
+    onErrors
+  );
+};
+
+// 🔹 Obtener seguidores de una rutina
+export const getFollowersByRoutine = (routineId, { page, size }, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/followers?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const isFollowingRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/is-following`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
