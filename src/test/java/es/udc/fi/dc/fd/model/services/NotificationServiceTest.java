@@ -28,6 +28,7 @@ import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 @RunWith(SpringRunner.class)
@@ -56,7 +57,7 @@ public class NotificationServiceTest {
 
 
     @Test
-    public void testNotifyFollowers() throws DuplicateInstanceException, IncorrectLoginException,
+    public void testNotifyFollowers() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException {
         Users user1 = createUser("manolo");
         userService.signUp(user1, RoleType.TRAINER);
@@ -86,7 +87,7 @@ public class NotificationServiceTest {
     }   
 
     @Test
-    public void testMarkAsReadAndUnread() throws DuplicateInstanceException, IncorrectLoginException,
+    public void testMarkAsReadAndUnread() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException {
         Users user1 = createUser("manolo");
         userService.signUp(user1, RoleType.TRAINER);
@@ -113,7 +114,7 @@ public class NotificationServiceTest {
     }
 
         @Test
-    public void testNotifyFollowersByModifyingRoutine() throws DuplicateInstanceException, IncorrectLoginException,
+    public void testNotifyFollowersByModifyingRoutine() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException {
         Users user1 = createUser("manolo");
         userService.signUp(user1, RoleType.TRAINER);

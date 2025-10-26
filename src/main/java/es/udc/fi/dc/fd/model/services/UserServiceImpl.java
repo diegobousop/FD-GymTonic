@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -17,13 +18,13 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 
 /**
  * The Class UserServiceImpl.
@@ -47,9 +48,6 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private AvatarDao avatarDao;
 
-	@Autowired 
-	private BlockUserDao blockUserDao;
-
 	/**
 	 * Sign up.
 	 *
@@ -62,6 +60,11 @@ public class UserServiceImpl implements UserService {
 		if (userDao.existsByUserName(user.getUserName())) {
 			throw new DuplicateInstanceException("project.entities.user", user.getUserName());
 		}
+
+		if (userDao.existsByEmail(user.getEmail())) {
+			throw new DuplicateInstanceException("project.entities.user", user.getEmail());
+		}
+
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
@@ -83,13 +86,16 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@Transactional(readOnly = true)
-	public Users login(String userName, String password) throws IncorrectLoginException {
+	public Users login(String userName, String password) throws LoginUserBlockedException ,IncorrectLoginException {
 
 		Optional<Users> user = userDao.findByUserName(userName);
 
 		if (!user.isPresent()) {
 			throw new IncorrectLoginException(userName, password);
 		}
+
+		if(user.get().getBlocked())
+			throw new LoginUserBlockedException();
 
 		if (!passwordEncoder.matches(password, user.get().getPassword())) {
 			throw new IncorrectLoginException(userName, password);
@@ -175,33 +181,41 @@ public class UserServiceImpl implements UserService {
 	 * @param idBlocker id who blocks
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
+	 * @throws SelfBlockException the user cant block him self
 	 */
-	@Override
-	public void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException{
-		if (blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked))
+		@Override
+		public void blockUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
+
+		if (!userDao.existsById(idBlocked)) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocked);
+
+		if (!userDao.existsById(idBlocker)) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocker);
+			
+		Users user = userDao.findById(idBlocked).get();
+
+		if (user.getBlocked())
 			throw new AlreadyBlockException();
 
-		if (userDao.findById(idBlocked).isEmpty()) 
-			throw new InstanceNotFoundException("project.entities.users", idBlocked);
 		
-		if (userDao.getById(idBlocker).getRole() != RoleType.ADMIN)
+		if (userDao.findById(idBlocker).get().getRole() != RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocker);
-		
-		
-		BlockUser block = new BlockUser(idBlocker, idBlocked);
 
-		blockUserDao.save(block);
+		if(idBlocker == idBlocked)
+			throw new SelfBlockException();
+		
+		
+		
+		
+		user.setBlocked(Boolean.valueOf(true));
+		
+		userDao.save(user);
 	}
 
 	@Override
 	public Users getUserById(Long id) throws InstanceNotFoundException {
 		if (!userDao.existsById(id)) throw new InstanceNotFoundException("project.entities.user", id);
 		return userDao.findById(id).get();
-	}
-
-	@Override
-	public boolean checkUserIsBlocked(Long idBlocker, Long idBlocked) throws AlreadyBlockException{
-		return blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked);
 	}
 
 	@Override
