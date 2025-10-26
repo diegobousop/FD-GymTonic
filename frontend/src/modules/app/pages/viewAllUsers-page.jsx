@@ -42,16 +42,20 @@ const ViewAllUsers = () => {
     backend.userService.blockUser(
       userId,
       () => {
-        setBlockedUsers(prev => [...prev, userId]);
+        setUsers(prevUsers =>
+          prevUsers.map(u =>
+            u.id === userId ? { ...u, blocked: true } : u
+          )
+        );
         setUserBlockedErr(null);
       },
-      (err) =>{
+      (err) => {
         let message = "Error al bloquear usuario";
         if (typeof err === "string") message = err;
         else if (err?.globalError) message = err.globalError.replace(/"/g, "");
         setUserBlockedErr(message);
       }
-    )
+    );
   };
 
   useEffect(() => {
@@ -66,35 +70,41 @@ const ViewAllUsers = () => {
       {userBlockedErr && <div className="bg-red-500 text-white p-3 rounded mb-4">⚠️ {userBlockedErr}</div>}
 
       <div className="grid gap-6" style={{ gridTemplateColumns: "1fr" }}>
-      {users.map(user => (
-        <div key={user.id} className="bg-[#262626] p-4 rounded-lg shadow-md flex items-center justify-between">
+      {users.map(userItem => (
+        <div
+        key={userItem.id}
+        className="relative bg-[#262626] p-4 rounded-lg shadow-md flex items-center justify-between"
+        style={{ gridTemplateColumns: "1fr 120px 130px", alignItems: "center", columnGap: "1.5rem" }}
+      >      
           {/* Columna 1: info usuario */}
-          <div>
+          <div  >
             <Link to={`/users/${user.id}`}>
               <h3 className="text-xl text-white">
-                <strong>{user.userName}</strong> <small>{user.firstName}</small> <small>{user.lastName}</small>
+                <strong>{userItem.userName}</strong> <small>{userItem.firstName}</small> <small>{userItem.lastName}</small>
               </h3>
             </Link>
-            <p className="text-white">{user.email}</p>
+            <p className="text-white">{userItem.email}</p>
           </div>
 
           {/* Columna 2: rol */}
-          <div className="text-white text-center">
-            <strong>{user.role}</strong>
+          <div className="absolute left-1/2 transform -translate-x-1/2 text-white text-center">
+            <strong>{userItem.role}</strong>
           </div>
 
           {/* Columna 3: botón */}
-          <button
-            onClick={() => handleBlockUser(user.id)}
-            disabled={blockedUsers.includes(user.id)} // desactiva si ya está bloqueado
-            className={`px-3 py-1 rounded text-sm transition ${
-              blockedUsers.includes(user.id)
-                ? "bg-gray-600 text-white cursor-not-allowed"
-                : "bg-red-800 text-white hover:bg-red-900"
-            }`}
-          >
-            {blockedUsers.includes(user.id) ? "Bloqueado" : "Bloquear"}
-          </button>
+          {user && userItem.id !== user.id && (
+            <button
+              onClick={() => handleBlockUser(userItem.id)}
+              disabled={userItem.blocked}
+              className={`px-3 py-1 rounded text-sm transition ${
+                userItem.blocked
+                  ? "bg-gray-600 text-white cursor-not-allowed"
+                  : "bg-red-800 text-white hover:bg-red-900"
+              }`}
+            >
+              {userItem.blocked ? "Bloqueado" : "Bloquear"}
+            </button>
+    )}
         </div>
       ))}
       </div>

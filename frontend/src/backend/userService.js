@@ -17,7 +17,7 @@ const processLoginSignUp = (authenticatedUser, reauthenticationCallback, onSucce
 
 export const viewAllUsers = ({page, size}, onSuccess, onErrors) => 
   appFetch(
-    `/users/allUsers?page=${page}`, 
+    `/users/getUsers?page=${page}`, 
     fetchConfig("GET"),
     onSuccess, 
     onErrors
