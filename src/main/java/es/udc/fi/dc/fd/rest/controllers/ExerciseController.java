@@ -85,9 +85,15 @@ public class ExerciseController {
     }
 
     @PostMapping("/Series/create")
-    public SerieDto CreateSerie(@RequestBody ExerciseDto exercise, @RequestParam long routineId)
+    public SerieDto CreateSerie(@RequestParam long exerciseId, @RequestParam long routineId)
         throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
-        return SerieConversor.toSerieDto((exerciseService.createSerie(ExerciseConversor.toExerciseId(exercise),routineId)));
+        return SerieConversor.toSerieDto((exerciseService.createSerie(exerciseId,routineId)));
+    }
+
+    @DeleteMapping("/Series/{serieId}")
+
+    public Boolean removeSerie(@PathVariable long serieId) throws InstanceNotFoundException {
+        return (exerciseService.removeSerie(serieId));
     }
 
     @PutMapping("/Series")
