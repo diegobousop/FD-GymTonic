@@ -6,25 +6,26 @@ import Exercise from "../components/exercise/exercise";
 import RoutineEditForm from "../components/routine/routine-edit-form";
 import RoutineActions from "../components/routine/routine-actions";
 
-const RoutineDetails = () => {
+const RoutineDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const [routine, setRoutine] = useState(null);
-  const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     setLoading(true);
 
-    // Cargar detalles de la rutina
     backend.routineService.findRoutineById(
       id,
       (data) => {
         setRoutine(data);
+        setIsFollowing(data.isFollowing || false); // Ajusta según el backend
         setLoading(false);
       },
       (err) => {
@@ -32,16 +33,19 @@ const RoutineDetails = () => {
         setLoading(false);
       }
     );
+  }, [id]);
 
-    // Consultar si el usuario ya sigue esta rutina
-    if (user) {
-      backend.routineService.isFollowingRoutine(
-        id,
-        (response) => setIsFollowing(response), // true / false
-        (err) => console.error("Error al comprobar seguimiento", err)
-      );
-    }
-  }, [id, user]);
+  const handleRoutineUpdated = (updatedRoutine, msg) => {
+    setRoutine(updatedRoutine);
+    setEditing(false);
+    setMessage({ type: "success", text: msg });
+    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+  };
+
+  const handleError = (msg) => {
+    setMessage({ type: "error", text: msg });
+    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+  };
 
   const handleFollowToggle = () => {
     if (!user) {
@@ -65,18 +69,6 @@ const RoutineDetails = () => {
         setUpdating(false);
       }
     );
-  };
-
-  const handleRoutineUpdated = (updatedRoutine, msg) => {
-    setRoutine(updatedRoutine);
-    setEditing(false);
-    setMessage({ type: "success", text: msg });
-    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
-  };
-
-  const handleError = (msg) => {
-    setMessage({ type: "error", text: msg });
-    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
   };
 
   if (loading) return <p>Cargando rutina...</p>;
@@ -103,10 +95,10 @@ const RoutineDetails = () => {
         <div className="flex flex-col">
           {(user?.role === "ADMIN" || user?.userName === routine.creator) && (
             <span className={`text-sm py-1 text-gray-400 rounded`}>
-                {routine.isPublic ? "Rutina pública" : "Rutina privada"}
+              {routine.isPublic ? "Rutina pública" : "Rutina privada"}
             </span>
-            )}
-            <h2 className="text-3xl font-bold text-white">{routine.name}</h2>
+          )}
+          <h2 className="text-3xl font-bold text-white">{routine.name}</h2>
         </div>
       </div>
 
@@ -118,7 +110,6 @@ const RoutineDetails = () => {
 
       {!editing ? (
         <>
-          {/* Botones de acción */}
           <RoutineActions
             user={user}
             routine={routine}
@@ -128,14 +119,37 @@ const RoutineDetails = () => {
             onError={handleError}
           />
 
-          {/* Ejercicios */}
           {routine.exercises && routine.exercises.length > 0 && (
             <ul className="list-disc list-inside space-y-5 mt-6">
               {routine.exercises.map((ex) => (
-                <Exercise ex={ex} routineId={routine.id} routineCreator={routine.creator} key={ex.id} />
+                <Exercise
+                  ex={ex}
+                  routineId={routine.id}
+                  routineCreator={routine.creator}
+                  key={ex.id}
+                />
               ))}
             </ul>
           )}
+
+          {/* Botón de seguir/dejar de seguir al final */}
+          <div className="mt-6">
+            <button
+              onClick={handleFollowToggle}
+              disabled={updating}
+              className={`px-4 py-2 rounded text-white font-semibold transition ${
+                isFollowing
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {updating
+                ? "Procesando..."
+                : isFollowing
+                ? "Dejar de seguir"
+                : "Seguir rutina"}
+            </button>
+          </div>
         </>
       ) : (
         <RoutineEditForm
@@ -149,4 +163,4 @@ const RoutineDetails = () => {
   );
 };
 
-export default RoutineDetails;
+export default RoutineDetailsPage;

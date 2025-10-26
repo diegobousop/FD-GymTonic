@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { UserContext } from "../../modules/app/components/common/user-provider";
@@ -88,5 +88,4 @@ describe("RoutineDetailsPage", () => {
     triggerSuccess();
     await waitFor(() => expect(screen.getByText(/Piernas/i)).toBeInTheDocument());
   });
-
 });
