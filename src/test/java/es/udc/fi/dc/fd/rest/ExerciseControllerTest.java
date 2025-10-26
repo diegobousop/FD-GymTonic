@@ -378,7 +378,7 @@ public class ExerciseControllerTest {
 
 
     @Test
-    public void testCreateSerie_Ok() throws Exception {
+    public void testCreateSeries_Ok() throws Exception {
         // Crear usuario autenticado
         LoginParamsDto loginParams = new LoginParamsDto();
         loginParams.setUserName("admin1");
@@ -413,7 +413,7 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
-    public void testCreateSerieWithNumber_Ok() throws Exception {
+    public void testCreateSeriesWithNumber_Ok() throws Exception {
         // Crear usuario autenticado
         LoginParamsDto loginParams = new LoginParamsDto();
         loginParams.setUserName("admin1");
@@ -510,6 +510,43 @@ public class ExerciseControllerTest {
                 .andExpect(jsonPath("$.items[1].peso").value(150))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
+
+
+
+    @Test
+    public void testCreateSerie_Ok() throws Exception {
+        // Crear usuario autenticado
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+        // Crear ExerciseDto de ejemplo
+        ExerciseDto exerciseDto = new ExerciseDto();
+        exerciseDto.setId(2L);
+        exerciseDto.setName("Squat");
+        exerciseDto.setNumeroSeries(4);
+        exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
+        exerciseDto.setDifficulty(Difficulty.FACIL);
+        exerciseDto.setEquipment(Equipment.MAQUINA);
+
+
+        // Mockear el comportamiento del servicio
+
+
+        ObjectMapper mapper = createObjectMapper();
+
+        mockMvc.perform(post("/api/exercise/Series?routineId=1" )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsBytes(exerciseDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(4)))
+                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[0].peso").value(10));
+
+    }
+
 
     @Test
     public void testBlockExercise() throws Exception{

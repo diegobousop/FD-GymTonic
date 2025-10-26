@@ -61,7 +61,7 @@ export const modifySerie = (serieId, repeticiones, peso, onSuccess, onErrors) =>
         onSuccess,
         onErrors
     );
-export const createSerie = (exercise, numSeries,routineId, onSuccess, onErrors) =>
+export const createSeries = (exercise, numSeries,routineId, onSuccess, onErrors) =>
     appFetch(
         `/exercise/Series?numSeries=${numSeries}&routineId=${routineId}`,
         fetchConfig("POST", exercise),
@@ -79,6 +79,14 @@ export const blockExercise = (exerciseId, onSuccess, onErrors) =>
     appFetch(
         `/exercise/blockExercise/${exerciseId}`,
         fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+
+export const createSerie = (exercise,routineId, onSuccess, onErrors) =>
+    appFetch(
+        `/exercise/Series?routineId=${routineId}`,
+        fetchConfig("POST", exercise),
         onSuccess,
         onErrors
     );

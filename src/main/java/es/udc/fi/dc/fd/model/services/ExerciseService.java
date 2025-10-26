@@ -21,6 +21,8 @@ public interface ExerciseService {
 
     Block<Serie> createSeries(Exercise exercise, Optional<Integer> n, long routine) throws  InstanceNotFoundException;
 
+    Serie createSerie(Exercise exercise, long routine) throws InstanceNotFoundException;
+
     Serie editSerie(Serie serie,int repeticiones, int peso) throws DuplicateInstanceException;
 
     Serie getSerie(Long serieId);
