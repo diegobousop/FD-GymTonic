@@ -16,7 +16,8 @@ const PAGE_TITLES = {
   'change-password': 'Cambiar Contraseña',
   validateExercises: 'Validar Ejercicios',
   search: 'Resultados de Búsqueda',
-  blockExercises: 'Bloquear Ejercicios'
+  blockExercises: 'Bloquear Ejercicios',
+  createTraining: 'Crear Entrenamiento'
 };
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');

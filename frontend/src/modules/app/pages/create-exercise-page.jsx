@@ -7,16 +7,20 @@ import MultiSelectList from "../../app/components/common/multi-select-list";
 
 
 const CreateExercise = () => {
-
+    // Variables de form
     const [exerciseName, setExerciseName] = useState("");
     const [exerciseDescripcion, setExerciseDescription] = useState("");
     const [grupoMuscular, setGrupoMuscular] = useState("");
     const [numeroSeries, setNumeroSeries] = useState("");
     const [difficulty, setDifficulty] = useState("");
     const [equipment, setEquipment] = useState("");
+
+    // Estados para la gestión de errores y éxito
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
     const [activePage, setActivePage] = useState('create-exercise')
+
+    //Errores
     const [exerciseNameErrors, setExerciseNameErrors] = useState(null);
     const [exerciseDescriptionErrors, setExerciseDescriptionErrors] = useState(null);
     const [grupoMuscularErrors, setGrupoMuscularErrors] = useState(null);
@@ -57,102 +61,120 @@ const CreateExercise = () => {
     };
 
     return(
-        <div  className="flex flex-col mt-10 justify-center items-center">
-            <form ref={node => form = node} className="need-validation" noValidate onSubmit={handleSubmit}>
-                <TextInput
-                    name="exerciseName"
-                    label="Nombre: "
-                    value={exerciseName}
-                    onChange={(e) => setExerciseName(e.target.value)}
-                    errors={exerciseNameErrors}
-                    errorMessage={exerciseNameErrors}
-                    className="h-10 w-full"
-                />
+        
+        <form ref={node => form = node} className="need-validation" noValidate onSubmit={handleSubmit}>
+            <div className="flex flex-row gap-10 ml-10 mt-5">
+                <div  className="flex flex-col justify-center items-center">
+                    <TextInput
+                        name="exerciseName"
+                        label="Nombre: "
+                        value={exerciseName}
+                        onChange={(e) => setExerciseName(e.target.value)}
+                        errors={exerciseNameErrors}
+                        errorMessage={exerciseNameErrors}
+                        className="h-10 w-full"
+                    />
 
-                <ParagraphInput
-                    name="exerciseDescription"
-                    label="Descripcion: "
-                    value={exerciseDescripcion}
-                    onChange={(e) => setExerciseDescription(e.target.value)}
-                    errors={exerciseDescriptionErrors}
-                    errorMessage={exerciseDescriptionErrors}
-                    maxLength={300}
-                    className="h-40 w-full"
-                />
+                    <ParagraphInput
+                        name="exerciseDescription"
+                        label="Descripcion: "
+                        value={exerciseDescripcion}
+                        onChange={(e) => setExerciseDescription(e.target.value)}
+                        errors={exerciseDescriptionErrors}
+                        errorMessage={exerciseDescriptionErrors}
+                        maxLength={300}
+                        className="h-40 w-full"
+                    />
+                    <SendButton onClick={handleSubmit}></SendButton>
 
-                <TextInput
-                    name="numeroSeries"
-                    label="Numero series:"
-                    value={numeroSeries}
-                    onChange={(e) => {
-                        const value = Number(e.target.value);
+                    
+                    
+                    {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
+                    {success && <div className="text-green-500 text-xs mt-2">Ejercicio {exerciseName} añadido existosamente</div>}
 
-                        if (value >= 0 && value <= 20) {
-                            setNumeroSeries(value);
-                            setNumeroSeriesErrors(null);
-                        } else {
-                            setNumeroSeriesErrors('El número de series debe estar entre 0 y 20');
-                        }
-                    }}
-                    errors={numeroSeriesErrors}
-                    errorMessage={numeroSeriesErrors}
-                    className="h-10 w-full"
-                    type="number"
-                    min={0}
-                    max={20}
-                />
-                <MultiSelectList
-                    options={[
-                        { id: 'PECHO', name: 'PECHO' },
-                        { id: 'ESPALDA', name: 'ESPALDA' },
-                        { id: 'PIERNA', name: 'PIERNA' },
-                        { id: 'HOMBROS', name: 'HOMBROS' },
-                        { id: 'BRAZOS', name: 'BRAZOS' },
-                        { id: 'ABDOMEN', name: 'ABDOMEN' },
-                    ]}
-                    selected={grupoMuscular ? [grupoMuscular] : []}
-                    onChange={(selected) => setGrupoMuscular(selected[0] || "")}
-                    required={true}
-                    label="Grupo Muscular"
-                    errors={grupoMuscularErrors}
-                    errorMessage={grupoMuscularErrors}
-                />
+            
+            </div>
 
-                <MultiSelectList
-                    options={[
-                        { id: 'FACIL', name: 'FACIL' },
-                        { id: 'INTERMEDIO', name: 'INTERMEDIO' },
-                        { id: 'DIFICIL', name: 'DIFICIL' },
-                    ]}
-                    selected={difficulty ? [difficulty] : []}
-                    onChange={(selected) => setDifficulty(selected[0] || "")}
-                    required={true}
-                    label="Dificultad"
-                    errors={difficultyErrors}
-                    errorMessage={difficultyErrors}
-                />
+            <div className="flex flex-col">
+                <div className="flex flex-row gap-10">
+                    
+                    <MultiSelectList
+                        options={[
+                            { id: 'PECHO', name: 'Pecho' },
+                            { id: 'ESPALDA', name: 'Espalda' },
+                            { id: 'PIERNA', name: 'Pierna' },
+                            { id: 'HOMBRO', name: 'Hombro' },
+                            { id: 'BRAZO', name: 'Brazo' },
+                            { id: 'ABDOMEN', name: 'Abdomen' },
+                            { id: 'FULLBODY', name: 'Fullbody' },
 
-                <MultiSelectList
-                    options={[
-                        { id: 'POLEA_CABLE', name: 'POLEA/CABLE' },
-                        { id: 'MAQUINA', name: 'MAQUINA' },
-                        { id: 'PESO_LIBRE', name: 'PESO LIBRE' },
-                        { id: 'OTROS', name: 'OTROS' },
-                    ]}
-                    selected={equipment ? [equipment] : []}
-                    onChange={(selected) => setEquipment(selected[0] || "")}
-                    required={true}
-                    label="Equipamiento"
-                    errors={equipmentErrors}
-                    errorMessage={equipmentErrors}
-                />
 
-                <SendButton onClick={handleSubmit}></SendButton>
+                        ]}
+                        selected={grupoMuscular ? [grupoMuscular] : []}
+                        onChange={(selected) => setGrupoMuscular(selected[0] || "")}
+                        required={true}
+                        label="Grupo Muscular"
+                        errors={grupoMuscularErrors}
+                        errorMessage={grupoMuscularErrors}
+                    />
 
-            </form>
-                {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
-                {success && <div className="text-green-500 text-xs mt-2">Ejercicio {exerciseName} añadido existosamente</div>}
+                    <MultiSelectList
+                        options={[
+                            { id: 'FACIL', name: 'FACIL' },
+                            { id: 'INTERMEDIO', name: 'INTERMEDIO' },
+                            { id: 'DIFICIL', name: 'DIFICIL' },
+                        ]}
+                        selected={difficulty ? [difficulty] : []}
+                        onChange={(selected) => setDifficulty(selected[0] || "")}
+                        required={true}
+                        label="Dificultad"
+                        errors={difficultyErrors}
+                        errorMessage={difficultyErrors}
+                    />
+
+                    <MultiSelectList
+                        options={[
+                            { id: 'POLEA_CABLE', name: 'Polea/Cable' },
+                            { id: 'MAQUINA', name: 'Máquina' },
+                            { id: 'PESO_LIBRE', name: 'Peso Libre' },
+                            { id: 'OTROS', name: 'Otros' },
+                        ]}
+                        selected={equipment ? [equipment] : []}
+                        onChange={(selected) => setEquipment(selected[0] || "")}
+                        required={true}
+                        label="Equipamiento"
+                        errors={equipmentErrors}
+                        errorMessage={equipmentErrors}
+                    />
+
+                    <TextInput
+                        name="numeroSeries"
+                        label="Numero series:"
+                        value={numeroSeries}
+                        onChange={(e) => {
+                            const value = Number(e.target.value);
+
+                            if (value >= 0 && value <= 20) {
+                                setNumeroSeries(value);
+                                setNumeroSeriesErrors(null);
+                            } else {
+                                setNumeroSeriesErrors('El número de series debe estar entre 0 y 20');
+                            }
+                        }}
+                        errors={numeroSeriesErrors}
+                        errorMessage={numeroSeriesErrors}
+                        className="h-10 w-full"
+                        type="number"
+                        maxLength={2}
+                    />
+
+                </div>
+                
+            </div>
+
         </div>
+     </form>
+        
     );
 
     function checkErrors(){

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const MultiChecklist = ({ options, selected, onChange, label, page=0, 
   setPage, existMoreItems=false, errors, errorMessage='', required=false }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const handleToggle = (id) => {
     if (selected.includes(id)) {
@@ -15,13 +15,13 @@ const MultiChecklist = ({ options, selected, onChange, label, page=0,
   
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 mt-3">
       <button
         type="button"
-        className="font-semibold mb-2 text-white"
+        className="text-xs text-start"
         onClick={() => setOpen(!open)}
       >
-        {label}
+        <p>{label}</p>
       </button>
       {open && (
         <div>
