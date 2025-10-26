@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import backend from "../../../backend";
 import { UserContext } from "../components/common/user-provider";
 import Pager from '../components/common/pager';
-import Routine from '../components/common/routine';
+import RoutineCard from '../components/routine/routine-card';
+
 
 const MyRoutines = () => {
   const { user } = useContext(UserContext);
@@ -11,7 +12,7 @@ const MyRoutines = () => {
   const [routines, setRoutines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  
   const size = 4;
 
   const viewRoutines = (pageNumber) => {
@@ -47,7 +48,7 @@ const MyRoutines = () => {
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10">
       <div className="flex flex-col space-y-4">
         {routines.map(routine => (
-          <Routine routine={routine} key={routine.id}/>
+          <RoutineCard Routine routine={routine} key={routine.id}/>
         ))}
       </div>
 
