@@ -241,7 +241,7 @@ public class UserController {
 		}
 
 		return toUserDto(
-				userService.updateProfile(id, userDto.getFirstName(), userDto.getLastName(), userDto.getEmail(), userDto.getAvatar().getName()));
+				userService.updateProfile(id, userDto.getFirstName(), userDto.getLastName(), userDto.getEmail(), userDto.getAvatar().getName(), userDto.getCardNumber()));
 
 	}
 

@@ -52,10 +52,12 @@ public interface UserService {
 	 * @param firstName the first name
 	 * @param lastName the last name
 	 * @param email the email
+	 * @param avatarName the avatar name
+	 * @param cardNumber the card number
 	 * @return the user
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
-	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName) throws InstanceNotFoundException;
+	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber) throws InstanceNotFoundException;
 	
 	/**
 	 * Change password.

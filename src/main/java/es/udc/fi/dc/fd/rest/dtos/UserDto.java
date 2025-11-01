@@ -1,5 +1,7 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import org.springframework.format.annotation.NumberFormat;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -45,6 +47,12 @@ public class UserDto {
 
 	private Boolean blocked;
 
+	private Boolean premium;
+
+	/** The card number. */
+	private String cardNumber;
+
+
 	/**
 	 * Instantiates a new user dto.
 	 */
@@ -59,6 +67,36 @@ public class UserDto {
 	 * @param lastName the last name
 	 * @param email the email
 	 * @param role the role
+	 * @param avatar the avatar
+	 * @param blocked the blocked
+	 * @param cardNumber the card number
+	 */
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked, String cardNumber, Boolean premium) {
+
+		this.id = id;
+		this.userName = userName != null ? userName.trim() : null;
+		this.firstName = firstName.trim();
+		this.lastName = lastName.trim();
+		this.email = email.trim();
+		this.role = role;
+		this.avatar = avatar;
+		this.blocked = blocked;
+		this.cardNumber = cardNumber;
+		this.premium = premium;
+	} 
+
+
+	/**
+	 * Instantiates a new userDto obtained from BD
+	 *
+	 * @param id the id
+	 * @param userName the user name
+	 * @param firstName the first name
+	 * @param lastName the last name
+	 * @param email the email
+	 * @param role the role
+	 * @param avatar the avatar
+	 * @param blocked the blocked
 	 */
 	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked) {
 
@@ -71,6 +109,7 @@ public class UserDto {
 		this.avatar = avatar;
 		this.blocked = blocked;
 	} 
+		
 	/**
 	 * Gets the id.
 	 *
@@ -229,13 +268,59 @@ public class UserDto {
 		this.avatar = avatar;
 	}
 
-
+	/**
+	 * Gets the blocked.
+	 *
+	 * @return the blocked
+	 */
 	public Boolean getBlocked(){
 		return blocked;
 	}
 
+	/**
+	 * Sets the blocked.
+	 *
+	 * @param blocked the new blocked
+	 */
 	public void setBlocked(Boolean blocked){
 		this.blocked = blocked;
+	}
+
+	/**
+	 * Gets the premium.
+	 *
+	 * @return the premium
+	 */
+	public Boolean getPremium() {
+		return premium;
+	}
+
+	/**
+	 * Sets the premium.
+	 *
+	 * @param premium the new premium
+	 */
+	public void setPremium(Boolean premium) {
+		this.premium = premium;
+	}
+
+	/**
+	 * Gets the card number.
+	 *
+	 * @return the card number
+	 */
+	@NumberFormat
+	public String getCardNumber() {
+		return cardNumber;
+	}
+
+	/**
+	 * Sets the card number.
+	 *
+	 * @param cardNumber the new card number
+	 */
+	public void setCardNumber(String cardNumber) {
+		this.cardNumber = cardNumber;
 	}
 }
 
