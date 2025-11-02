@@ -19,10 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.SerieDao;
@@ -52,6 +55,10 @@ public class ExerciseServiceTest {
     @Autowired
     private SerieDao serieDao;
 
+    @Autowired
+    private AvatarDao avatarDao;
+
+    private static final String PASSWORD = "password";
 
     private Exercise createExercise(String name, String description, grupoMuscular grupo, int numeroSeries) {
         Exercise exercise = new Exercise(name, description, grupo, numeroSeries);
@@ -59,6 +66,11 @@ public class ExerciseServiceTest {
         exercise.setEquipment(Equipment.POLEA_CABLE);
         return exercise;
     }
+
+	private Users createUser(String userName) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		return new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+	}
 
     @Test
     public void addExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
@@ -525,7 +537,18 @@ public class ExerciseServiceTest {
         // Desbloquear el ejercicio
         exercise1 = exerciseService.validateExercise(creator.getId(), idExercise);
         assertTrue(exercise1.isValidated());
+    }
 
+    @Test
+    public void addExerciseNonPremiumUserTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException {
+        Users usuario = createUser("testuser1");
+        usuario.setPremium(false);
+        userService.signUp(usuario, RoleType.TRAINER);
 
+        Users creator = userService.login("testuser1", PASSWORD);
+
+        assertThrows(PermissionException.class, () -> {
+            exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        });
     }
 }
