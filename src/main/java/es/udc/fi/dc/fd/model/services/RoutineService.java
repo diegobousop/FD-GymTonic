@@ -14,16 +14,18 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 
 public interface RoutineService {
     Routine createRoutine(Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws DuplicateInstanceException, InstanceNotFoundException, 
-    InvalidRoutineNameException, InvalidRoutineDurationException;
+    InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException;
     
     Page<Routine> viewAllRoutines(Long userId, Pageable pageable) throws InstanceNotFoundException;
 
     Routine getRoutineById(Long routineId, Long userId) throws InstanceNotFoundException, PermissionException;
     
-    Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException;
+    Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException, RoutineExerciseLimitReachedException;
 
     void deleteRoutine(Long creatorId, Long routineId) throws InstanceNotFoundException, PermissionException;
 

@@ -30,6 +30,8 @@ import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -58,7 +60,7 @@ public class NotificationServiceTest {
 
     @Test
     public void testNotifyFollowers() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
-     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException {
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users user1 = createUser("manolo");
         userService.signUp(user1, RoleType.TRAINER);
 
@@ -88,7 +90,7 @@ public class NotificationServiceTest {
 
     @Test
     public void testMarkAsReadAndUnread() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
-     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException {
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users user1 = createUser("manolo");
         userService.signUp(user1, RoleType.TRAINER);
 
@@ -115,7 +117,7 @@ public class NotificationServiceTest {
 
         @Test
     public void testNotifyFollowersByModifyingRoutine() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
-     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException {
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users user1 = createUser("manolo");
         userService.signUp(user1, RoleType.TRAINER);
 
