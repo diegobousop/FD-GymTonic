@@ -4,6 +4,8 @@ import SendButton from "../../app/components/common/send-button";
 import TextInput from "../../app/components/common/text-input";
 import ParagraphInput from "../../app/components/common/paragraph-input";
 import MultiSelectList from "../../app/components/common/multi-select-list";
+import { useContext } from "react";
+import { UserContext } from "../../app/components/common/user-provider";
 
 
 const CreateExercise = () => {
@@ -14,6 +16,7 @@ const CreateExercise = () => {
     const [numeroSeries, setNumeroSeries] = useState("");
     const [difficulty, setDifficulty] = useState("");
     const [equipment, setEquipment] = useState("");
+    const { user } = useContext(UserContext);
 
     // Estados para la gestión de errores y éxito
     const [success, setSuccess] = useState(false);
@@ -59,6 +62,16 @@ const CreateExercise = () => {
             form.classList.add("was-validated");
         }
     };
+    
+    if(user?.role === "TRAINER" && !user?.premium){
+        return(
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="flex flex-col text-center text-3xl px-4 max-w-4xl">
+                    <p>Como entrenador, no puedes añadir nuevos ejercicios a menos que seas un entrenador PREMIUM.</p>
+                </div>
+            </div>
+        )
+    }
 
     return(
         
