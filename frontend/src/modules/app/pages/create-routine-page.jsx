@@ -3,6 +3,8 @@ import backend from "../../../backend";
 import SendButton from "../components/common/send-button";
 import TextInput from "../components/common/text-input";
 import MultiSelectList from "../components/common/multi-select-list";
+import { useContext } from "react";
+import { UserContext } from "../components/common/user-provider";
 
 
 const CreateRoutine = () => {
@@ -16,6 +18,12 @@ const CreateRoutine = () => {
     const [page, setPage] = useState(0);
     const [existMoreItems, setExistMoreItems] = useState(false);
     const [isPublic, setIsPublic] = useState(false);
+    const { user } = useContext(UserContext);
+
+
+    const [nameErrors, setNameErrors] = useState(null);
+    const [durationErrors, setDurationErrors] = useState(null);
+    const [exercisesErrors, setExercisesErrors] = useState(null);
 
     let form;
 
@@ -35,6 +43,10 @@ const CreateRoutine = () => {
     e.preventDefault();
 
     if (form.checkValidity() && !isNaN(duration) ) {
+
+        const isValid = !checkErrors()
+        if (!isValid) return;
+
         try {
             await backend.routineService.createRoutine(
                 name.trim(),
@@ -71,6 +83,8 @@ const CreateRoutine = () => {
                         label="Nombre"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        errors={nameErrors}
+                        errorMessage={nameErrors}
                         />
 
                     <TextInput
@@ -80,6 +94,8 @@ const CreateRoutine = () => {
                         onChange={(e) => setDuration(e.target.value)}
                         maxLength="3"
                         type="number"
+                        errors={durationErrors}
+                        errorMessage={durationErrors}
                         />
 
                     <MultiSelectList
@@ -90,6 +106,8 @@ const CreateRoutine = () => {
                         page={page}
                         setPage={setPage}
                         existMoreItems={existMoreItems}
+                        errors={exercisesErrors}
+                        errorMessage={exercisesErrors}
                     />
                     
                     <div className="flex items-center mb-4">
@@ -109,12 +127,36 @@ const CreateRoutine = () => {
                     <SendButton onClick={handleSubmit}></SendButton>
                 </form>    
 
-                        {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>}
+                        {/* {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>} */}
                         {success && <div className="text-green-500 text-xs mt-2">Rutina creada Exitosamente</div>}
             </div>       
 
     );
 
-}
+    function checkErrors(){
+        let hasErrors = false;
+        const trimmedName = name.trim();
+        const durationNumber = Number(duration);
+        const selectedExercisesCount = selectedExercises.length;
 
+        const nameErrors = !trimmedName ? "El nombre es obligatorio." : null;
+        const durationErrors = isNaN(durationNumber) || durationNumber <= 0 ? "La duración debe ser un número positivo." : null;
+        let exerciseErrors = null;
+
+        if(user.premium === false){
+        exerciseErrors = selectedExercisesCount > 5 ? "Como entrenador no premium, no puedes seleccionar más de 5 ejercicios." : null;
+        }
+        
+        if(nameErrors || durationErrors || exerciseErrors){
+            hasErrors = true;
+        }
+
+        setNameErrors(nameErrors);
+        setDurationErrors(durationErrors);
+        setExercisesErrors(exerciseErrors);
+
+        return hasErrors;
+    }
+
+}
 export default CreateRoutine;

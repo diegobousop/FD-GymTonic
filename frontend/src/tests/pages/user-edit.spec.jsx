@@ -17,11 +17,16 @@ describe("UserEdit", () => {
         email: "test@example.com",
         firstName: "John",
         lastName: "Doe",
+        cardNumber: "1234567890123456",
+        role: "TRAINER",
+        avatar: {
+            name: "default"
+        }
     };
 
-    const renderWithContext = (user = mockUser, setUserFn = jest.fn()) => {
+    const renderWithContext = (user = mockUser, setUserFn = jest.fn(), refreshUserFn = jest.fn()) => {
         return render(
-            <UserContext.Provider value={{ user, setUser: setUserFn }}>
+            <UserContext.Provider value={{ user, setUser: setUserFn, refreshUser: refreshUserFn }}>
                 <UserEdit />
             </UserContext.Provider>
         );
@@ -38,17 +43,22 @@ describe("UserEdit", () => {
         expect(screen.getByLabelText('Email')).toBeInTheDocument();
         expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
         expect(screen.getByLabelText('Apellidos')).toBeInTheDocument();
+        expect(screen.getByLabelText('Tarjeta de crédito')).toBeInTheDocument();
 
         expect(screen.getByDisplayValue(mockUser.email)).toBeInTheDocument();
         expect(screen.getByDisplayValue(mockUser.firstName)).toBeInTheDocument();
         expect(screen.getByDisplayValue(mockUser.lastName)).toBeInTheDocument();
+        expect(screen.getByDisplayValue(mockUser.cardNumber)).toBeInTheDocument();
     });
 
     it("actualiza el perfil correctamente y muestra mensaje de éxito", async () => {
         const setUser = jest.fn();
-        updateProfile.mockImplementation((_, onSuccess) => onSuccess({}));
+        const refreshUser = jest.fn();
+        updateProfile.mockImplementation((updatedUser, onSuccess) => {
+            onSuccess({});
+        });
 
-        renderWithContext(mockUser, setUser);
+        renderWithContext(mockUser, setUser, refreshUser);
 
         const emailInput = screen.getByDisplayValue(mockUser.email);
 
@@ -58,30 +68,42 @@ describe("UserEdit", () => {
             target: { value: "new@example.com" },
         });
 
-        const saveChanges = screen.getByText('Guardar cambios');
+        const saveButton = screen.getByText('Guardar cambios');
 
-        expect(saveChanges).toBeInTheDocument();
+        expect(saveButton).toBeInTheDocument();
 
-        fireEvent.click(saveChanges);
+        fireEvent.click(saveButton);
         
-        expect(
-            await screen.findByText(/Perfil actualizado correctamente/i)
-        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('Perfil actualizado correctamente')).toBeInTheDocument();
+        });
 
+        expect(updateProfile).toHaveBeenCalledWith(
+            expect.objectContaining({
+                email: "new@example.com",
+                firstName: mockUser.firstName,
+                lastName: mockUser.lastName
+            }),
+            expect.any(Function),
+            expect.any(Function)
+        );
     });
 
      it("muestra mensaje de error si updateProfile falla", async () => {
+        const refreshUser = jest.fn();
 
+        updateProfile.mockImplementation((updatedUser, onSuccess, onError) => {
+            onError("error");
+        });
 
-        updateProfile.mockImplementation((_, __, onError) => onError("error"));
+        renderWithContext(mockUser, jest.fn(), refreshUser);
 
-        renderWithContext();
+        const saveButton = screen.getByText('Guardar cambios');
+        fireEvent.click(saveButton);
 
-        fireEvent.click(screen.getByText('Guardar cambios'));
-
-        expect(
-            await screen.findByText(/Error al actualizar el perfil/i)
-        ).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('Error al actualizar el perfil')).toBeInTheDocument();
+        });
     }); 
  
 });
