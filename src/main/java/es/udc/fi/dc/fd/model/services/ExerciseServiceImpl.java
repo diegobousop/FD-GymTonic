@@ -57,7 +57,7 @@ public class ExerciseServiceImpl implements ExerciseService {
             throw new InstanceNotFoundException("project.entities.user", userId);
         }
 
-        if(validator.get().getRole().toString().equals("USER")){ // si el que añade es admin, se valida directamente
+        if(validator.get().getRole().toString().equals("USER")){ // si el que añade es user, no tiene permiso
             throw new PermissionException("project.entities.exercise", exercise.getExerciseName());
         }
 
@@ -66,8 +66,13 @@ public class ExerciseServiceImpl implements ExerciseService {
             exercise.setValidator(validator.get());
         }
 
-        if(validator.get().getRole().toString().equals("TRAINER") ){
+        //si el que añade es trainer y es premium, puede añadir ejercicios
+        if(validator.get().getRole().toString().equals("TRAINER") && creator.get().getPremium()) { 
             exercise.setValidated(false);
+        }
+
+        if(validator.get().getRole().toString().equals("TRAINER") && !creator.get().getPremium()) {
+            throw new PermissionException("project.entities.exercise", exercise);
         }
 
         Icon icon = iconDao.findByName(exercise.getGrupoMuscular().toString());

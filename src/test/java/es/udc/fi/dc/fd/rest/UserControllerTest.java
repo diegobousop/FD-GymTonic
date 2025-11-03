@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
+import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,10 +164,10 @@ public class UserControllerTest {
 		Long userId = user.getUserDto().getId();
 		Optional<Avatar> avatar = avatarDao.findByName("messy");
 
-		// Crear DTO de usuario con datos actualizados
+		// Crear DTO de usuario con datos actualizados con tarjeta para ser PREMIUM
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
 				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked());
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), "1234567890123456", null);
 
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -180,7 +182,8 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$.lastName").value(userDto.getLastName()))
 				.andExpect(jsonPath("$.email").value(userDto.getEmail()))
 				.andExpect(jsonPath("$.avatar.name").value(avatar.get().getName()))
-				.andExpect(jsonPath("$.avatar.avatarBase64").value(avatar.get().getAvatarBase64()));
+				.andExpect(jsonPath("$.avatar.avatarBase64").value(avatar.get().getAvatarBase64()))
+				.andExpect(jsonPath("$.cardNumber").value(userDto.getCardNumber()));
 	}
 
 	@Test
@@ -193,7 +196,7 @@ public class UserControllerTest {
 
 		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
 				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked());
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -213,7 +216,7 @@ public class UserControllerTest {
 
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
 				"","email-invalido",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked());
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -223,6 +226,31 @@ public class UserControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsBytes(userDto)))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testUpdateProfile_PremiumStatus() throws Exception {
+
+		//Registrar sin cardNumber, no debe ser premium
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto("paco","12345","Paco","Gomez","paco@paco.com","USER");
+		AuthenticatedUserDto user = userController.signUp(registerParams).getBody();
+
+		//Actualizamos el usuario con un cardNumber, debe ser premium
+		UserDto userDto = new UserDto(user.getUserDto().getId(),user.getUserDto().getUserName(),"Paco",
+				"Gomez","paco@paco.com",user.getUserDto().getRole(),user.getUserDto().getAvatar(), user.getUserDto().getBlocked(),"1234567890123456", null);
+
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(put("/api/users/{id}", userDto.getId())
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userDto.getId())	
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsBytes(userDto)))
+				.andExpect(status().isOk());
+	
+		Users updatedUser = userDao.getById(userDto.getId());
+		assertEquals(true, updatedUser.getPremium());
+
+
 	}
 
 	@Test
