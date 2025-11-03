@@ -25,6 +25,10 @@ public interface RoutineService {
     
     Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException;
 
+    boolean removeExerciseFromRoutine(Long exerciseId, Long routineId) throws InstanceNotFoundException;
+
+    boolean deleteSeriesByRoutine(Long routineId) throws InstanceNotFoundException;
+
     void deleteRoutine(Long creatorId, Long routineId) throws InstanceNotFoundException, PermissionException;
 
     Page<Routine> findByFilters(Long userId, Long creatorId, String name, Pageable pageable) throws InstanceNotFoundException;

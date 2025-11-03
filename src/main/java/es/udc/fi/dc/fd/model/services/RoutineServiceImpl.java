@@ -174,6 +174,47 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
+    public boolean removeExerciseFromRoutine(Long exerciseId, Long routineId) throws InstanceNotFoundException{
+
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
+
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        if (optionalExercise.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        }
+
+        Routine routine = optionalRoutine.get();
+        Exercise exercise = optionalExercise.get();
+
+        if (routine.getExercises() == null || !routine.getExercises().contains(exercise)) {
+            return false;
+        }
+
+        routine.getExercises().remove(exercise);
+
+        routineDao.save(routine);
+
+        return true;
+    }
+
+
+    @Transactional
+    @Override
+    public boolean deleteSeriesByRoutine(Long routineId) {
+        try {
+            List<Serie> series = serieDao.findByRoutineId(routineId);
+            series.forEach(serie -> serieDao.deleteById(serie.getId()));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
     public void deleteRoutine(Long creatorId, Long routineId) throws InstanceNotFoundException, PermissionException {
         Users creator = permissionChecker.checkUser(creatorId);
         
@@ -188,6 +229,7 @@ public class RoutineServiceImpl implements RoutineService {
             throw new PermissionException("project.entities.routine", routineId);
         }
         
+        deleteSeriesByRoutine(routine.getId());
         routineDao.delete(routine);
     }
 

@@ -17,4 +17,6 @@ public interface SerieDao extends JpaRepository<Serie, Long> {
     List<Serie> findByRoutineAndExercise(Routine routine, Exercise exercise);
     
     List<Serie> findByTrainingId(Long trainingId);
+
+    List<Serie> findByRoutineId(Long routineId);
 }

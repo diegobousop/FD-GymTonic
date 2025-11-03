@@ -97,6 +97,7 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
                   }
                   className="bg-gray-800 text-white w-16 rounded text-center"
                   aria-label={`Repeticiones serie ${serie.numeroSerie}`}
+                  min="0"
                 />
                 <input
                   type="number"
@@ -106,6 +107,7 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
                   }
                   className="bg-gray-800 text-white w-16 rounded text-center"
                   aria-label={`Peso serie ${serie.numeroSerie}`}
+                  min="0"
                 />
                 {series.length === serie.numeroSerie &&
                   <button
