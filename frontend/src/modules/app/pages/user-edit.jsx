@@ -17,6 +17,7 @@ const UserEdit = () => {
     const [cardNumber, setCardNumber] = useState(user?.cardNumber ?? '');
 
     const [isLoading, setIsLoading] = useState(false);
+    const [premiumStatusChanged, setPremiumStatusChanged] = useState(null); // 'upgraded' | 'downgraded' | null
 
     const [emailErrors, setEmailErrors] = React.useState(null)
     const [firstnameErrors, setFirstnameErrors] = React.useState(null)
@@ -32,6 +33,9 @@ const UserEdit = () => {
         if (!isValid) return;
 
         setIsLoading(true);
+        setPremiumStatusChanged(null); // Reset premium status message
+        
+        const wasPremium = user.premium;
         const updatedUser = {
             ...user,
             email: email.trim() === '' ? user.email : email,
@@ -42,10 +46,22 @@ const UserEdit = () => {
             cardNumber: (cardNumber || '').trim() === '' ? null : (cardNumber || '').trim(),
         };
         updateProfile(updatedUser, (res) => {
+            // Check if premium status changed
+            const isNowPremium = res.premium;
+            
+            if (!wasPremium && isNowPremium) {
+                setPremiumStatusChanged('upgraded');
+                setMessage('Te has convertido en usuario premium');
+            } else if (wasPremium && !isNowPremium) {
+                setPremiumStatusChanged('downgraded');
+                setMessage('Has dejado de ser usuario premium');
+            } else {
+                setMessage('Perfil actualizado correctamente');
+            }
+            
             if (refreshUser) {
                 refreshUser(); // Solo se llama después de éxito
             }
-            setMessage('Perfil actualizado correctamente');
             setIsLoading(false);
         }, (err) => {
             setMessage('Error al actualizar el perfil');
@@ -115,7 +131,17 @@ const UserEdit = () => {
                 children="Guardar cambios"
                 isLoading={isLoading}
                 />
-                {message && <div className=" text-white mb-3 ml-14">{message}</div>}
+                {message && (
+                    <div className={`mb-3 ml-14 font-semibold ${
+                        premiumStatusChanged === 'upgraded' 
+                            ? 'text-yellow-400 text-lg' 
+                            : premiumStatusChanged === 'downgraded'
+                            ? 'text-orange-400'
+                            : 'text-white'
+                    }`}>
+                        {message}
+                    </div>
+                )}
             </div>
             </form>
         </div>

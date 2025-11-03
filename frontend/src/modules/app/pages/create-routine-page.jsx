@@ -60,7 +60,7 @@ const CreateRoutine = () => {
                 (err) => {
                 // Callback de error
                 setSuccess(false);
-                setBackendErrors(err || "Error inesperado");
+                setBackendErrors(err);
                 }
 
             );
@@ -68,7 +68,7 @@ const CreateRoutine = () => {
 
         } catch (ex) {
         setSuccess(false);
-        setBackendErrors(ex.message || "Error inesperado");
+        setBackendErrors(ex);
         }
     } else {
         form.classList.add("was-validated");
@@ -127,7 +127,7 @@ const CreateRoutine = () => {
                     <SendButton onClick={handleSubmit}></SendButton>
                 </form>    
 
-                        {/* {backendErrors && <div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>} */}
+                        {backendErrors && backendErrors.globalError && (<div className="text-red-500 text-xs mt-2">{backendErrors.globalError}</div>)}
                         {success && <div className="text-green-500 text-xs mt-2">Rutina creada Exitosamente</div>}
             </div>       
 
