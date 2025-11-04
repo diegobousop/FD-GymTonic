@@ -4,6 +4,7 @@ import backend from "../../../../backend";
 const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
   const [series, setSeries] = useState([]);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Cargar las series del backend
   useEffect(() => {
@@ -48,20 +49,34 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
   };
 
   // Confirmar cambios de repeticiones y pesos en backend
-  const handleConfirm = () => {
-    series.forEach((serie) => {
-      backend.exerciseService.modifySerie(
-        serie.id,
-        serie.repeticiones,
-        serie.peso,
-        () => {},
-        (err) => console.error(`❌ Error al modificar serie ${serie.id}:`, err)
+  const handleConfirm = async () => {
+    setSaving(true);
+    try {
+      await Promise.all(
+        series.map(
+          (serie) =>
+            new Promise((resolve, reject) => {
+              backend.exerciseService.modifySerie(
+                serie.id,
+                serie.repeticiones,
+                serie.peso,
+                () => resolve(),
+                (err) => reject(err)
+              );
+            })
+        )
       );
-    });
 
-    if (typeof onUpdate === "function") onUpdate();
-    onClose();
+      if (typeof onUpdate === "function") await onUpdate();
+
+      onClose();
+    } catch (err) {
+      console.error("❌ Error al modificar series:", err);
+    }finally{
+      setSaving(false);
+    }
   };
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
@@ -137,9 +152,10 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
 
           <button
             onClick={handleConfirm}
+            disabled={saving}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
           >
-            Continuar
+            {saving ? "Guardando..." : "Continuar"}
           </button>
         </div>
       </div>
