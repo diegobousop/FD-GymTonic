@@ -30,7 +30,14 @@ public class SerieConversor {
         Long exerciseId, 
         Long routineId){
 
-        return serieParamsDtoList.stream().map(serieParamsDto -> new Serie(serieParamsDto.getRepeticiones(), serieParamsDto.getPeso(), serieParamsDto.getNumeroSerie(), new Exercise(exerciseId), new Routine(routineId))).toList();
+        return serieParamsDtoList.stream().map(serieParamsDto -> 
+        new Serie(serieParamsDto.getRepeticiones(), 
+        serieParamsDto.getPeso(), 
+        serieParamsDto.getNumeroSerie(), 
+        new Exercise(exerciseId), 
+        routineId != null ? new Routine(routineId) : null  
+        ))
+        .toList();
     }
 
     public static final List<SerieSummaryDto> toSerieSummaryDtos(List<Serie> series){

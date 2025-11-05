@@ -586,7 +586,6 @@ public class RoutineServiceTest {
         
         Training createdTraining = routineService.createTrainingFromRoutine(
             creator.getId(),
-            routine.getId(),
             "Training 1",
             "Description of training",
             45L,
@@ -610,22 +609,6 @@ public class RoutineServiceTest {
     public void testCreateTrainingFromRoutineWithInvalidUser() throws Exception {
         routineService.createTrainingFromRoutine(
             999999L,
-            1L,
-            "Training",
-            "Description",
-            30L,
-            true,
-            new ArrayList<Serie>()
-        );
-    }
-
-    @Test(expected = InstanceNotFoundException.class)
-    public void testCreateTrainingFromRoutineWithInvalidRoutine() throws Exception {
-        Users creator = userService.login("admin1", "12345");
-        
-        routineService.createTrainingFromRoutine(
-            creator.getId(),
-            999999L,
             "Training",
             "Description",
             30L,
@@ -637,7 +620,6 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testCreateTrainingFromRoutineWithInvalidExercise() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "routine1", new ArrayList<Long>(), 60L, true);
         
         Serie serie = new Serie();
         Exercise invalidExercise = new Exercise();
@@ -649,7 +631,6 @@ public class RoutineServiceTest {
         
         routineService.createTrainingFromRoutine(
             creator.getId(),
-            routine.getId(),
             "Training",
             "Description",
             30L,

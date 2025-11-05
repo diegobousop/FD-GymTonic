@@ -187,11 +187,11 @@ public class RoutineController {
         List<Serie> series = new ArrayList<>();
         for (ExerciseRoutineParamsDto exerciseParamsDto : params.getExercises()) {
 
-            series.addAll(SerieConversor.toSerieFromSerieParamsDtoList(exerciseParamsDto.getSeries(), exerciseParamsDto.getId(), params.getRoutineId()));
+            series.addAll(SerieConversor.toSerieFromSerieParamsDtoList(exerciseParamsDto.getSeries(), exerciseParamsDto.getId(), null));
         }
 
-        //id usuario, id rutina, descripcion, duracion, visibilidad, lista de ejercicios con repes
-        routineService.createTrainingFromRoutine(userId, params.getRoutineId(), params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
+        //id usuario, descripcion, duracion, visibilidad, lista de ejercicios con repes
+        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
     }
 
         @PostMapping("/{routineId}/follow")

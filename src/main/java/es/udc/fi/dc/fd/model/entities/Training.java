@@ -17,19 +17,17 @@ public class Training {
     private LocalDateTime creationDate;
     private Boolean isPublic;
     private Users user;
-    private Routine routine;
     private Long duration;
 
     public Training() {}
 
     public Training(String name, String description, LocalDateTime creationDate, Boolean isPublic, 
-                   Users user, Routine routine, Long duration) {
+                   Users user, Long duration) {
         this.name = name;
         this.description = description;
         this.creationDate = creationDate;
         this.isPublic = isPublic;
         this.user = user;
-        this.routine = routine;
         this.duration = duration;
     }
 
@@ -83,16 +81,6 @@ public class Training {
 
     public void setUser(Users user) {
         this.user = user;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "routineId")
-    public Routine getRoutine() {
-        return routine;
-    }
-
-    public void setRoutine(Routine routine) {
-        this.routine = routine;
     }
 
     public Long getDuration() {

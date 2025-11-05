@@ -93,9 +93,8 @@ CREATE TABLE Training (
     creationDate TIMESTAMP NOT NULL,
     isPublic BOOLEAN DEFAULT TRUE,
     userId BIGINT NOT NULL,
-    routineId BIGINT NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(id),
-    FOREIGN KEY (routineId) REFERENCES Routine(id)
+    routineId BIGINT,
+    FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
 CREATE TABLE Serie (
@@ -104,7 +103,7 @@ CREATE TABLE Serie (
     peso INT NOT NULL,
     numeroSerie INT NOT NULL,
     exerciseId BIGINT NOT NULL,
-    routineId BIGINT NOT NULL,
+    routineId BIGINT,
     trainingId BIGINT,
     FOREIGN KEY (exerciseId) REFERENCES Exercise(id),
     FOREIGN KEY (routineId) REFERENCES  Routine(id),
