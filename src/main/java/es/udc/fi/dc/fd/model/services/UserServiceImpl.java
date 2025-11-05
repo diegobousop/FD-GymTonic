@@ -125,11 +125,13 @@ public class UserServiceImpl implements UserService {
 	 * @param firstName the first name
 	 * @param lastName  the last name
 	 * @param email     the email
+	 * @param avatarName the avatar name
+	 * @param cardNumber the card number
 	 * @return the user
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	@Override
-	public Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName)
+	public Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber)
 			throws InstanceNotFoundException {
 
 		Users user = permissionChecker.checkUser(id);
@@ -137,6 +139,16 @@ public class UserServiceImpl implements UserService {
 		user.setFirstName(firstName);
 		user.setLastName(lastName);
 		user.setEmail(email);
+
+		// Actualizar premium y tarjeta
+		if(cardNumber != null && !cardNumber.isEmpty()) {
+			user.setBankCard(cardNumber);
+			user.setPremium(true);
+		} 
+		else {
+			user.setBankCard(null);
+			user.setPremium(false);
+		}
 
 		Optional<Avatar> avatar = avatarDao.findByName(avatarName);
 		if (!avatar.isPresent()) {
@@ -148,6 +160,8 @@ public class UserServiceImpl implements UserService {
         }
 
 		userDao.save(user);
+
+		System.out.println("USER SERVICE: " + user);
 
 		return user;
 	}

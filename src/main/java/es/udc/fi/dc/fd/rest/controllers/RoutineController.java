@@ -37,6 +37,8 @@ import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
@@ -67,6 +69,8 @@ public class RoutineController {
 
     private final static String INVALID_ROUTINE_NAME_EXCEPTION_CODE = "project.exceptions.InvalidRoutineNameException";
     private final static String INVALID_ROUTINE_DURATION_EXCEPTION_CODE = "project.exceptions.InvalidRoutineDurationException";
+    private final static String ROUTINE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineLimitReachedException";
+    private final static String ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineExercisesLimitReachedException";
 
 
     @ExceptionHandler(InvalidRoutineNameException.class)
@@ -89,10 +93,31 @@ public class RoutineController {
         return new ErrorsDto(errorMessage);
     }
 
-    
+    @ExceptionHandler(RoutineLimitReachedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleRoutineLimitReachedException(RoutineLimitReachedException exception, Locale locale){
+        String errorMessage = messageSource.getMessage(ROUTINE_LIMIT_REACHED_EXCEPTION_CODE,
+        new Object[] {exception.getRoutineLimit()}, ROUTINE_LIMIT_REACHED_EXCEPTION_CODE, locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(RoutineExerciseLimitReachedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleRoutineExerciseLimitReachedException(RoutineExerciseLimitReachedException exception, Locale locale){
+        String errorMessage = messageSource.getMessage(ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE,
+        new Object[] {exception.getRoutineExerciseLimit()}, ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE, locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
+
     @PostMapping("/createRoutine")
     public RoutineDto createRoutine(@RequestAttribute Long userId, @RequestBody RoutineParamsDto params ) 
-        throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+        throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException,
+         RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         return RoutineConversor.toRoutineDto(routineService.createRoutine(userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic()));
     }
 
@@ -142,7 +167,7 @@ public class RoutineController {
             @PathVariable Long routineId,
             @RequestAttribute Long userId, 
             @Validated @RequestBody RoutineParamsDto params) 
-        throws InstanceNotFoundException, PermissionException {
+        throws InstanceNotFoundException, PermissionException, RoutineExerciseLimitReachedException {
         return RoutineConversor.toRoutineDto(
             routineService.modifyRoutine(routineId, userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic())
         );

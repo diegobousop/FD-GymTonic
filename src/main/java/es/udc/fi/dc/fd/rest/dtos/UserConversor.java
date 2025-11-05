@@ -30,7 +30,7 @@ public class UserConversor {
 	 */
 	public static final UserDto toUserDto(Users user) {
 		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), 
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked());
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked(), user.getBankCard(),user.getPremium());
 	}
 
 	/**

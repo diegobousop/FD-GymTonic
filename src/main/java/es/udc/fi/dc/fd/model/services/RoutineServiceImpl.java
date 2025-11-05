@@ -28,6 +28,8 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 
 
 @Service
@@ -54,7 +56,7 @@ public class RoutineServiceImpl implements RoutineService {
     
     @Override
     public Routine createRoutine( Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws DuplicateInstanceException,
-        InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException {
+        InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users creator = permissionChecker.checkUser(creatorId);
 
 		if (routineDao.existsByNameAndCreator(name, creator)) {
@@ -75,6 +77,24 @@ public class RoutineServiceImpl implements RoutineService {
         if (isPublic == null) {
             isPublic = true;
         }
+
+        // Comprobar límite de rutinas para usuarios no premium
+        if(!creator.getPremium() && creator.getRole().toString().equals("TRAINER")) {
+            List<Routine> routineCount = routineDao.findByCreator(creator);
+            if (routineCount.size() >= 3) {
+                throw new RoutineLimitReachedException();
+            }
+        }
+
+        // Comprobar límite de ejercicios por rutina para usuarios no premium
+        if(!creator.getPremium() && creator.getRole().toString().equals("TRAINER")) {
+            int exerciseLimit = 5;
+            if (found.size() > exerciseLimit) {
+                throw new RoutineExerciseLimitReachedException();
+            }
+        }
+
+
         Routine routine = new Routine(name, found, creator, duration, LocalDateTime.now().withNano(0), isPublic);
         
         if(isPublic && creator.getFollowers()!=null) {
@@ -136,7 +156,7 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
-    public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException {
+    public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException, RoutineExerciseLimitReachedException {
         Users creator = permissionChecker.checkUser(creatorId);
         
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
@@ -149,6 +169,14 @@ public class RoutineServiceImpl implements RoutineService {
         // Admin can modify any routine, others can only modify their own
         if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
             throw new PermissionException("project.entities.routine", routineId);
+        }
+
+        //Si el creador no es premium comprobar limite de ejercicios
+        if(!creator.getPremium() && creator.getRole().toString().equals("TRAINER")) {
+            int exerciseLimit = 5;
+            if (exercises.size() > exerciseLimit) {
+                throw new RoutineExerciseLimitReachedException();
+            }
         }
         
         List<Exercise> foundExercises = new ArrayList<>();

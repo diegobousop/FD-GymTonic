@@ -52,9 +52,14 @@ public class Users {
 	/** The role. */
 	private RoleType role;
 
-
 	/** Ban */
 	private Boolean blocked;
+
+	/** The premium status. */
+	private Boolean premium;
+
+	/** The bank card. */
+	private String bankCard;
 
 	/** The followers. */
 	private List<Users> followers;
@@ -272,8 +277,47 @@ public class Users {
 		this.blocked = blocked;
 	}
 
+	/**
+	 * Gets if is premium.
+	 *
+	 * @return the bool
+	 */
+	public Boolean getPremium() {
+		return premium;
+	}
+
+	/**
+	 * Sets the premium status.
+	 *
+	 * @param premium the new premium status
+	 */
+	public void setPremium(Boolean premium) {
+		this.premium = premium;
+	}
+
+	/**
+	 * Gets the bank card.
+	 *
+	 * @return the bank card
+	 */
+	public String getBankCard() {
+		return bankCard;
+	}
+
+	/**
+	 * Sets the bank card.
+	 *
+	 * @param bankCard the new bank card
+	 */
+	public void setBankCard(String bankCard) {
+		this.bankCard = bankCard;
+	}
 
 
+	/**
+	 * Gets the followers.
+	 * @return the followers
+	 */
 	@ManyToMany
 	@JoinTable(name = "User_Follow",
 			joinColumns = @JoinColumn(name = "followed_id"),
@@ -282,15 +326,28 @@ public class Users {
 	public List<Users> getFollowers() {
 		return followers;
 	}
+
+	/**
+	 * Sets the followers.
+	 * @param followers the new followers
+	 */
 	public void setFollowers(List<Users> followers) {
 		this.followers = followers;
 	}
 
+	/**
+	 * Gets the following.
+	 * @return the following
+	 */
 	@ManyToMany(mappedBy = "followers")
 	public List<Users> getFollowing() {
 		return following;
 	}
 
+	/**
+	 * Sets the following.
+	 * @param following the new following
+	 */
 	public void setFollowing(List<Users> following) {
 		this.following = following;
 	}

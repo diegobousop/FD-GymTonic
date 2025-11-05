@@ -80,13 +80,14 @@ public class RoutineControllerTest {
         return mapper;
     }
 
-    private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
+    private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType, Boolean premium)
 			throws LoginUserBlockedException, IncorrectLoginException {
         Optional<Avatar> avatar = avatarDao.findByName("default");
 		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+                user.setPremium(premium);
 
 		userDao.save(user);
 
@@ -101,7 +102,7 @@ public class RoutineControllerTest {
     @Test
     public void testPostCreateRoutine() throws Exception{
 
-		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.TRAINER);
+		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.TRAINER,true);
 
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Rutina Alvaro");
@@ -120,7 +121,7 @@ public class RoutineControllerTest {
     @Test
     public void testPostCreateInvalidRoutine() throws Exception{
 
-		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.TRAINER);
+		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.TRAINER, true);
 
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Rutina Alvaro");
@@ -144,7 +145,7 @@ public class RoutineControllerTest {
     @Test
     public void testPostDuplicatedRoutine() throws Exception{
 
-		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.TRAINER);
+		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.TRAINER, true);
 
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Rutina Alvaro");
@@ -167,7 +168,7 @@ public class RoutineControllerTest {
     @Test
     public void testViewAllRoutines() throws Exception {
 
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Full-Body");
@@ -206,7 +207,7 @@ public class RoutineControllerTest {
     @Test
     public void testViewAllRoutinesWithoutRoutines() throws Exception {
 
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
         mockMvc.perform(get("/api/routines/viewAllRoutines")
                 .header("Authorization", "Bearer " + user.getServiceToken())
@@ -220,7 +221,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testRemoveExerciseFromRoutineSuccess() throws Exception {
-    AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+    AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
     // Crear una rutina
     RoutineParamsDto createParams = new RoutineParamsDto();
@@ -274,7 +275,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testRemoveExerciseFromRoutine_NotFoundRoutine() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
         Long nonExistingRoutineId = 99999L;
         Long someExerciseId = 1L; // ID cualquiera
@@ -287,7 +288,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testRemoveExerciseFromRoutine_NotFoundExercise() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
         // Crear una rutina válida
         RoutineParamsDto createParams = new RoutineParamsDto();
@@ -320,7 +321,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testModifyRoutineSuccess() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         
         RoutineParamsDto createParams = new RoutineParamsDto();
         createParams.setName("Original Routine");
@@ -356,7 +357,7 @@ public class RoutineControllerTest {
     
     @Test
     public void testModifyRoutineNotFound() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Modified Routine");
@@ -374,8 +375,8 @@ public class RoutineControllerTest {
     
     @Test
     public void testModifyRoutinePermissionDenied() throws Exception {
-        AuthenticatedUserDto creator = createAuthenticatedUser("creator", RoleType.TRAINER);
-        AuthenticatedUserDto otherUser = createAuthenticatedUser("otheruser", RoleType.USER);
+        AuthenticatedUserDto creator = createAuthenticatedUser("creator", RoleType.TRAINER,true);
+        AuthenticatedUserDto otherUser = createAuthenticatedUser("otheruser", RoleType.USER, true);
         
         RoutineParamsDto createParams = new RoutineParamsDto();
         createParams.setName("Original Routine");
@@ -409,7 +410,7 @@ public class RoutineControllerTest {
     
     @Test
     public void testDeleteRoutineSuccess() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         
         RoutineParamsDto createParams = new RoutineParamsDto();
         createParams.setName("Routine to Delete");
@@ -436,7 +437,7 @@ public class RoutineControllerTest {
     
     @Test
     public void testDeleteRoutineNotFound() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         
         mockMvc.perform(delete("/api/routines/deleteRoutine/999999")
                 .header("Authorization", "Bearer " + user.getServiceToken())
@@ -446,8 +447,8 @@ public class RoutineControllerTest {
     
     @Test
     public void testDeleteRoutinePermissionDenied() throws Exception {
-        AuthenticatedUserDto creator = createAuthenticatedUser("creator", RoleType.TRAINER);
-        AuthenticatedUserDto otherUser = createAuthenticatedUser("otheruser", RoleType.USER);
+        AuthenticatedUserDto creator = createAuthenticatedUser("creator", RoleType.TRAINER, true);
+        AuthenticatedUserDto otherUser = createAuthenticatedUser("otheruser", RoleType.USER, true);
         
         RoutineParamsDto createParams = new RoutineParamsDto();
         createParams.setName("Routine to Delete");
@@ -476,7 +477,7 @@ public class RoutineControllerTest {
     @Test
     public void testGetRoutineById() throws Exception{
 
-		AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+		AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Full-Body");
@@ -513,8 +514,8 @@ public class RoutineControllerTest {
     @Test
     public void testFindRoutinesByParams() throws Exception {
 
-        AuthenticatedUserDto user1 = createAuthenticatedUser("trainer", RoleType.TRAINER);
-        AuthenticatedUserDto user2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+        AuthenticatedUserDto user1 = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        AuthenticatedUserDto user2 = createAuthenticatedUser("trainer2", RoleType.TRAINER, true);
 
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Pierna");
@@ -582,7 +583,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testCreateTrainingFromRoutineSuccess() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.ADMIN);
+        AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.ADMIN, true);
         
         // Crear ejercicio
         Exercise exercise1 = new Exercise("exercise1", "description1", Exercise.grupoMuscular.PECHO, 1);
@@ -644,7 +645,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testCreateTrainingFromRoutineWithInvalidExercise() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         
         // Crear rutina sin ejercicios
         RoutineParamsDto routineParams = new RoutineParamsDto();
@@ -682,7 +683,7 @@ public class RoutineControllerTest {
 
     @Test
     public void testCreateTrainingWithMultipleSeries() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         
         // Crear ejercicio con múltiples series
         Exercise exercise1 = new Exercise("exercise1", "description1", Exercise.grupoMuscular.PECHO, 2);
@@ -729,8 +730,8 @@ public class RoutineControllerTest {
 
     @Test
     public void testCreateTrainingWithEmptySeries() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER);
-        
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
         // Crear rutina sin ejercicios
         RoutineParamsDto routineParams = new RoutineParamsDto();
         routineParams.setName("Rutina Test");
@@ -758,7 +759,7 @@ public class RoutineControllerTest {
     @Test
     public void testFollowAndUnfollowRoutine() throws Exception {
         // Crear un usuario entrenador
-        AuthenticatedUserDto trainer = createAuthenticatedUser("trainer_" + System.currentTimeMillis(), RoleType.TRAINER);
+        AuthenticatedUserDto trainer = createAuthenticatedUser("trainer_" + System.currentTimeMillis(), RoleType.TRAINER, true);
 
         // Crear rutina pública con nombre único
         RoutineParamsDto routineParams = new RoutineParamsDto();
@@ -780,7 +781,7 @@ public class RoutineControllerTest {
         Long routineId = createdRoutine.getId();
 
         // Crear un usuario normal
-        AuthenticatedUserDto user = createAuthenticatedUser("user_" + System.currentTimeMillis(), RoleType.USER);
+        AuthenticatedUserDto user = createAuthenticatedUser("user_" + System.currentTimeMillis(), RoleType.USER, true);
 
         // FOLLOW
         mockMvc.perform(post("/api/routines/" + routineId + "/follow")
@@ -796,7 +797,7 @@ public class RoutineControllerTest {
     @Test
     public void testGetFollowersByRoutine() throws Exception {
         // Crear un usuario entrenador
-        AuthenticatedUserDto trainer = createAuthenticatedUser("trainer_" + System.currentTimeMillis(), RoleType.TRAINER);
+        AuthenticatedUserDto trainer = createAuthenticatedUser("trainer_" + System.currentTimeMillis(), RoleType.TRAINER, true);
 
         // Crear rutina pública con nombre único
         RoutineParamsDto routineParams = new RoutineParamsDto();
@@ -818,7 +819,7 @@ public class RoutineControllerTest {
         Long routineId = createdRoutine.getId();
 
         // Crear un usuario que seguirá la rutina
-        AuthenticatedUserDto user = createAuthenticatedUser("user_" + System.currentTimeMillis(), RoleType.USER);
+        AuthenticatedUserDto user = createAuthenticatedUser("user_" + System.currentTimeMillis(), RoleType.USER, true);
 
         mockMvc.perform(post("/api/routines/" + routineId + "/follow")
                 .header("Authorization", "Bearer " + user.getServiceToken()))
