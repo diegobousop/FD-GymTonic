@@ -164,7 +164,8 @@ public class ExerciseServiceImpl implements ExerciseService {
             Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
             List<Serie> filtered = slice.getContent().stream()
                     .filter(serie -> serie.getRoutine() != null
-                            && serie.getRoutine().getId() == routine)
+                            && serie.getRoutine().getId() == routine
+                            && serie.getTraining() == null)
                     .toList();
             return new Block<>(filtered, slice.hasNext());
         }

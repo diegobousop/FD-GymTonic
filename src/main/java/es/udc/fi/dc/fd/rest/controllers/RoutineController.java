@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -172,6 +173,14 @@ public class RoutineController {
         );
     }
 
+    @PutMapping("/{routineId}/removeExercise/{exerciseId}")
+    public Boolean removeExerciseFromRoutine(
+            @PathVariable Long routineId,
+            @PathVariable Long exerciseId) throws InstanceNotFoundException {
+
+        return routineService.removeExerciseFromRoutine(exerciseId, routineId);
+    }
+
     @DeleteMapping("/deleteRoutine/{routineId}")
     public void deleteRoutine(
             @PathVariable Long routineId,
@@ -203,11 +212,11 @@ public class RoutineController {
         List<Serie> series = new ArrayList<>();
         for (ExerciseRoutineParamsDto exerciseParamsDto : params.getExercises()) {
 
-            series.addAll(SerieConversor.toSerieFromSerieParamsDtoList(exerciseParamsDto.getSeries(), exerciseParamsDto.getId(), params.getRoutineId()));
+            series.addAll(SerieConversor.toSerieFromSerieParamsDtoList(exerciseParamsDto.getSeries(), exerciseParamsDto.getId(), null));
         }
 
-        //id usuario, id rutina, descripcion, duracion, visibilidad, lista de ejercicios con repes
-        routineService.createTrainingFromRoutine(userId, params.getRoutineId(), params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
+        //id usuario, descripcion, duracion, visibilidad, lista de ejercicios con repes
+        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
     }
 
         @PostMapping("/{routineId}/follow")
