@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
 			throw new IncorrectLoginException(userName, password);
 		}
 
-		if(user.get().getBlocked())
+		if(user.get().getBanned())
 			throw new LoginUserBlockedException();
 
 		if (!passwordEncoder.matches(password, user.get().getPassword())) {
@@ -198,7 +198,7 @@ public class UserServiceImpl implements UserService {
 	 * @throws SelfBlockException the user cant block him self
 	 */
 		@Override
-		public void blockUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
+		public void banUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
 
 		if (!userDao.existsById(idBlocked)) 
 			throw new InstanceNotFoundException("project.entities.users", idBlocked);
@@ -208,7 +208,7 @@ public class UserServiceImpl implements UserService {
 			
 		Users user = userDao.findById(idBlocked).get();
 
-		if (user.getBlocked())
+		if (user.getBanned())
 			throw new AlreadyBlockException();
 
 		
@@ -218,10 +218,7 @@ public class UserServiceImpl implements UserService {
 		if(idBlocker == idBlocked)
 			throw new SelfBlockException();
 		
-		
-		
-		
-		user.setBlocked(Boolean.valueOf(true));
+		user.setBanned(Boolean.valueOf(true));
 		
 		userDao.save(user);
 	}

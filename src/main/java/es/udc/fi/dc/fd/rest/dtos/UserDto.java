@@ -45,7 +45,7 @@ public class UserDto {
 	/** The avatar. */
 	private AvatarDto avatar;
 
-	private Boolean blocked;
+	private Boolean banned;
 
 	private Boolean premium;
 
@@ -68,10 +68,10 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 * @param avatar the avatar
-	 * @param blocked the blocked
+	 * @param banned the banned
 	 * @param cardNumber the card number
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked, String cardNumber, Boolean premium) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -80,7 +80,7 @@ public class UserDto {
 		this.email = email.trim();
 		this.role = role;
 		this.avatar = avatar;
-		this.blocked = blocked;
+		this.banned = banned;
 		this.cardNumber = cardNumber;
 		this.premium = premium;
 	} 
@@ -96,9 +96,9 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 * @param avatar the avatar
-	 * @param blocked the blocked
+	 * @param banned the banned
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -107,7 +107,7 @@ public class UserDto {
 		this.email = email.trim();
 		this.role = role;
 		this.avatar = avatar;
-		this.blocked = blocked;
+		this.banned = banned;
 	} 
 		
 	/**
@@ -269,21 +269,21 @@ public class UserDto {
 	}
 
 	/**
-	 * Gets the blocked.
+	 * Gets the banned.
 	 *
-	 * @return the blocked
+	 * @return the banned
 	 */
-	public Boolean getBlocked(){
-		return blocked;
+	public Boolean getBanned(){
+		return banned;
 	}
 
 	/**
 	 * Sets the blocked.
 	 *
-	 * @param blocked the new blocked
+	 * @param banned the new banned
 	 */
-	public void setBlocked(Boolean blocked){
-		this.blocked = blocked;
+	public void setBanned(Boolean banned){
+		this.banned = banned;
 	}
 
 	/**

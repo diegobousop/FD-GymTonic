@@ -155,30 +155,30 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testBlockUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
+	public void testBanUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.ADMIN);
 
 		Users userTest = createUser("userTest");
 		userService.signUp(userTest, Users.RoleType.USER);
 
-		userService.blockUser(user.getId(), userTest.getId());
-		assertTrue(userTest.getBlocked());
+		userService.banUser(user.getId(), userTest.getId());
+		assertTrue(userTest.getBanned());
 	}
 
 	@Test
-	public void testBlockUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.ADMIN);
 
-		userService.blockUser(user.getId(), 1L);
+		userService.banUser(user.getId(), 1L);
 		assertThrows(AlreadyBlockException.class, () -> {
-			userService.blockUser(user.getId(), 1L);
+			userService.banUser(user.getId(), 1L);
 		});
 	}
 
 	@Test 
-	public void testBlockByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -187,18 +187,18 @@ public class UserServiceTest {
 
 
 		assertThrows(PermissionException.class, () -> {
-			userService.blockUser(user.getId(), userTest.getId());
+			userService.banUser(user.getId(), userTest.getId());
 		});
 	}
 
 	@Test 
-	public void testBlockNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user");
 		userService.signUp(user, Users.RoleType.USER);
 
 
 		assertThrows(InstanceNotFoundException.class, () -> {
-			userService.blockUser(user.getId(), 500L);
+			userService.banUser(user.getId(), 500L);
 		});
 	}
 

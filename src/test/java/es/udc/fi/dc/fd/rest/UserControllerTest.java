@@ -167,7 +167,7 @@ public class UserControllerTest {
 		// Crear DTO de usuario con datos actualizados con tarjeta para ser PREMIUM
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
 				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), "1234567890123456", null);
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBanned(), "1234567890123456", null);
 
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -196,7 +196,7 @@ public class UserControllerTest {
 
 		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
 				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBanned(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -216,7 +216,7 @@ public class UserControllerTest {
 
 		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
 				"","email-invalido",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
+				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBanned(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -237,7 +237,7 @@ public class UserControllerTest {
 
 		//Actualizamos el usuario con un cardNumber, debe ser premium
 		UserDto userDto = new UserDto(user.getUserDto().getId(),user.getUserDto().getUserName(),"Paco",
-				"Gomez","paco@paco.com",user.getUserDto().getRole(),user.getUserDto().getAvatar(), user.getUserDto().getBlocked(),"1234567890123456", null);
+				"Gomez","paco@paco.com",user.getUserDto().getRole(),user.getUserDto().getAvatar(), user.getUserDto().getBanned(),"1234567890123456", null);
 
 		ObjectMapper mapper = new ObjectMapper();
 		mockMvc.perform(put("/api/users/{id}", userDto.getId())
@@ -276,53 +276,53 @@ public class UserControllerTest {
 	}
 
 	@Test
-	public void testBlockUser() throws Exception{
+	public void testBanUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isOk());
 	}
 
 	@Test
-	public void testBlockUserAlreadyBlocked() throws Exception{
+	public void testBanUserAlreadyBanned() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isOk());
 
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isBadRequest());
 	}
 
 	@Test
-	public void testBlockNullUser() throws Exception{
+	public void testBanNullUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 500)
+		mockMvc.perform(post("/api/users/ban/{id}", 500)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isNotFound());
 	}
 
 	@Test
-	public void testBlockByUser() throws Exception{
+	public void testBanByUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isForbidden());

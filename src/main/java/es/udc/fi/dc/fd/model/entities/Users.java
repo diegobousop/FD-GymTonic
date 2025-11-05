@@ -53,7 +53,7 @@ public class Users {
 	private RoleType role;
 
 	/** Ban */
-	private Boolean blocked;
+	private Boolean banned;
 
 	/** The premium status. */
 	private Boolean premium;
@@ -92,7 +92,7 @@ public class Users {
 		this.lastName = lastName;
 		this.email = email;
 		this.avatar = avatar;
-		this.blocked = false;
+		this.banned = false;
 	}
 
 	public Users( String userName, String password, String firstName, String lastName, String email,
@@ -264,8 +264,8 @@ public class Users {
 	 *
 	 * @return the bool
 	 */
-	public Boolean getBlocked() {
-		return blocked;
+	public Boolean getBanned() {
+		return banned;
 	}
 
 	/**
@@ -273,8 +273,8 @@ public class Users {
 	 *
 	 * @param role the new role
 	 */
-	public void setBlocked(Boolean blocked) {
-		this.blocked = blocked;
+	public void setBanned(Boolean banned) {
+		this.banned = banned;
 	}
 
 	/**

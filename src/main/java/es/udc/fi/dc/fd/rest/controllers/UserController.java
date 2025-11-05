@@ -275,9 +275,9 @@ public class UserController {
 		return toUserDto(userService.getUserById(userId));
 	}
 
-	@PostMapping("/block/{id}")
-	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
-		userService.blockUser(userId, id);
+	@PostMapping("/ban/{id}")
+	public void banUser(@RequestAttribute Long userId, @PathVariable Long id) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
+		userService.banUser(userId, id);
 	}
 
 	@GetMapping("/getUsers")

@@ -86,9 +86,11 @@ public interface UserService {
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
 	 */
-	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
+	void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
 
 	Block<Users> getAllUser (int page, int size);
+
+	
 
 	/**
 	 * Follow a user

@@ -38,7 +38,7 @@ CREATE TABLE Users (
     avatar BIGINT,
     role TINYINT NOT NULL, /*0 User, 1 Trainer. 2 Admin*/
     premium BOOLEAN DEFAULT FALSE,
-    blocked BOOLEAN NOT NULL DEFAULT FALSE,
+    banned BOOLEAN NOT NULL DEFAULT FALSE,
     bankCard VARCHAR(16),
     FOREIGN KEY (avatar) REFERENCES Avatar(id)
 );
