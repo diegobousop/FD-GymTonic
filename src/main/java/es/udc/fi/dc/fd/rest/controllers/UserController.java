@@ -19,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
@@ -32,6 +33,7 @@ import es.udc.fi.dc.fd.rest.common.JwtGenerator;
 import es.udc.fi.dc.fd.rest.common.JwtInfo;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
+import es.udc.fi.dc.fd.rest.dtos.BlockedByUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
@@ -39,6 +41,9 @@ import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 
@@ -304,6 +309,14 @@ public class UserController {
 	public BlockDto<ResumeUserDto> getFollowing(@RequestAttribute Long userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
 		return toBlockResumeUserDto(userService.getFollowing(userId, page, size));
 	}
+
+	@PostMapping("/block/{id}")
+	public BlockedByUserDto postBlockUser(@RequestAttribute Long userId, @PathVariable Long id)throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
+		BlockUser blockuser = userService.blockUser(userId, id);
+
+		return new BlockedByUserDto(blockuser.getId(), blockuser.getIdBlocked(), blockuser.getIdBlocker(), blockuser.getDateBlock());
+	}
+	
 
 	/**
 	 * Generate service token.

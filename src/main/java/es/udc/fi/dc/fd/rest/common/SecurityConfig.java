@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
                 .requestMatchers("/api/users/allUsers").hasRole("ADMIN")
                 .requestMatchers(antMatcher("/api/users/ban/*")).hasRole("ADMIN")
+                .requestMatchers(antMatcher("/api/users/block/*")).hasAnyRole("USER", "TRAINER", "ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

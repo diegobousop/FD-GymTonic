@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.transaction.Transactional;
-
+import jakarta.validation.constraints.AssertTrue;
 
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -24,6 +24,7 @@ import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -50,6 +51,9 @@ public class UserServiceTest {
 
 	@Autowired
 	private AvatarDao avatarDao;
+
+	@Autowired
+	private BlockUserDao blockUserDao;
 
 	/**
 	 * Creates the user.
@@ -324,4 +328,27 @@ public class UserServiceTest {
 
 		assertEquals(user2, following.getItems().get(0));
 	}
+
+	@Test 
+	public void testBlockUser() throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		userService.blockUser(2L, 3L);
+		assertTrue(blockUserDao.existsByIdBlockerAndIdBlocked(2L, 3L));
+	}
+
+	@Test
+	public void testCheckFollowesAfterBlock() throws DuplicateInstanceException, AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		if(userService.followUser(user1.getId(), user2.getId())){
+			userService.blockUser(user1.getId(), user2.getId());
+			assertEquals(user2.getFollowers().size(), 0);
+			assertEquals(user1.getFollowing().size(), 0);
+		}else{
+			assertTrue(false);
+		}
+	}
+
 }

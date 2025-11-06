@@ -4,6 +4,7 @@ import java.util.List;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -89,6 +90,8 @@ public interface UserService {
 	void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
 
 	Block<Users> getAllUser (int page, int size);
+
+	BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException;
 
 	
 
