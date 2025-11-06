@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.model.services;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -206,24 +205,38 @@ public class UserServiceImpl implements UserService {
 		if (!userDao.existsById(idBlocker)) 
 			throw new InstanceNotFoundException("project.entities.users", idBlocker);
 			
-		Users user = userDao.findById(idBlocked).get();
+		Users blocker = userDao.findById(idBlocker).get();
+		Users blocked = userDao.findById(idBlocked).get();
 
-		if (user.getBlocked())
+		if (blocked.getBlocked())
 			throw new AlreadyBlockException();
 
 		
-		if (userDao.findById(idBlocker).get().getRole() != RoleType.ADMIN)
+		if (blocker.getRole() != RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocker);
 
 		if(idBlocker == idBlocked)
 			throw new SelfBlockException();
 		
+		// Remove blocked user from all users who have them as a follower
+		// Iterate through all users that the blocked user is following
+		if (blocked.getFollowing() != null && !blocked.getFollowing().isEmpty()) {
+			// Create a copy of the list to avoid ConcurrentModificationException
+			java.util.List<Users> followingCopy = new ArrayList<>(blocked.getFollowing());
+			for (Users followed : followingCopy) {
+				if (followed.getFollowers() != null && followed.getFollowers().contains(blocked)) {
+					followed.getFollowers().remove(blocked);
+					userDao.save(followed);
+				}
+			}
+			// Clear the blocked user's following list
+			blocked.getFollowing().clear();
+			userDao.save(blocked);
+		}
 		
+		blocked.setBlocked(Boolean.valueOf(true));
 		
-		
-		user.setBlocked(Boolean.valueOf(true));
-		
-		userDao.save(user);
+		userDao.save(blocked);
 	}
 
 	@Override
@@ -245,9 +258,19 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean followUser(Long followerId, Long followedId) throws InstanceNotFoundException {
+	public boolean followUser(Long followerId, Long followedId) throws InstanceNotFoundException, PermissionException {
 		Users newFollower = permissionChecker.checkUser(followerId);
 		Users followed = permissionChecker.checkUser(followedId);
+
+		// Admins cannot be followed unless the follower is also an admin
+		if (followed.getRole() == RoleType.ADMIN && newFollower.getRole() != RoleType.ADMIN) {
+			throw new PermissionException("project.entities.users", followedId);
+		}
+
+		// Cannot follow someone who has been blocked (system-wide block)
+		if (followed.getBlocked() != null && followed.getBlocked()) {
+			throw new PermissionException("project.entities.users", followedId);
+		}
 
 		if(followed.getFollowers()==null) {
 			followed.setFollowers(new ArrayList<Users>());
@@ -332,5 +355,14 @@ public class UserServiceImpl implements UserService {
 						list -> new org.springframework.data.domain.SliceImpl<>(list, pageable, list.size() == size)
 				));
 		return new Block<>(slice.getContent(), slice.hasNext());
+	}
+
+	@Override
+	public int getFollowersCount(Long userId) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		if(user.getFollowers() == null) {
+			return 0;
+		}
+		return user.getFollowers().size();
 	}
 }

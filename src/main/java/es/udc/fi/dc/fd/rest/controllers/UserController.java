@@ -291,7 +291,7 @@ public class UserController {
 	}
 
 	@PostMapping("/follow/{id}")
-	public boolean followUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
+	public boolean followUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
 		return userService.followUser(userId, id);
 	}
 
@@ -303,6 +303,11 @@ public class UserController {
 	@GetMapping("/following")
 	public BlockDto<ResumeUserDto> getFollowing(@RequestAttribute Long userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
 		return toBlockResumeUserDto(userService.getFollowing(userId, page, size));
+	}
+
+	@GetMapping("/followers/count")
+	public int getFollowersCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
+		return userService.getFollowersCount(userId);
 	}
 
 	/**
