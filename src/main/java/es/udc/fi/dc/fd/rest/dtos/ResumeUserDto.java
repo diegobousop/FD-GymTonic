@@ -8,17 +8,19 @@ public class ResumeUserDto {
     private String lastName;
     private String email;
     private String role;
+    private String avatarBase64;
 
     public ResumeUserDto() {
     }
 
-    public ResumeUserDto(Long id, String userName, String firstName, String lastName, String email, String role) {
+    public ResumeUserDto(Long id, String userName, String firstName, String lastName, String email, String role, String avatarBase64) {
         this.id = id;
         this.userName = userName;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.role = role;
+        this.avatarBase64 = avatarBase64;
     }
 
 
@@ -68,5 +70,13 @@ public class ResumeUserDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getAvatarBase64() {
+        return avatarBase64;
+    }
+
+    public void setAvatarBase64(String avatarBase64) {
+        this.avatarBase64 = avatarBase64;
     }
 }

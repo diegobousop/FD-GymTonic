@@ -101,8 +101,9 @@ public interface UserService {
 	 * @param idFollowed id of the user to follow
 	 * @return true if the user was followed, false if already following
 	 * @throws InstanceNotFoundException the instance not found exception
+	 * @throws PermissionException the permission exception (if trying to follow an admin without being admin)
 	 */
-	boolean followUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException;
+	boolean followUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException, PermissionException;
 
 	/**
 	 * Unfollow a user
@@ -128,5 +129,13 @@ public interface UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
+
+	/**
+	 * Get followers count of a user
+	 * @param id the userId
+	 * @return count of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	int getFollowersCount(Long id) throws InstanceNotFoundException;
 
 }

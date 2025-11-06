@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
+import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
@@ -43,6 +46,9 @@ public class RoutineServiceTest {
     
     @Autowired
     private RoutineService routineService;
+
+    @Autowired
+    private ExerciseService exerciseService;
     
     @Autowired
     private RoutineDao routineDao;
@@ -66,6 +72,13 @@ public class RoutineServiceTest {
 
     private Routine createRoutine(String name, Users creator) {
         return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
+    }
+
+        private Exercise createExercise(String name, String description, grupoMuscular grupo, int numeroSeries) {
+        Exercise exercise = new Exercise(name, description, grupo, numeroSeries);
+        exercise.setDifficulty(Difficulty.FACIL);
+        exercise.setEquipment(Equipment.POLEA_CABLE);
+        return exercise;
     }
 
 	/**
@@ -267,10 +280,158 @@ public class RoutineServiceTest {
         routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L, true);
     }
 
+
+    @Test
+    public void removeExerciseFromRoutineTest_Success() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+
+        long exerciseId = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Press banca", "Ejercicio de pecho", grupoMuscular.PECHO, 4)
+        );
+
+        Routine routine = routineService.createRoutine(
+            creator.getId(),
+            "Rutina A",
+            new ArrayList<Long>(),
+            60L,
+            true
+        );
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+        routineService.modifyRoutine(
+            routine.getId(),
+            creator.getId(),
+            routine.getName(),
+            exerciseIds,
+            routine.getDuration(),
+            routine.getIsPublic()
+        );
+
+        Routine rutinaConEjercicio = routineDao.findById(routine.getId()).get();
+        assertEquals(1, rutinaConEjercicio.getExercises().size());
+
+        assertEquals(true, routineService.removeExerciseFromRoutine(exerciseId, routine.getId()));
+
+        Routine rutinaActualizada = routineDao.findById(routine.getId()).get();
+        assertEquals(0, rutinaActualizada.getExercises().size());
+    }
+
+    @Test
+    public void removeExerciseFromRoutineTest_NotInRoutine() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+
+        long exerciseId1 = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Press banca", "Ejercicio de pecho", grupoMuscular.PECHO, 4)
+        );
+
+        long exerciseId2 = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Sentadillas", "Ejercicio de piernas", grupoMuscular.PIERNA, 3)
+        );
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId1);
+        Routine routine = routineService.createRoutine(creator.getId(), "Rutina B", exerciseIds, 45L, true);
+
+        boolean eliminado = routineService.removeExerciseFromRoutine(exerciseId2, routine.getId());
+
+        assertFalse(eliminado);
+
+        Routine rutinaFinal = routineDao.findById(routine.getId()).get();
+        assertEquals(1, rutinaFinal.getExercises().size());
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void removeExerciseFromRoutine_RoutineOrExerciseNotFound() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+
+        long exerciseId = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Curl bíceps", "Ejercicio de brazos", grupoMuscular.BRAZO, 2)
+        );
+
+        Routine routine = routineService.createRoutine(
+            creator.getId(),
+            "Rutina C",
+            new ArrayList<Long>(),
+            30L,
+            true
+        );
+
+        routineService.removeExerciseFromRoutine(exerciseId, 99999L);
+        routineService.removeExerciseFromRoutine(88888L, routine.getId());
+    }
+
+    @Test
+    public void deleteSeriesByRoutineTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineExerciseLimitReachedException, RoutineLimitReachedException {
+
+        Users creator = userService.login("trainer1", "12345");
+        
+        long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,4));
+        Exercise exercise1 = exerciseDao.getById(exerciseId);
+        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+
+        routineService.modifyRoutine(rutina.getId(), creator.getId(), rutina.getName(), exerciseIds, rutina.getDuration(), true);
+        
+        exerciseService.createSerie(exercise1.getId(), rutina.getId());
+        exerciseService.createSerie(exercise1.getId(), rutina.getId());
+
+        assertEquals(true, routineService.deleteSeriesByRoutine(rutina.getId()));
+        assertEquals(0, exerciseService.getSeriesByExerciseAndRoutine(exerciseId,rutina.getId()).getItems().size());
+    }
+
+    @Test
+    public void deleteSeriesByRoutineWithNoSeriesTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+
+        Users creator = userService.login("trainer1", "12345");
+        
+        long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,4));
+        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+
+        routineService.modifyRoutine(rutina.getId(), creator.getId(), rutina.getName(), exerciseIds, rutina.getDuration(), true);
+        
+        assertEquals(0, exerciseService.getSeriesByExerciseAndRoutine(exerciseId,rutina.getId()).getItems().size());
+        assertEquals(true, routineService.deleteSeriesByRoutine(rutina.getId()));
+        assertEquals(0, exerciseService.getSeriesByExerciseAndRoutine(exerciseId,rutina.getId()).getItems().size());
+    }
+
+
     @Test
     public void testDeleteRoutineSuccess() throws Exception {
         Users creator = userService.login("admin1", "12345");
         Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L, true);
+        routineService.deleteRoutine(creator.getId(), routine.getId());
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        assertEquals(false, retrieved.isPresent());
+    }
+
+    @Test
+    public void testDeleteRoutineWithSeriesSuccess() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L, true);
+        
+        long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+        "ejercicio de prueba", grupoMuscular.PECHO,4));
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+
+        routineService.modifyRoutine(routine.getId(), creator.getId(), routine.getName(), exerciseIds, routine.getDuration(), true);
+        
+        exerciseService.createSerie(exerciseId, routine.getId());
+        exerciseService.createSerie(exerciseId, routine.getId());
+
         routineService.deleteRoutine(creator.getId(), routine.getId());
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
         assertEquals(false, retrieved.isPresent());
@@ -452,7 +613,6 @@ public class RoutineServiceTest {
         
         Training createdTraining = routineService.createTrainingFromRoutine(
             creator.getId(),
-            routine.getId(),
             "Training 1",
             "Description of training",
             45L,
@@ -476,22 +636,6 @@ public class RoutineServiceTest {
     public void testCreateTrainingFromRoutineWithInvalidUser() throws Exception {
         routineService.createTrainingFromRoutine(
             999999L,
-            1L,
-            "Training",
-            "Description",
-            30L,
-            true,
-            new ArrayList<Serie>()
-        );
-    }
-
-    @Test(expected = InstanceNotFoundException.class)
-    public void testCreateTrainingFromRoutineWithInvalidRoutine() throws Exception {
-        Users creator = userService.login("admin1", "12345");
-        
-        routineService.createTrainingFromRoutine(
-            creator.getId(),
-            999999L,
             "Training",
             "Description",
             30L,
@@ -503,7 +647,6 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testCreateTrainingFromRoutineWithInvalidExercise() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "routine1", new ArrayList<Long>(), 60L, true);
         
         Serie serie = new Serie();
         Exercise invalidExercise = new Exercise();
@@ -515,7 +658,6 @@ public class RoutineServiceTest {
         
         routineService.createTrainingFromRoutine(
             creator.getId(),
-            routine.getId(),
             "Training",
             "Description",
             30L,

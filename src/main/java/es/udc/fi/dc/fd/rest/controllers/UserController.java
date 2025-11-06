@@ -296,7 +296,7 @@ public class UserController {
 	}
 
 	@PostMapping("/follow/{id}")
-	public boolean followUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
+	public boolean followUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
 		return userService.followUser(userId, id);
 	}
 
@@ -310,6 +310,7 @@ public class UserController {
 		return toBlockResumeUserDto(userService.getFollowing(userId, page, size));
 	}
 
+
 	@PostMapping("/block/{id}")
 	public BlockedByUserDto postBlockUser(@RequestAttribute Long userId, @PathVariable Long id)throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
 		BlockUser blockuser = userService.blockUser(userId, id);
@@ -317,6 +318,12 @@ public class UserController {
 		return new BlockedByUserDto(blockuser.getId(), blockuser.getIdBlocked(), blockuser.getIdBlocker(), blockuser.getDateBlock());
 	}
 	
+
+	@GetMapping("/followers/count")
+	public int getFollowersCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
+		return userService.getFollowersCount(userId);
+	}
+
 
 	/**
 	 * Generate service token.

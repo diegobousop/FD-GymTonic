@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 
 public class TrainingParamsDto {
 
-    private Long routineId;
-
     private String name;
 
     private String description;
@@ -23,22 +21,13 @@ public class TrainingParamsDto {
 
     }
 
-    public TrainingParamsDto(Long routineId, String name, String description, Long duration, boolean visibility,
+    public TrainingParamsDto(String name, String description, Long duration, boolean visibility,
             List<ExerciseRoutineParamsDto> exercises) {
-        this.routineId = routineId;
         this.name = name;
         this.description = description;
         this.duration = duration;
         this.visibility = visibility;
         this.exercises = exercises;
-    }
-
-    public Long getRoutineId() {
-        return routineId;
-    }
-
-    public void setRoutineId(Long routineId) {
-        this.routineId = routineId;
     }
 
     @NotNull

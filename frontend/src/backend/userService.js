@@ -130,6 +130,7 @@ export const unfollowUser = (userId, onSuccess, onErrors) =>
 export const getFollowers = ({page,size}, onSuccess, onErrors) =>
   appFetch(
     `/users/followers?page=${page}&size=${size}`,
+    fetchConfig("GET"),
     onSuccess,
     onErrors
   );
@@ -137,6 +138,15 @@ export const getFollowers = ({page,size}, onSuccess, onErrors) =>
 export const getFollowing = ({page,size}, onSuccess, onErrors) =>
   appFetch(
     `/users/following?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowersCount = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/followers/count`,
+    fetchConfig("GET"),
     onSuccess,
     onErrors
   );

@@ -202,6 +202,47 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
+    public boolean removeExerciseFromRoutine(Long exerciseId, Long routineId) throws InstanceNotFoundException{
+
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
+
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        if (optionalExercise.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        }
+
+        Routine routine = optionalRoutine.get();
+        Exercise exercise = optionalExercise.get();
+
+        if (routine.getExercises() == null || !routine.getExercises().contains(exercise)) {
+            return false;
+        }
+
+        routine.getExercises().remove(exercise);
+
+        routineDao.save(routine);
+
+        return true;
+    }
+
+
+    @Transactional
+    @Override
+    public boolean deleteSeriesByRoutine(Long routineId) {
+        try {
+            List<Serie> series = serieDao.findByRoutineId(routineId);
+            series.forEach(serie -> serieDao.deleteById(serie.getId()));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
     public void deleteRoutine(Long creatorId, Long routineId) throws InstanceNotFoundException, PermissionException {
         Users creator = permissionChecker.checkUser(creatorId);
         
@@ -216,6 +257,7 @@ public class RoutineServiceImpl implements RoutineService {
             throw new PermissionException("project.entities.routine", routineId);
         }
         
+        deleteSeriesByRoutine(routine.getId());
         routineDao.delete(routine);
     }
 
@@ -245,15 +287,8 @@ public class RoutineServiceImpl implements RoutineService {
         return routineDao.findAll(spec, pageable);
     }
 
-    public void createTraining(Long userId, Long routineId, String trainingName, String trainingDescription, Boolean isPublic) throws InstanceNotFoundException {
+    public void createTraining(Long userId, String trainingName, String trainingDescription, Boolean isPublic) throws InstanceNotFoundException {
         Users user = permissionChecker.checkUser(userId);
-
-        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
-        if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
-        }
-
-        Routine routine = optionalRoutine.get();
 
         Training training = new Training();
         training.setName(trainingName);
@@ -261,7 +296,6 @@ public class RoutineServiceImpl implements RoutineService {
         training.setCreationDate(LocalDateTime.now().withNano(0));
         training.setIsPublic(isPublic != null ? isPublic : true);
         training.setUser(user);
-        training.setRoutine(routine);
 
         trainingDao.save(training);
     }
@@ -290,15 +324,8 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
-    public Training createTrainingFromRoutine(Long userId, Long routineId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
+    public Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
         Users user = permissionChecker.checkUser(userId);
-
-        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
-        if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
-        }
-
-        Routine routine = optionalRoutine.get();
 
         Training training = new Training();
         training.setName(trainingName);
@@ -306,9 +333,10 @@ public class RoutineServiceImpl implements RoutineService {
         training.setCreationDate(LocalDateTime.now().withNano(0));
         training.setIsPublic(isPublic != null ? isPublic : true);
         training.setUser(user);
-        training.setRoutine(routine);
         training.setCreationDate(LocalDateTime.now().withNano(0));
         training.setDuration(duration);
+
+        trainingDao.save(training);
 
 
         for (Serie serie : series) {
@@ -324,13 +352,11 @@ public class RoutineServiceImpl implements RoutineService {
             }
 
             newSerie.setExercise(optionalExercise.get());
-            newSerie.setRoutine(routine);
-            serie.setTraining(training);
+            newSerie.setTraining(training);
+            newSerie.setRoutine(null);
 
-            serieDao.save(serie);
+            serieDao.save(newSerie);
         }
-
-        trainingDao.save(training);
         
         return training;
     }
