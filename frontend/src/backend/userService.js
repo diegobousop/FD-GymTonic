@@ -22,7 +22,7 @@ export const viewAllUsers = ({page, size}, onSuccess, onErrors) =>
     onSuccess, 
     onErrors
   );
-
+  
 export const banUser = (userId, onSuccess, onErrors) => 
   appFetch(
     `/users/ban/${userId}`,
@@ -30,6 +30,14 @@ export const banUser = (userId, onSuccess, onErrors) =>
     onSuccess,
     onErrors
   );
+    
+export const blockUser = (userId, onSuccess, onErrors) => 
+  appFetch(
+    `/users/block/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  )
 
 export const login = (
   userName,
