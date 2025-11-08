@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.entities;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -26,6 +27,10 @@ public class Users {
 		USER,
 		TRAINER,
 		ADMIN
+	}
+
+	public enum Gender {
+		MALE, FEMALE, OTHER
 	}
 
 	/** The id. */
@@ -66,6 +71,21 @@ public class Users {
 
 	/** The following. */
 	private List<Users> following;
+
+	/** The weight. */
+	private float weight;
+
+	/** The height. */
+	private int height;
+
+	/** The gender. */
+	private Gender gender;
+
+	/** The IMC (Body Mass Index). */
+	private float imc;
+
+	/** The birth date. */
+	private LocalDate birthDate;
 
 
 	/**
@@ -350,6 +370,96 @@ public class Users {
 	 */
 	public void setFollowing(List<Users> following) {
 		this.following = following;
+	}
+
+	/**
+	 * Gets the weight.
+	 *
+	 * @return the weight
+	 */
+	public float getWeight() {
+		return weight;
+	}
+
+	/**
+	 * Sets the weight.
+	 *
+	 * @param weight the new weight
+	 */
+	public void setWeight(float weight) {
+		this.weight = weight;
+	}
+
+	/**
+	 * Gets the height.
+	 *
+	 * @return the height
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * Sets the height.
+	 *
+	 * @param height the new height
+	 */
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	/**
+	 * Gets the gender.
+	 * @return the gender
+	 */	
+	public Gender getGender() {
+		return gender;
+	}
+
+	/**
+	 * Sets the gender.
+	 * @param gender the new gender
+	 */
+	public void setGender(Gender gender) {
+		this.gender = gender;
+	}	
+
+	/**
+	 * Gets the imc.
+	 * @return the imc
+	 */	
+	public float getImc() {
+		return imc;
+	}
+
+	/**
+	 * Sets the imc.
+	 * @param imc the new imc
+	 */
+	public void setImc(float imc) {
+		this.imc = imc;
+	}
+
+	/**
+	 * Gets the birth date.
+	 *
+	 * @return the birth date
+	 */
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+	/**
+	 * Sets the birth date.
+	 *
+	 * @param birthDate the new birth date
+	 */
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public float calculateImc() {
+		return this.weight / ((this.height/100) * (this.height/100)); // height in meters
 	}
 
 }

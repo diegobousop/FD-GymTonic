@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
@@ -30,6 +31,7 @@ import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -48,15 +50,23 @@ public class UserServiceTest {
 	@Autowired
 	private AvatarDao avatarDao;
 
+	private static final String PASSWORD = "12345";
+
 	/**
 	 * Creates the user.
 	 *
 	 * @param userName the user name
 	 * @return the user
 	 */
-	private Users createUser(String userName) {
+	private Users createUser(String userName, RoleType role, Gender gender) {
 		Optional<Avatar> avatar = avatarDao.findByName("default");
-		return new Users(userName, "password", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+        user.setRole(role);
+        user.setGender(gender);
+        user.setHeight(190);
+        user.setWeight(80);
+        user.setBirthDate(LocalDate.now());
+		return user;
 	}
 
 	/**
@@ -68,7 +78,7 @@ public class UserServiceTest {
 	@Test
 	public void testSignUpAndLoginFromId() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -88,7 +98,7 @@ public class UserServiceTest {
 	@Test
 	public void testUpdateProfile() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -96,21 +106,24 @@ public class UserServiceTest {
 		assertEquals( "lastName",user.getLastName());
 		assertEquals("user@user.com",user.getEmail());
 
-		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456");
+		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456",
+		 180, 75.5f, "MALE","10-02-1990");
 
 		assertEquals("prueba",user.getFirstName());
 		assertEquals( "pruebez",user.getLastName());
 		assertEquals("prueba@pruebez.com",user.getEmail());
 		assertEquals("messy",user.getAvatar().getName());
 
-		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "messy987", "1234567890123456"));
+		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "messy987", "1234567890123456",
+		 180, 75, "MALE","1990-05-15"));
 	}
 
 	public void testUpdateProfileChangePremium() throws DuplicateInstanceException, InstanceNotFoundException {
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
-		user = userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456");
+		user = userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456",
+		 180, 75.5f, "MALE","1990-05-15");
 
 		assertTrue(user.getPremium());
 
@@ -119,17 +132,17 @@ public class UserServiceTest {
     @Test
     public void testChangePassword() throws LoginUserBlockedException ,DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
 
-        Users user = createUser("userChange");
+        Users user = createUser("userChange", Users.RoleType.USER, Gender.OTHER);
         userService.signUp(user, Users.RoleType.USER);
 
         Users loggedInUser = userService.loginFromId(user.getId());
         assertEquals(user, loggedInUser);
 
         String newPassword = "Changed";
-        userService.changePassword(user.getId(), "password", newPassword);
+        userService.changePassword(user.getId(), PASSWORD, newPassword);
 
         Assertions.assertThrows(IncorrectLoginException.class, () -> {
-            userService.login(user.getUserName(), "password");
+            userService.login(user.getUserName(), PASSWORD);
         });
 
         Users loggedInWithNew = userService.login(user.getUserName(), newPassword);
@@ -137,7 +150,7 @@ public class UserServiceTest {
     }
 	@Test
 	public void testGetUserbyId() throws DuplicateInstanceException, InstanceNotFoundException {
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 		assertEquals(user.getUserName(), userService.getUserById(user.getId()).getUserName());
 
@@ -145,7 +158,7 @@ public class UserServiceTest {
 
 	@Test
 	public void FailedTestGetUserbyId() throws DuplicateInstanceException, InstanceNotFoundException {
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 		assertThrows(InstanceNotFoundException.class, () -> {userService.getUserById(user.getId()+1);});
 
@@ -153,10 +166,10 @@ public class UserServiceTest {
 
 	@Test
 	public void testBlockUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.ADMIN, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.ADMIN);
 
-		Users userTest = createUser("userTest");
+		Users userTest = createUser("userTest", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(userTest, Users.RoleType.USER);
 
 		userService.blockUser(user.getId(), userTest.getId());
@@ -165,7 +178,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testBlockUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.ADMIN, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.ADMIN);
 
 		userService.blockUser(user.getId(), 1L);
@@ -176,10 +189,10 @@ public class UserServiceTest {
 
 	@Test 
 	public void testBlockByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
-		Users userTest = createUser("userTest");
+		Users userTest = createUser("userTest", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(userTest, Users.RoleType.USER);
 
 
@@ -190,7 +203,7 @@ public class UserServiceTest {
 
 	@Test 
 	public void testBlockNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
 
@@ -230,8 +243,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testFollowUser() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -246,8 +259,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testUnfollowUser() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -265,8 +278,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testFollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -277,8 +290,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testUnfollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -291,8 +304,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testGetFollowers() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");	
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -307,8 +320,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testGetFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -322,8 +335,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testGetFollowersCount() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-		Users user1 = createUser("manolo");
-		Users user2 = createUser("entrenadoh");
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
@@ -335,7 +348,7 @@ public class UserServiceTest {
 		assertEquals(1, userService.getFollowersCount(user2.getId()));
 
 		// Agregar otro seguidor
-		Users user3 = createUser("user3");
+		Users user3 = createUser("user3", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user3, Users.RoleType.USER);
 		assertTrue(userService.followUser(user3.getId(), user2.getId()));
 		assertEquals(2, userService.getFollowersCount(user2.getId()));
@@ -343,7 +356,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testGetFollowersCountNoUser() throws DuplicateInstanceException {
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
 		assertThrows(InstanceNotFoundException.class, () -> {
@@ -353,8 +366,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testFollowAdminAsNonAdmin() throws DuplicateInstanceException, InstanceNotFoundException {
-		Users admin = createUser("admin");
-		Users user = createUser("user");
+		Users admin = createUser("admin", Users.RoleType.ADMIN, Gender.OTHER);
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(admin, Users.RoleType.ADMIN);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -365,8 +378,8 @@ public class UserServiceTest {
 
 	@Test
 	public void testFollowAdminAsAdmin() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
-		Users admin1 = createUser("admin1Follow" + System.currentTimeMillis());
-		Users admin2 = createUser("admin2Follow" + System.currentTimeMillis());
+		Users admin1 = createUser("admin1Follow" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		Users admin2 = createUser("admin2Follow" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
 		userService.signUp(admin1, Users.RoleType.ADMIN);
 		userService.signUp(admin2, Users.RoleType.ADMIN);
 
@@ -378,9 +391,9 @@ public class UserServiceTest {
 
 	@Test
 	public void testFollowBlockedUser() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException, AlreadyBlockException, SelfBlockException {
-		Users admin = createUser("adminBlock" + System.currentTimeMillis());
-		Users user1 = createUser("user1Block" + System.currentTimeMillis());
-		Users user2 = createUser("user2Block" + System.currentTimeMillis());
+		Users admin = createUser("adminBlock" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		Users user1 = createUser("user1Block" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("user2Block" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(admin, Users.RoleType.ADMIN);
 		userService.signUp(user1, Users.RoleType.USER);
 		userService.signUp(user2, Users.RoleType.USER);
@@ -402,9 +415,9 @@ public class UserServiceTest {
 
 	@Test
 	public void testBlockUserRemovesFromFollowers() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException, AlreadyBlockException, SelfBlockException {
-		Users admin = createUser("adminRemove" + System.currentTimeMillis());
-		Users blocker = createUser("blockerRemove" + System.currentTimeMillis());
-		Users follower = createUser("followerRemove" + System.currentTimeMillis());
+		Users admin = createUser("adminRemove" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		Users blocker = createUser("blockerRemove" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users follower = createUser("followerRemove" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(admin, Users.RoleType.ADMIN);
 		userService.signUp(blocker, Users.RoleType.USER);
 		userService.signUp(follower, Users.RoleType.USER);

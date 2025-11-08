@@ -1,11 +1,10 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import org.h2.mvstore.Page;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
@@ -48,10 +48,19 @@ public class NotificationServiceTest {
     @Autowired
     private AvatarDao avatarDao;
 
-    private Users createUser(String userName) {
-        Optional<Avatar> avatar = avatarDao.findByName("default");
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
-    }
+    private final String PASSWORD = "12345";
+
+	private Users createUser(String userName, RoleType role, Gender gender) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+        user.setRole(role);
+        user.setGender(gender);
+        user.setHeight(190);
+        user.setWeight(80);
+        user.setBirthDate(LocalDate.now());
+		return user;
+	}
+
 
     private Routine createRoutine(String name, Users creator) {
         return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
@@ -61,13 +70,13 @@ public class NotificationServiceTest {
     @Test
     public void testNotifyFollowers() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
-        Users user1 = createUser("manolo");
+        Users user1 = createUser("manolo", RoleType.TRAINER, Gender.MALE);
         userService.signUp(user1, RoleType.TRAINER);
 
-        Users user2 = createUser("pepe");
+        Users user2 = createUser("pepe", RoleType.USER, Gender.OTHER);
         userService.signUp(user2, RoleType.USER);
 
-        Users user3 = createUser("mariloli");
+        Users user3 = createUser("mariloli", RoleType.USER, Gender.FEMALE);
         userService.signUp(user3, RoleType.USER);
 
         Users trainer1 = userService.login("trainer1", "12345");
@@ -91,7 +100,7 @@ public class NotificationServiceTest {
     @Test
     public void testMarkAsReadAndUnread() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
-        Users user1 = createUser("manolo");
+        Users user1 = createUser("manolo", RoleType.TRAINER, Gender.MALE);
         userService.signUp(user1, RoleType.TRAINER);
 
         Users trainer1 = userService.login("trainer1", "12345");
@@ -118,13 +127,13 @@ public class NotificationServiceTest {
         @Test
     public void testNotifyFollowersByModifyingRoutine() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
-        Users user1 = createUser("manolo");
+        Users user1 = createUser("manolo", RoleType.TRAINER, Gender.MALE);
         userService.signUp(user1, RoleType.TRAINER);
 
-        Users user2 = createUser("pepe");
+        Users user2 = createUser("pepe", RoleType.USER, Gender.MALE);
         userService.signUp(user2, RoleType.USER);
 
-        Users user3 = createUser("mariloli");
+        Users user3 = createUser("mariloli", RoleType.USER, Gender.FEMALE);
         userService.signUp(user3, RoleType.USER);
 
         Users trainer1 = userService.login("trainer1", "12345");

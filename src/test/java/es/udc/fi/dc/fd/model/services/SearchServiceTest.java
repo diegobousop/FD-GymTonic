@@ -1,8 +1,10 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +26,8 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.rest.dtos.SearchFullDto;
 import es.udc.fi.dc.fd.rest.dtos.SearchSuggestionDto;
 
@@ -52,6 +56,7 @@ public class SearchServiceTest {
     private Exercise exerciseBench;
     private Routine routineBench;
 
+    private static final String PASSWORD = "12345";
     @Before
     public void setUp() {
         benchUser = createUser("benchUser", Users.RoleType.USER);
@@ -59,13 +64,18 @@ public class SearchServiceTest {
         routineBench = createRoutine("Bench Routine", benchUser, List.of(exerciseBench));
     }
 
-    private Users createUser(String username, Users.RoleType role) {
-        Avatar avatar = avatarDao.findByName("default").orElse(null);
-        Users u = new Users(username, "12345", "First", "Last", username + "@mail.com", avatar);
-        u.setRole(role);
-        usersDao.save(u);
-        return u;
-    }
+	private Users createUser(String userName, RoleType role) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+        user.setRole(role);
+        user.setGender(Gender.OTHER);
+        user.setHeight(190);
+        user.setWeight(80);
+        user.setBirthDate(LocalDate.now());
+        usersDao.save(user);
+		return user;
+	}
+
 
     private Exercise createExercise(String name, grupoMuscular gm) {
         Exercise e = new Exercise(name, "Desc " + name, gm, 1);
