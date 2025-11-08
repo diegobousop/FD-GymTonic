@@ -1,0 +1,207 @@
+import React, {useEffect, useState, useContext} from 'react'
+import backend from "../../../../backend";
+import { Link } from 'react-router-dom';
+
+import Spinner from '../common/spinner';
+import Pager from '../common/pager';
+
+import { SVG_ICONS } from '../../../../config/constants'; 
+
+const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selectedDay}) => {
+
+    //control
+    const [isLoading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    //recientes
+    const [page, setPage] = useState(0);
+    const [existMoreItems, setExistMoreItems] = useState(false);
+    const size = 2;
+
+    //filtro
+    const [filterPage, setFilterPage] = useState(0);
+    const [filterExistMoreItems, setFilterExistMoreItems] = useState(false);
+    const filterSize = 2;
+
+
+    const [trainingData, setTrainingData] = useState([]);
+
+    const viewLastTrainings = (pageNumber) => {
+        setLoading(true);
+        backend.routineService.viewUserTrainings(
+          pageNumber,
+        size,
+          (data) => {
+            setTrainingData(data.items);
+            setExistMoreItems(data.existMoreItems);
+            setPage(pageNumber);
+            setLoading(false);
+          },
+          (err) => {
+            setError(err || "Error inesperado al cargar rutinas");
+            setLoading(false);
+          }
+        );
+      };
+
+    const viewDayTrainings = (pageNumber) => {
+        setLoading(true);
+        backend.routineService.viewDayTrainings(
+          pageNumber,
+          filterSize,
+          selectedDay.getDate(),
+          selectedDay.getMonth() + 1,
+          selectedDay.getFullYear(),
+          (data) => {
+            setTrainingData(data.items);
+            setFilterExistMoreItems(data.existMoreItems);
+            setFilterPage(pageNumber);
+            setLoading(false);
+          },
+          (err) => {
+            setError(err || "Error inesperado al cargar rutinas");
+            setLoading(false);
+          }
+        );
+      };
+    
+    useEffect(() => {
+      if (!dayFilterActivated) {
+        viewLastTrainings(0);
+      }
+      else {
+        viewDayTrainings(0);
+      }
+    }, [dayFilterActivated, selectedDay]);
+
+    const formatDate = (iso) => {
+        if (!iso) return ''
+        const d = typeof iso === 'string' ? new Date(iso) : iso instanceof Date ? iso : new Date(iso)
+        if (Number.isNaN(d.getTime())) return iso
+        const datePart = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+        const timePart = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })
+        return `${datePart} a las ${timePart}`
+    }
+
+    if (isLoading) return <Spinner />;
+
+  return (
+    <div className="w-[65%]">
+      {
+      trainingData.length === 0 && !dayFilterActivated? (
+        <div className="flex flex-col items-center justify-center">
+          <SVG_ICONS.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
+          <p className="text-white text-center items-center ml-10">Ningún entrenamiento registrado</p>
+          
+       </div>
+      ) : trainingData.length === 0 && dayFilterActivated ? (
+       <div className="flex flex-col items-center justify-center">
+          <SVG_ICONS.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
+          <p className="text-white text-center items-center ml-10">Ningún entrenamiento registrado para el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}.</p>
+       </div>
+       
+      ) : (
+        <>
+          <div className="flex flex-row items-center mt-10 ml-10 gap-10">
+            <p className="font-semibold text-white text-[18px]">Últimos entrenamientos</p>
+            {dayFilterActivated && (
+            <p className="flex flex-row bg-[#262626] text-white p-2 rounded-full px-5 border items-center ">
+              <button onClick={() => {
+                setFilterActivated(false);
+              }}>
+                <SVG_ICONS.CancelIcon className="w-8 h-8 text-white mr-3"/>
+              </button>
+              Entrenos el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}
+              </p>
+            )}
+          </div>
+
+          {trainingData.map((training) => (
+            <div key={training.id} className="flex flex-col mb-4 p-8 pt-4  m-10 shadow-lg rounded-md w-full">
+              <div className="flex flex-row gap-5">
+                
+                <img src={user.avatar.avatarBase64} alt={training.name} className="w-[40px] h-[40px]  my-2" />
+
+                <div className="flex flex-col w-full">
+                  <Link 
+                    to={`/profile/${training.creatorId}`}
+                    className="inline-block w-fit text-white hover:text-[#CA0D0A] cursor-pointer"
+                  >
+                    {training.creatorUserName}
+                  </Link>
+                  <p className="mb-5">{formatDate(training.creationDate)}</p>
+                  <p className="font-semibold text-[25px] text-white mb-3">{training.name}</p>
+                  <p className="mb-3">{training.description}</p>
+                  <div className="flex flex-row gap-10">
+                    <p className="text-[12px] w-[12%]">Duración</p>
+                    <p className="text-[12px] w-[10%]">Ejercicios</p>
+                    <p className="text-[12px] w-[10%]">Dificultad</p>
+                    <p className="text-[12px] w-[40%] ml-4">Rutina</p> 
+                  </div>
+                  <div className="flex flex-row gap-10">
+                    <p className="text-[25px] text-left w-[12%] text-white">{training.duration} min</p>
+                    <p className="text-[25px] text-left w-[10%] text-white">{training.exercises.length}</p>
+                    <p className="text-[25px] text-left w-[10%] text-white">Iniciación</p>
+                    <Link
+                      to={`/routines/${training.routineId}`}
+                      className="text-[25px] text-left w-[40%] ml-4 text-white overflow-hidden text-ellipsis whitespace-nowrap hover:text-[#CA0D0A] cursor-pointer"
+                    >
+                      {training.routineName}
+                    </Link>
+                  </div>
+                </div>
+                </div>
+
+              <div className="bg-[#262626] rounded-md p-5 mt-10 w-fit self-start inline-block">
+                <div className="flex flex-col">
+                  <div className="flex flex-row">
+                    <SVG_ICONS.SeparationExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
+                    {training.exercises.map((exercise, index) => (
+                      <div key={index} className="flex flex-row items-center">
+                        <div className="flex flex-col justify-center items-center p-2 text-center ">
+                          <img src={exercise.exerciseImageBase64} alt={exercise.name} className="w-[50px] h-auto rounded-md"/>
+                          <p className="text-white mt-2">{exercise.name}</p>
+                        </div>
+
+                        {index !== training.exercises.length - 1 ? (
+                          <SVG_ICONS.NextExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
+                        ) : (
+                          <SVG_ICONS.SeparationExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
+                        )}
+                      </div>
+                    ))}
+
+                  </div>
+                
+                </div>
+              </div>
+              {!training.public ? (
+                <div className="flex flex-row mt-2 text-[12px] items-center">
+                  <SVG_ICONS.LockIcon className="text-white h-[24px] w-[24px]"/>
+                  <p className="ml-2">Solo tú puedes ver este entrenamiento.</p>
+                </div>
+              ) : null}
+            </div>
+              
+          ))}
+          {dayFilterActivated ? (
+            <Pager 
+            back={{ enabled: filterPage > 0, 
+            onClick: () => viewDayTrainings(filterPage - 1) }} 
+            next={{ enabled: filterExistMoreItems, 
+            onClick: () => viewDayTrainings(filterPage + 1) }}
+          />
+          ):
+          <Pager 
+            back={{ enabled: page > 0, 
+            onClick: () => viewLastTrainings(page - 1) }} 
+            next={{ enabled: existMoreItems, 
+            onClick: () => viewLastTrainings(page + 1) }}
+          />
+          }
+      </>
+      )}
+    </div>
+  )
+}
+
+export default TrainingHistory

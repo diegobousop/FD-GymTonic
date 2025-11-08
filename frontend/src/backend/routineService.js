@@ -69,3 +69,67 @@ onSuccess, onErrors) => {
     onErrors
   );
 };
+
+export const followRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/follow`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const unfollowRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/unfollow`,
+    fetchConfig("DELETE"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const getFollowersByRoutine = (routineId, { page, size }, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/followers?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const isFollowingRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/is-following`,
+  );
+};
+
+
+export const viewUserTrainings = (page, size, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/findTrainings?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const viewDayTrainings = (page, size, day, month, year, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/findDayTrainings?day=${day}&month=${month}&year=${year}&page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+
+export const getTrainingCalendarStats = (year, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/getTrainingCalendarStats?year=${year}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+

@@ -94,6 +94,7 @@ CREATE TABLE Training (
     isPublic BOOLEAN DEFAULT TRUE,
     userId BIGINT NOT NULL,
     routineId BIGINT NOT NULL,
+    duration BIGINT NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(id),
     FOREIGN KEY (routineId) REFERENCES Routine(id)
 );

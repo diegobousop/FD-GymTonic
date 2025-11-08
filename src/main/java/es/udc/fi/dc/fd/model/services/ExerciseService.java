@@ -1,14 +1,14 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.Optional;
+import java.util.List;
+
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
-
-import java.util.Optional;
 
 
 public interface ExerciseService {
@@ -34,4 +34,6 @@ public interface ExerciseService {
     void declineExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
 
     void blockExercise(Long userId, Long exerciseId2) throws InstanceNotFoundException;
+
+    List<Serie> findExerciseSeriesInTraining(Long trainingId, Long exerciseId);
 } 

@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
+import es.udc.fi.dc.fd.model.entities.Training;
+
 
 public class RoutineConversor {
 
@@ -54,5 +56,35 @@ public class RoutineConversor {
         return routines.stream()
                 .map(r -> toRoutineDto(r, currentUserId, routineFollowDao))
                 .collect(Collectors.toList());
+    }
+
+    public static TrainingDetailsDto toTrainingDetailsDto(Training training, List<ExerciseRoutineDto> exercises) {
+        return new TrainingDetailsDto(
+            training.getId(),
+            training.getName(),
+            training.getDescription(),
+            training.getDuration(),
+            training.getCreationDate(),
+            training.getUser().getId(),
+            training.getUser().getUserName(),
+            training.getRoutine().getId(),
+            training.getRoutine().getName(),
+            exercises,
+            training.getIsPublic()
+        );
+    }
+
+    public static CalendarTrainingDto toCalendarStatDto(Training training) {
+        return new CalendarTrainingDto(
+            training.getCreationDate().toLocalDate(),
+            training.getName()
+        );
+    }
+
+    public static CalendarStatsDto toCalendarStatsDto(List<Training> trainings) {
+        List<CalendarTrainingDto> trainingDtos = trainings.stream()
+                .map(RoutineConversor::toCalendarStatDto)
+                .collect(Collectors.toList());
+        return new CalendarStatsDto(trainingDtos);
     }
 }

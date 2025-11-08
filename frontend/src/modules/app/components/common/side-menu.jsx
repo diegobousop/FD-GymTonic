@@ -29,7 +29,7 @@ const SideMenu = ({ activePage, setActivePage }) => {
 
 
   return (
-    <div className="fixed left-0 flex flex-col w-[270px] border-r border-[#ff0000] h-full items-center px-4 py-20">
+    <div className="fixed left-0 flex flex-col w-[270px] border-r border-[#990000] h-full items-center px-4 py-20">
       <MenuItem title="Inicio" activePage={isActive} page={'home'} onClick={() => go('home', '/home')} icon={HomeIcon} />
       <MenuItem title="Ver perfil" activePage={isActive} page={'profile'} onClick={() => go('profile', '/profile')} icon={ProfileIcon} />
       <MenuItem title="Crear Entrenamiento" activePage={isActive} page={'createTraining'} onClick={() => go('createTraining', '/trainings/create-training')} icon={TrainingIcon} />
