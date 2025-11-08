@@ -57,7 +57,7 @@ public class ExerciseServiceImpl implements ExerciseService {
             throw new InstanceNotFoundException("project.entities.user", userId);
         }
 
-        if(validator.get().getRole().toString().equals("USER")){ // si el que añade es admin, se valida directamente
+        if(validator.get().getRole().toString().equals("USER")){ // si el que añade es user, no tiene permiso
             throw new PermissionException("project.entities.exercise", exercise.getExerciseName());
         }
 
@@ -66,8 +66,13 @@ public class ExerciseServiceImpl implements ExerciseService {
             exercise.setValidator(validator.get());
         }
 
-        if(validator.get().getRole().toString().equals("TRAINER") ){
+        //si el que añade es trainer y es premium, puede añadir ejercicios
+        if(validator.get().getRole().toString().equals("TRAINER") && creator.get().getPremium()) { 
             exercise.setValidated(false);
+        }
+
+        if(validator.get().getRole().toString().equals("TRAINER") && !creator.get().getPremium()) {
+            throw new PermissionException("project.entities.exercise", exercise);
         }
 
         Icon icon = iconDao.findByName(exercise.getGrupoMuscular().toString());
@@ -116,16 +121,23 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Serie createSerie(Exercise exercise, long routine) throws InstanceNotFoundException {
+    public Serie createSerie(long exercise, long routine) throws InstanceNotFoundException {
         int aux;
-        if(!exerciseDao.existsByExerciseName(exercise.getExerciseName()))
-            throw new InstanceNotFoundException("project.entities.exercise", exercise.getExerciseName());
+        if(exerciseDao.findById(exercise).isEmpty())
+            throw new InstanceNotFoundException("project.entities.exercise", exercise);
         if (!routineDao.existsById(routine))
             throw new InstanceNotFoundException("project.entities.routine", routine);
-        aux=getSeriesByExerciseAndRoutine(exercise.getId(), routine).getItems().size();
-        Serie serie= new Serie(0,0,aux+1,exercise,routineDao.getReferenceById(routine));
+        aux=getSeriesByExerciseAndRoutine(exercise, routine).getItems().size();
+        Serie serie= new Serie(0,0,aux+1,exerciseDao.findById(exercise).get(),routineDao.getReferenceById(routine));
         serieDao.save(serie);
         return serie;
+    }
+
+    @Override
+    public Boolean removeSerie(long SerieId) throws InstanceNotFoundException {
+        if(!serieDao.existsById(SerieId)) throw new InstanceNotFoundException("project.entities.serie", SerieId);
+        serieDao.deleteById(SerieId);
+        return (!serieDao.existsById(SerieId));
     }
 
     @Override
@@ -152,7 +164,8 @@ public class ExerciseServiceImpl implements ExerciseService {
             Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
             List<Serie> filtered = slice.getContent().stream()
                     .filter(serie -> serie.getRoutine() != null
-                            && serie.getRoutine().getId() == routine)
+                            && serie.getRoutine().getId() == routine
+                            && serie.getTraining() == null)
                     .toList();
             return new Block<>(filtered, slice.hasNext());
         }

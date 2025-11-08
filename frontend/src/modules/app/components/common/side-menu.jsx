@@ -1,16 +1,16 @@
-import React, { useEffect,useContext } from 'react'
+import React, { useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { SVG_ICONS } from '../../../../config/constants'
 import MenuItem from './menu-item'
-import { UserContext } from "./user-provider";
-
+import { UserContext } from "./user-provider"
 
 const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = SVG_ICONS
 
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
-  const {user} = useContext(UserContext)
+  const { user } = useContext(UserContext)
+
   // Leer la última página activa de localStorage al montar
   useEffect(() => {
     const lastPage = localStorage.getItem('sideMenuActivePage')
@@ -26,7 +26,6 @@ const SideMenu = ({ activePage, setActivePage }) => {
     localStorage.setItem('sideMenuActivePage', page)
     if (path) navigate(path)
   }
-
 
   return (
     <div className="fixed left-0 flex flex-col w-[270px] border-r border-[#990000] h-full items-center px-4 py-20">
@@ -51,6 +50,9 @@ const SideMenu = ({ activePage, setActivePage }) => {
       }
       { user && user.role === 'ADMIN' &&
         <MenuItem title="Bloquear Ejercicios" activePage={isActive} page={'blockExercises'} onClick={() => go('blockExercises', '/admin/blockExercises')} icon={CreateExerciseIcon} />
+      }
+      { user && user.role === 'TRAINER' &&
+        <MenuItem title="Seguidores" activePage={isActive} page={'myFollowers'} onClick={() => go('myFollowers', '/routines/my-followers')} icon={ProfileIcon} />
       }
     </div>
   )

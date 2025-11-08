@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,13 +25,14 @@ public class SearchController {
     @GetMapping("/suggestions")
     public ResponseEntity<List<SearchSuggestionDto>> getSuggestions(
             @RequestParam(required = false) String text,
-            @RequestParam(defaultValue = "2") int limit) {
+            @RequestParam(defaultValue = "2") int limit,
+            @RequestAttribute(required = false) Long userId) {
 
         if (text == null || text.isBlank()) {
             return ResponseEntity.ok(List.of());
         }
 
-        return ResponseEntity.ok(searchService.findSuggestions(text.trim(), limit));
+        return ResponseEntity.ok(searchService.findSuggestions(text.trim(), limit, userId));
     }
 
     @GetMapping("/full")
@@ -38,7 +40,8 @@ public class SearchController {
             @RequestParam(required = false) String text,
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) String muscleGroup,
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestAttribute(required = false) Long userId) {
 
         if (text == null || text.isBlank()) {
             return ResponseEntity.ok(Map.of(
@@ -49,7 +52,7 @@ public class SearchController {
         }
 
         return ResponseEntity.ok(
-                searchService.findFullResults(text.trim(), trainerName, muscleGroup, limit)
+                searchService.findFullResults(text.trim(), trainerName, muscleGroup, limit, userId)
         );
     }
 }

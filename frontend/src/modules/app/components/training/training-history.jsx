@@ -130,7 +130,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
                   </Link>
                   <p className="mb-5">{formatDate(training.creationDate)}</p>
                   <p className="font-semibold text-[25px] text-white mb-3">{training.name}</p>
-                  <p className="mb-3">{training.description}</p>
+                  <p className="mb-3 text-white">{training.description}</p>
                   <div className="flex flex-row gap-10">
                     <p className="text-[12px] w-[12%]">Duración</p>
                     <p className="text-[12px] w-[10%]">Ejercicios</p>

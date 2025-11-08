@@ -2,15 +2,18 @@ import React, {useState, useContext} from 'react'
 
 import TrainingHistory from '../components/training/training-history'
 import SendButton from '../components/common/send-button'
+import BubbleButton from '../components/common/bubble-button'
+
 import CalendarCard from '../components/profile/calendar-card'
 
-import { getProfile } from "../../../backend/userService"
+import { getProfile, getFollowersCount } from "../../../backend/userService"
+
 
 import { UserContext } from '../components/common/user-provider';
 
 import { useNavigate } from 'react-router-dom'
 
-
+import { SVG_ICONS } from '../../../config/constants'
 
 
 const MyProfilePage = () => {
@@ -18,6 +21,7 @@ const MyProfilePage = () => {
   
 
   const { user, setUser, handleLogout } = useContext(UserContext);
+  const [followerCount, setFollowerCount] = useState(0);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
 
@@ -28,29 +32,37 @@ const MyProfilePage = () => {
 
   React.useEffect(() => {
     if (user) {
+      console.log('Datos del usuario:', user);
       getProfile(user, (data) => {
         setProfile(data);
       }, (err) => {
         setError('Error al cargar el perfil');
       });
+
+      getFollowersCount(
+        (count) => {
+        setFollowerCount(count);
+      }, (err) => {
+        setError('Error al cargar el número de seguidores');
+      });
     }
   }, [user]);
 
   return (
-    <div className="flex flex-col w-full mx-auto mt-10 py-6 bg-auto h-full">
+    <div className="flex flex-col w-full mx-auto mt-10  bg-auto h-full">
 
       {error && <div className="text-red-600 mb-2">{error}</div>}
       {user ? (
         <div className="flex flex-row  items-center text-white gap-5 border-b border-b-[#990000] pb-5">
-          <div className="flex flex-col ml-5">
+          <img src={user.avatar.avatarBase64} alt="Profile" className="w-24 h-24 object-cover ml-10 "/>
+          <div className="flex flex-col ml-5 w-[60%]">
             
-            <div><strong>Email:</strong> {user.email}</div>
-            <div><strong>Nombre:</strong> {user.firstName}</div>
-            <div><strong>Apellido:</strong> {user.lastName}</div>
+            <h1>{user.userName}</h1>
+            <p className="text-white">{followerCount} seguidores   </p>
           </div>
 
-          <SendButton
-          children="Editar perfil"
+          <BubbleButton 
+          icon={<SVG_ICONS.CreateRoutineIcon />}
           onClick={
             () => {
               navigate('/profileUpdate');
@@ -58,8 +70,8 @@ const MyProfilePage = () => {
           }
           />
 
-          <SendButton
-          children="Cambiar contraseña"
+          <BubbleButton 
+          icon={<SVG_ICONS.PasswordIcon />}
           onClick={
             () => {
               navigate('/change-password');
@@ -67,9 +79,12 @@ const MyProfilePage = () => {
           }
           />
 
-          <SendButton children="Cerrar sesión" isLoading={false} onClick={() => {
+          <BubbleButton 
+          icon={<SVG_ICONS.LogoutIcon />}
+          onClick={() => {
             handleLogout();
-          }}/>
+          }}
+          />
 
         </div>
       ) : (

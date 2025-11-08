@@ -30,7 +30,7 @@ public class UserConversor {
 	 */
 	public static final UserDto toUserDto(Users user) {
 		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), 
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked());
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked(), user.getBankCard(),user.getPremium());
 	}
 
 	/**
@@ -74,10 +74,11 @@ public class UserConversor {
 	}
 
 	public static final ResumeUserDto toResumeUserDto(Users user){
-		return new ResumeUserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole().toString());
+		String avatarBase64 = user.getAvatar() != null ? user.getAvatar().getAvatarBase64() : null;
+		return new ResumeUserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole().toString(), avatarBase64);
 	}
 
-	public static final BlockDto toBlockResumeUserDto(Block<Users> userBlock){
+	public static final BlockDto<ResumeUserDto> toBlockResumeUserDto(Block<Users> userBlock){
 		List<ResumeUserDto> list = userBlock.getItems().stream().map(u -> toResumeUserDto(u)).collect(Collectors.toList());
 		return new BlockDto<ResumeUserDto>(list ,userBlock.getExistMoreItems());
 	}

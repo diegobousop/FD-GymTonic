@@ -85,6 +85,7 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
 
   return (
     <div className="flex flex-col h-full border-l-[1px] border-l-[#990000] w-[30%] p-4 ">
+      
       <p className="text-white text-center mt-5">Última semana</p>
       <div className="flex flex-row gap-3 justify-center">
         {thisWeekCount >= 4 ? (

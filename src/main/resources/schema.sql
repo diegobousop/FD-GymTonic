@@ -37,8 +37,10 @@ CREATE TABLE Users (
     email VARCHAR(60) NOT NULL,
     avatar BIGINT,
     role TINYINT NOT NULL, /*0 User, 1 Trainer. 2 Admin*/
-    FOREIGN KEY (avatar) REFERENCES Avatar(id),
-    blocked BOOLEAN NOT NULL DEFAULT FALSE
+    premium BOOLEAN DEFAULT FALSE,
+    blocked BOOLEAN NOT NULL DEFAULT FALSE,
+    bankCard VARCHAR(16),
+    FOREIGN KEY (avatar) REFERENCES Avatar(id)
 );
 
 CREATE TABLE Exercise (
@@ -93,10 +95,8 @@ CREATE TABLE Training (
     creationDate TIMESTAMP NOT NULL,
     isPublic BOOLEAN DEFAULT TRUE,
     userId BIGINT NOT NULL,
-    routineId BIGINT NOT NULL,
     duration BIGINT NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(id),
-    FOREIGN KEY (routineId) REFERENCES Routine(id)
+    FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
 CREATE TABLE Serie (
@@ -105,7 +105,7 @@ CREATE TABLE Serie (
     peso INT NOT NULL,
     numeroSerie INT NOT NULL,
     exerciseId BIGINT NOT NULL,
-    routineId BIGINT NOT NULL,
+    routineId BIGINT,
     trainingId BIGINT,
     FOREIGN KEY (exerciseId) REFERENCES Exercise(id),
     FOREIGN KEY (routineId) REFERENCES  Routine(id),

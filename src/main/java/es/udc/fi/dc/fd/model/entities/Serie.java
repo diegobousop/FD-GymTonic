@@ -73,7 +73,7 @@ public class Serie {
     public void setExercise(Exercise exercise) { this.exercise = exercise; }
 
     @ManyToOne
-    @JoinColumn(name = "routineId")
+    @JoinColumn(name = "routineId", nullable = true)
     public Routine getRoutine() { return routine; }
     public void setRoutine(Routine routine) { this.routine = routine; }
 

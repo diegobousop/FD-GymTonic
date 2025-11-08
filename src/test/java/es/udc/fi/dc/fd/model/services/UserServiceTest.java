@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -31,8 +30,6 @@ import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -99,14 +96,24 @@ public class UserServiceTest {
 		assertEquals( "lastName",user.getLastName());
 		assertEquals("user@user.com",user.getEmail());
 
-		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy");
+		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456");
 
 		assertEquals("prueba",user.getFirstName());
 		assertEquals( "pruebez",user.getLastName());
 		assertEquals("prueba@pruebez.com",user.getEmail());
 		assertEquals("messy",user.getAvatar().getName());
 
-		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "messy987"));
+		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "messy987", "1234567890123456"));
+	}
+
+	public void testUpdateProfileChangePremium() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users user = createUser("user");
+		userService.signUp(user, Users.RoleType.USER);
+
+		user = userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456");
+
+		assertTrue(user.getPremium());
+
 	}
 
     @Test
@@ -208,8 +215,6 @@ public class UserServiceTest {
         Users user = new Users("user1", "pass", "User", "User", "User1@user.com", avatar);
         user.setId(3L);
         user.setRole(RoleType.USER);
-		
-        List<Users> usersList = Arrays.asList(admin, trainer, user);
 
 		Block<Users> result = userService.getAllUser(0, 5);
 
@@ -224,7 +229,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testFollowUser() throws InstanceNotFoundException, DuplicateInstanceException {
+	public void testFollowUser() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
 		Users user1 = createUser("manolo");
 		Users user2 = createUser("entrenadoh");
 		userService.signUp(user1, Users.RoleType.USER);
@@ -240,7 +245,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testUnfollowUser() throws InstanceNotFoundException, DuplicateInstanceException {
+	public void testUnfollowUser() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
 		Users user1 = createUser("manolo");
 		Users user2 = createUser("entrenadoh");
 		userService.signUp(user1, Users.RoleType.USER);
@@ -259,7 +264,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testFollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException {
+	public void testFollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
 		Users user1 = createUser("manolo");
 		Users user2 = createUser("entrenadoh");
 		userService.signUp(user1, Users.RoleType.USER);
@@ -271,7 +276,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testUnfollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException {
+	public void testUnfollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
 		Users user1 = createUser("manolo");
 		Users user2 = createUser("entrenadoh");
 		userService.signUp(user1, Users.RoleType.USER);
@@ -285,7 +290,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testGetFollowers() throws InstanceNotFoundException, DuplicateInstanceException {
+	public void testGetFollowers() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
 		Users user1 = createUser("manolo");
 		Users user2 = createUser("entrenadoh");	
 		userService.signUp(user1, Users.RoleType.USER);
@@ -301,7 +306,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testGetFollowing() throws InstanceNotFoundException, DuplicateInstanceException {
+	public void testGetFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
 		Users user1 = createUser("manolo");
 		Users user2 = createUser("entrenadoh");
 		userService.signUp(user1, Users.RoleType.USER);
@@ -313,5 +318,112 @@ public class UserServiceTest {
 		Block<Users> following = userService.getFollowing(user1.getId(), 0,5);
 
 		assertEquals(user2, following.getItems().get(0));
+	}
+
+	@Test
+	public void testGetFollowersCount() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo");
+		Users user2 = createUser("entrenadoh");
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		// Sin seguidores
+		assertEquals(0, userService.getFollowersCount(user2.getId()));
+
+		// Agregar seguidores
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertEquals(1, userService.getFollowersCount(user2.getId()));
+
+		// Agregar otro seguidor
+		Users user3 = createUser("user3");
+		userService.signUp(user3, Users.RoleType.USER);
+		assertTrue(userService.followUser(user3.getId(), user2.getId()));
+		assertEquals(2, userService.getFollowersCount(user2.getId()));
+	}
+
+	@Test
+	public void testGetFollowersCountNoUser() throws DuplicateInstanceException {
+		Users user = createUser("user");
+		userService.signUp(user, Users.RoleType.USER);
+
+		assertThrows(InstanceNotFoundException.class, () -> {
+			userService.getFollowersCount(user.getId() + 999);
+		});
+	}
+
+	@Test
+	public void testFollowAdminAsNonAdmin() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users admin = createUser("admin");
+		Users user = createUser("user");
+		userService.signUp(admin, Users.RoleType.ADMIN);
+		userService.signUp(user, Users.RoleType.USER);
+
+		assertThrows(PermissionException.class, () -> {
+			userService.followUser(user.getId(), admin.getId());
+		});
+	}
+
+	@Test
+	public void testFollowAdminAsAdmin() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users admin1 = createUser("admin1Follow" + System.currentTimeMillis());
+		Users admin2 = createUser("admin2Follow" + System.currentTimeMillis());
+		userService.signUp(admin1, Users.RoleType.ADMIN);
+		userService.signUp(admin2, Users.RoleType.ADMIN);
+
+		// Admin puede seguir a otro admin
+		assertTrue(userService.followUser(admin1.getId(), admin2.getId()));
+		assertEquals(1, admin2.getFollowers().size());
+		assertEquals(admin1, admin2.getFollowers().get(0));
+	}
+
+	@Test
+	public void testFollowBlockedUser() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException, AlreadyBlockException, SelfBlockException {
+		Users admin = createUser("adminBlock" + System.currentTimeMillis());
+		Users user1 = createUser("user1Block" + System.currentTimeMillis());
+		Users user2 = createUser("user2Block" + System.currentTimeMillis());
+		userService.signUp(admin, Users.RoleType.ADMIN);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.USER);
+
+		// user1 sigue a user2
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertEquals(1, userService.getFollowersCount(user2.getId()));
+
+		// Admin bloquea a user2
+		userService.blockUser(admin.getId(), user2.getId());
+
+		userService.unfollowUser(user1.getId(), user2.getId());
+
+		// Intentar seguir a un usuario bloqueado debe fallar
+		assertThrows(PermissionException.class, () -> {
+			userService.followUser(user1.getId(), user2.getId());
+		});
+	}
+
+	@Test
+	public void testBlockUserRemovesFromFollowers() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException, AlreadyBlockException, SelfBlockException {
+		Users admin = createUser("adminRemove" + System.currentTimeMillis());
+		Users blocker = createUser("blockerRemove" + System.currentTimeMillis());
+		Users follower = createUser("followerRemove" + System.currentTimeMillis());
+		userService.signUp(admin, Users.RoleType.ADMIN);
+		userService.signUp(blocker, Users.RoleType.USER);
+		userService.signUp(follower, Users.RoleType.USER);
+
+		
+		assertTrue(userService.followUser(follower.getId(), blocker.getId()));
+		
+		blocker = userService.getUserById(blocker.getId());
+		assertEquals(1, userService.getFollowersCount(blocker.getId()));
+		assertTrue(blocker.getFollowers().stream().anyMatch(u -> u.getId().equals(follower.getId())));
+
+		
+		userService.blockUser(admin.getId(), follower.getId());
+		
+		
+		blocker = userService.getUserById(blocker.getId());
+		boolean containsFollower = blocker.getFollowers() != null && 
+			blocker.getFollowers().stream().anyMatch(u -> u.getId().equals(follower.getId()));
+		assertFalse(containsFollower);
+		assertEquals(0, userService.getFollowersCount(blocker.getId()));
 	}
 }

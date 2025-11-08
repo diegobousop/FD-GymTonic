@@ -58,7 +58,7 @@ public class RoutineConversor {
                 .collect(Collectors.toList());
     }
 
-    public static TrainingDetailsDto toTrainingDetailsDto(Training training, List<ExerciseRoutineDto> exercises) {
+    public static TrainingDetailsDto toTrainingDetailsDto(Training training, List<ExerciseRoutineDto> exercises, Routine routine) {
         return new TrainingDetailsDto(
             training.getId(),
             training.getName(),
@@ -67,8 +67,8 @@ public class RoutineConversor {
             training.getCreationDate(),
             training.getUser().getId(),
             training.getUser().getUserName(),
-            training.getRoutine().getId(),
-            training.getRoutine().getName(),
+            routine.getId(),
+            routine.getName(),
             exercises,
             training.getIsPublic()
         );

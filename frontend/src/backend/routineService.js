@@ -1,14 +1,11 @@
-import {
-  fetchConfig,
-  appFetch,
-} from "./appFetch";
+import { fetchConfig, appFetch } from "./appFetch";
 
 export const createRoutine = (name, exercises, duration, isPublic, onSuccess, onErrors) => {
   appFetch(
     "/routines/createRoutine",
     fetchConfig("POST", { name, exercises, duration, isPublic }),
-    (createdRoutine) => onSuccess(createdRoutine),
-    onErrors 
+    onSuccess,
+    onErrors
   );
 };
 
@@ -60,8 +57,16 @@ export const searchRoutines = (creatorId, name, { page, size }, onSuccess, onErr
     onErrors
   );
 
-export const createTraining = (routineId, name, description, duration, visibility, exercises, 
-onSuccess, onErrors) => {
+export const createTraining = (
+  routineId,
+  name,
+  description,
+  duration,
+  visibility,
+  exercises,
+  onSuccess,
+  onErrors
+) => {
   appFetch(
     "/routines/createTraining",
     fetchConfig("POST", { routineId, name, description, duration, visibility, exercises }),

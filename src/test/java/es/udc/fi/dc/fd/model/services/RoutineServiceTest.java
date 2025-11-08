@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -22,12 +23,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
+import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -40,6 +46,9 @@ public class RoutineServiceTest {
     
     @Autowired
     private RoutineService routineService;
+
+    @Autowired
+    private ExerciseService exerciseService;
     
     @Autowired
     private RoutineDao routineDao;
@@ -65,6 +74,13 @@ public class RoutineServiceTest {
         return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
+        private Exercise createExercise(String name, String description, grupoMuscular grupo, int numeroSeries) {
+        Exercise exercise = new Exercise(name, description, grupo, numeroSeries);
+        exercise.setDifficulty(Difficulty.FACIL);
+        exercise.setEquipment(Equipment.POLEA_CABLE);
+        return exercise;
+    }
+
 	/**
 	 * Test sign up and login from id.
 	 *
@@ -86,7 +102,7 @@ public class RoutineServiceTest {
 	}
 
     @Test
-    public void testCreateEmptyRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testCreateEmptyRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
         routine = routineService.createRoutine(creator.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
@@ -102,7 +118,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testCreateRoutineWithExercises() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testCreateRoutineWithExercises() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -123,7 +139,7 @@ public class RoutineServiceTest {
     }
 
     @Test(expected = InvalidRoutineNameException.class)
-    public void createInvalidNameRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+    public void createInvalidNameRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -133,7 +149,7 @@ public class RoutineServiceTest {
 
 
     @Test(expected = InvalidRoutineDurationException.class)
-    public void createInvalidDurationRoutine1() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+    public void createInvalidDurationRoutine1() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("X", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -143,7 +159,7 @@ public class RoutineServiceTest {
     }
 
     @Test(expected = InvalidRoutineDurationException.class)
-    public void createInvalidDurationRoutine2() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException{
+    public void createInvalidDurationRoutine2() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("X", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -152,7 +168,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testViewAllRoutines() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testViewAllRoutines() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
 
         // Foto del estado previo (puede haber rutinas sembradas en BD)
@@ -178,7 +194,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testViewAllRoutinesInOrder() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testViewAllRoutinesInOrder() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
 
         // Rutinas existentes antes (semillas u otras)
@@ -213,7 +229,7 @@ public class RoutineServiceTest {
     
 
     @Test
-    public void testGetRoutineById() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException{
+    public void testGetRoutineById() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -285,10 +301,158 @@ public class RoutineServiceTest {
         routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L, true);
     }
 
+
+    @Test
+    public void removeExerciseFromRoutineTest_Success() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+
+        long exerciseId = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Press banca", "Ejercicio de pecho", grupoMuscular.PECHO, 4)
+        );
+
+        Routine routine = routineService.createRoutine(
+            creator.getId(),
+            "Rutina A",
+            new ArrayList<Long>(),
+            60L,
+            true
+        );
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+        routineService.modifyRoutine(
+            routine.getId(),
+            creator.getId(),
+            routine.getName(),
+            exerciseIds,
+            routine.getDuration(),
+            routine.getIsPublic()
+        );
+
+        Routine rutinaConEjercicio = routineDao.findById(routine.getId()).get();
+        assertEquals(1, rutinaConEjercicio.getExercises().size());
+
+        assertEquals(true, routineService.removeExerciseFromRoutine(exerciseId, routine.getId()));
+
+        Routine rutinaActualizada = routineDao.findById(routine.getId()).get();
+        assertEquals(0, rutinaActualizada.getExercises().size());
+    }
+
+    @Test
+    public void removeExerciseFromRoutineTest_NotInRoutine() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+
+        long exerciseId1 = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Press banca", "Ejercicio de pecho", grupoMuscular.PECHO, 4)
+        );
+
+        long exerciseId2 = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Sentadillas", "Ejercicio de piernas", grupoMuscular.PIERNA, 3)
+        );
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId1);
+        Routine routine = routineService.createRoutine(creator.getId(), "Rutina B", exerciseIds, 45L, true);
+
+        boolean eliminado = routineService.removeExerciseFromRoutine(exerciseId2, routine.getId());
+
+        assertFalse(eliminado);
+
+        Routine rutinaFinal = routineDao.findById(routine.getId()).get();
+        assertEquals(1, rutinaFinal.getExercises().size());
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void removeExerciseFromRoutine_RoutineOrExerciseNotFound() throws Exception {
+        Users creator = userService.login("trainer1", "12345");
+
+        long exerciseId = exerciseService.addExercise(
+            creator.getId(),
+            createExercise("Curl bíceps", "Ejercicio de brazos", grupoMuscular.BRAZO, 2)
+        );
+
+        Routine routine = routineService.createRoutine(
+            creator.getId(),
+            "Rutina C",
+            new ArrayList<Long>(),
+            30L,
+            true
+        );
+
+        routineService.removeExerciseFromRoutine(exerciseId, 99999L);
+        routineService.removeExerciseFromRoutine(88888L, routine.getId());
+    }
+
+    @Test
+    public void deleteSeriesByRoutineTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineExerciseLimitReachedException, RoutineLimitReachedException {
+
+        Users creator = userService.login("trainer1", "12345");
+        
+        long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,4));
+        Exercise exercise1 = exerciseDao.getById(exerciseId);
+        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+
+        routineService.modifyRoutine(rutina.getId(), creator.getId(), rutina.getName(), exerciseIds, rutina.getDuration(), true);
+        
+        exerciseService.createSerie(exercise1.getId(), rutina.getId());
+        exerciseService.createSerie(exercise1.getId(), rutina.getId());
+
+        assertEquals(true, routineService.deleteSeriesByRoutine(rutina.getId()));
+        assertEquals(0, exerciseService.getSeriesByExerciseAndRoutine(exerciseId,rutina.getId()).getItems().size());
+    }
+
+    @Test
+    public void deleteSeriesByRoutineWithNoSeriesTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+
+        Users creator = userService.login("trainer1", "12345");
+        
+        long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+                "ejercicio de prueba", grupoMuscular.PECHO,4));
+        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+
+        routineService.modifyRoutine(rutina.getId(), creator.getId(), rutina.getName(), exerciseIds, rutina.getDuration(), true);
+        
+        assertEquals(0, exerciseService.getSeriesByExerciseAndRoutine(exerciseId,rutina.getId()).getItems().size());
+        assertEquals(true, routineService.deleteSeriesByRoutine(rutina.getId()));
+        assertEquals(0, exerciseService.getSeriesByExerciseAndRoutine(exerciseId,rutina.getId()).getItems().size());
+    }
+
+
     @Test
     public void testDeleteRoutineSuccess() throws Exception {
         Users creator = userService.login("admin1", "12345");
         Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L, true);
+        routineService.deleteRoutine(creator.getId(), routine.getId());
+        Optional<Routine> retrieved = routineDao.findById(routine.getId());
+        assertEquals(false, retrieved.isPresent());
+    }
+
+    @Test
+    public void testDeleteRoutineWithSeriesSuccess() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "to-delete", new ArrayList<Long>(), 30L, true);
+        
+        long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
+        "ejercicio de prueba", grupoMuscular.PECHO,4));
+
+        List<Long> exerciseIds = new ArrayList<>();
+        exerciseIds.add(exerciseId);
+
+        routineService.modifyRoutine(routine.getId(), creator.getId(), routine.getName(), exerciseIds, routine.getDuration(), true);
+        
+        exerciseService.createSerie(exerciseId, routine.getId());
+        exerciseService.createSerie(exerciseId, routine.getId());
+
         routineService.deleteRoutine(creator.getId(), routine.getId());
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
         assertEquals(false, retrieved.isPresent());
@@ -306,6 +470,30 @@ public class RoutineServiceTest {
         Users otherUser = userService.login("user1", "12345");
         Routine routine = routineService.createRoutine(creator.getId(), "to-delete-2", new ArrayList<Long>(), 35L, true);
         routineService.deleteRoutine(otherUser.getId(), routine.getId());
+    }
+
+    @Test(expected = RoutineLimitReachedException.class)
+    public void testCreateRoutineLimitReached() throws Exception {
+        Users creator = createUser("paco");
+        creator.setPremium(false);
+        userService.signUp(creator, RoleType.TRAINER);
+
+        routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+        routineService.createRoutine(creator.getId(), "r2", new ArrayList<Long>(), 45L, true);
+        routineService.createRoutine(creator.getId(), "r3", new ArrayList<Long>(), 45L, true);
+        // This one should fail
+        routineService.createRoutine(creator.getId(), "r4", new ArrayList<Long>(), 45L, true);
+    }
+
+    @Test(expected = RoutineExerciseLimitReachedException.class)
+    public void testModifyRoutineExerciseLimitReached() throws Exception {
+        Users creator = createUser("paco");
+        creator.setPremium(false);
+        userService.signUp(creator, RoleType.TRAINER);
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+        routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){
+            {add(1L);add(2L);add(3L);add(4L);add(5L);add(6L);}}, 45L, true);
     }
 
     @Test
@@ -373,7 +561,7 @@ public class RoutineServiceTest {
 
 
     @Test
-    public void testFindRoutinesByCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testFindRoutinesByCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator1 = userService.login("trainer1", "12345");
         Users creator2 = userService.login("admin1", "12345");
         Routine routine1 = createRoutine("routine1", creator1);
@@ -418,7 +606,7 @@ public class RoutineServiceTest {
 
 
     @Test
-    public void testFindRoutinesByName() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+    public void testFindRoutinesByName() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator1 = userService.login("trainer1", "12345");
         Routine routine1 = createRoutine("routine1", creator1);
         Routine routine2 = createRoutine("routine2", creator1);
@@ -434,7 +622,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testFindRoutinesByNameAndCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException {
+    public void testFindRoutinesByNameAndCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator1 = userService.login("trainer1", "12345");
         Users creator2 = userService.login("admin1", "12345");
 
@@ -487,7 +675,6 @@ public class RoutineServiceTest {
         
         Training createdTraining = routineService.createTrainingFromRoutine(
             creator.getId(),
-            routine.getId(),
             "Training 1",
             "Description of training",
             45L,
@@ -511,22 +698,6 @@ public class RoutineServiceTest {
     public void testCreateTrainingFromRoutineWithInvalidUser() throws Exception {
         routineService.createTrainingFromRoutine(
             999999L,
-            1L,
-            "Training",
-            "Description",
-            30L,
-            true,
-            new ArrayList<Serie>()
-        );
-    }
-
-    @Test(expected = InstanceNotFoundException.class)
-    public void testCreateTrainingFromRoutineWithInvalidRoutine() throws Exception {
-        Users creator = userService.login("admin1", "12345");
-        
-        routineService.createTrainingFromRoutine(
-            creator.getId(),
-            999999L,
             "Training",
             "Description",
             30L,
@@ -538,7 +709,6 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testCreateTrainingFromRoutineWithInvalidExercise() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "routine1", new ArrayList<Long>(), 60L, true);
         
         Serie serie = new Serie();
         Exercise invalidExercise = new Exercise();
@@ -550,7 +720,6 @@ public class RoutineServiceTest {
         
         routineService.createTrainingFromRoutine(
             creator.getId(),
-            routine.getId(),
             "Training",
             "Description",
             30L,
@@ -560,7 +729,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException {
+    public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         // Crear usuario y rutina con nombres únicos
         Users user = createUser("user_" + System.currentTimeMillis());
         userService.signUp(user, Users.RoleType.USER);
@@ -592,7 +761,7 @@ public class RoutineServiceTest {
     }
 
     @Test
-    public void testGetFollowersByRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException {
+    public void testGetFollowersByRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         // Crear entrenador y rutina con nombres únicos
         Users trainer = userService.login("trainer1", "12345");
         Routine routine = createRoutine("routine_" + System.currentTimeMillis(), trainer);

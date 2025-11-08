@@ -1,11 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,20 +10,27 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import es.udc.fi.dc.fd.rest.controllers.UserController;
-import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
-
-import org.springframework.test.web.servlet.ResultActions;
+import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.rest.controllers.UserController;
+import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
+import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 
 /**
  * The Class UserControllerTest.
@@ -405,11 +407,11 @@ public class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(4)))
+                .andExpect(jsonPath("$.items", hasSize(8)))
                 .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[0].peso").value(40))
                 .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.items[1].peso").value(45))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
@@ -440,11 +442,11 @@ public class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(3)))
+                .andExpect(jsonPath("$.items", hasSize(7)))
                 .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[0].peso").value(40))
                 .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.items[1].peso").value(45))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
@@ -522,13 +524,7 @@ public class ExerciseControllerTest {
 
         AuthenticatedUserDto user = userController.login(loginParams);
         // Crear ExerciseDto de ejemplo
-        ExerciseDto exerciseDto = new ExerciseDto();
-        exerciseDto.setId(2L);
-        exerciseDto.setName("Squat");
-        exerciseDto.setNumeroSeries(4);
-        exerciseDto.setGrupoMuscular(Exercise.grupoMuscular.PIERNA);
-        exerciseDto.setDifficulty(Difficulty.FACIL);
-        exerciseDto.setEquipment(Equipment.MAQUINA);
+
 
 
         // Mockear el comportamiento del servicio
@@ -536,15 +532,29 @@ public class ExerciseControllerTest {
 
         ObjectMapper mapper = createObjectMapper();
 
-        mockMvc.perform(post("/api/exercise/Series?routineId=1" )
+        mockMvc.perform(post("/api/exercise/Series/create?exerciseId=1&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsBytes(exerciseDto)))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(4)))
-                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10));
+                .andExpect(jsonPath("$.repeticiones").value(0))
+                .andExpect(jsonPath("$.peso").value(0));
 
+    }
+
+
+    @Test
+    public void testDeleteSerie_Ok() throws Exception {
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+
+        mockMvc.perform(delete("/api/exercise/Series/1" )
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(content().string("true"));
     }
 
 

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +39,8 @@ import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
@@ -72,6 +75,8 @@ public class RoutineController {
 
     private final static String INVALID_ROUTINE_NAME_EXCEPTION_CODE = "project.exceptions.InvalidRoutineNameException";
     private final static String INVALID_ROUTINE_DURATION_EXCEPTION_CODE = "project.exceptions.InvalidRoutineDurationException";
+    private final static String ROUTINE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineLimitReachedException";
+    private final static String ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineExercisesLimitReachedException";
 
 
     @ExceptionHandler(InvalidRoutineNameException.class)
@@ -94,10 +99,31 @@ public class RoutineController {
         return new ErrorsDto(errorMessage);
     }
 
-    
+    @ExceptionHandler(RoutineLimitReachedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleRoutineLimitReachedException(RoutineLimitReachedException exception, Locale locale){
+        String errorMessage = messageSource.getMessage(ROUTINE_LIMIT_REACHED_EXCEPTION_CODE,
+        new Object[] {exception.getRoutineLimit()}, ROUTINE_LIMIT_REACHED_EXCEPTION_CODE, locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(RoutineExerciseLimitReachedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleRoutineExerciseLimitReachedException(RoutineExerciseLimitReachedException exception, Locale locale){
+        String errorMessage = messageSource.getMessage(ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE,
+        new Object[] {exception.getRoutineExerciseLimit()}, ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE, locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
+
     @PostMapping("/createRoutine")
     public RoutineDto createRoutine(@RequestAttribute Long userId, @RequestBody RoutineParamsDto params ) 
-        throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException{
+        throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException,
+         RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         return RoutineConversor.toRoutineDto(routineService.createRoutine(userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic()));
     }
 
@@ -147,10 +173,18 @@ public class RoutineController {
             @PathVariable Long routineId,
             @RequestAttribute Long userId, 
             @Validated @RequestBody RoutineParamsDto params) 
-        throws InstanceNotFoundException, PermissionException {
+        throws InstanceNotFoundException, PermissionException, RoutineExerciseLimitReachedException {
         return RoutineConversor.toRoutineDto(
             routineService.modifyRoutine(routineId, userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic())
         );
+    }
+
+    @PutMapping("/{routineId}/removeExercise/{exerciseId}")
+    public Boolean removeExerciseFromRoutine(
+            @PathVariable Long routineId,
+            @PathVariable Long exerciseId) throws InstanceNotFoundException {
+
+        return routineService.removeExerciseFromRoutine(exerciseId, routineId);
     }
 
     @DeleteMapping("/deleteRoutine/{routineId}")
@@ -184,11 +218,11 @@ public class RoutineController {
         List<Serie> series = new ArrayList<>();
         for (ExerciseRoutineParamsDto exerciseParamsDto : params.getExercises()) {
 
-            series.addAll(SerieConversor.toSerieFromSerieParamsDtoList(exerciseParamsDto.getSeries(), exerciseParamsDto.getId(), params.getRoutineId()));
+            series.addAll(SerieConversor.toSerieFromSerieParamsDtoList(exerciseParamsDto.getSeries(), exerciseParamsDto.getId(), null));
         }
 
-        //id usuario, id rutina, descripcion, duracion, visibilidad, lista de ejercicios con repes
-        routineService.createTrainingFromRoutine(userId, params.getRoutineId(), params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
+        //id usuario, descripcion, duracion, visibilidad, lista de ejercicios con repes
+        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
     }
 
         @PostMapping("/{routineId}/follow")
@@ -235,11 +269,12 @@ public class RoutineController {
 
         for (Training t : trainingsPage.getContent()) {
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
-            for (Exercise exercise : t.getRoutine().getExercises()) {
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
                 List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
                 exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series));
             }
-            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises));
+            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
         }
 
         return new BlockDto<>(items, trainingsPage.hasNext());
@@ -267,11 +302,12 @@ public class RoutineController {
 
         for (Training t : trainingsPage.getContent()) {
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
-            for (Exercise exercise : t.getRoutine().getExercises()) {
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
                 List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
                 exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series));
             }
-            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises));
+            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
         }
 
         return new BlockDto<>(items, trainingsPage.hasNext());

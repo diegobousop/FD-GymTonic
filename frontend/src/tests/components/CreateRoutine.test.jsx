@@ -21,10 +21,15 @@ jest.mock('../../backend/exerciseService', () => ({
 
 describe('CreateRoutine', () => {
     const setUser = jest.fn();
+    const mockUser = {
+        id: 1,
+        userName: 'testuser',
+        premium: false
+    };
 
-    const renderComponent = () =>
+    const renderComponent = (user = mockUser) =>
         render(
-            <UserContext.Provider value={{ setUser }}>
+            <UserContext.Provider value={{ setUser, user }}>
                 <Router>
                     <CreateRoutine />
                 </Router>
@@ -37,13 +42,14 @@ describe('CreateRoutine', () => {
     });
 
     test('renders the form correctly', () => {
-        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" },
                     { id: 2, name: "Squat", descripcion: "A lower body exercise that primarily targets the quadriceps, hamstrings, and glutes.", grupoMuscular: "PIERNA" },
                     { id: 3, name: "Pull Up", descripcion: "An upper body exercise that primarily targets the back and biceps.", grupoMuscular: "ESPALDA" }
-                ]
+                ],
+                existMoreItems: false
             });
         });
 
@@ -60,31 +66,37 @@ describe('CreateRoutine', () => {
     });
 
     test("muestra error de nombre vacío", async () => {
-        renderComponent();
-
-        routineService.createRoutine.mockImplementation((name, exercises, duration, isPublic, onSuccess, onError) => {
-            onError({ globalError: "project.exceptions.InvalidRoutineNameException" });
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
+            onSuccess({
+                items: [],
+                existMoreItems: false
+            });
         });
+
+        renderComponent();
 
         const durationInput = screen.getByLabelText(/duración/i);
 
         fireEvent.change(durationInput, {
-            target: { value: '0' },
+            target: { value: '10' },
         });
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
 
         await waitFor(() =>
-            expect(screen.getByText("project.exceptions.InvalidRoutineNameException")).toBeInTheDocument()
+            expect(screen.getByText("El nombre es obligatorio.")).toBeInTheDocument()
         );
     });
 
     test("muestra error de duración vacío", async () => {
-        renderComponent();
-
-        routineService.createRoutine.mockImplementation((name, exercises, duration, isPublic, onSuccess, onError) => {
-            onError({ globalError: "project.exceptions.InvalidRoutineDurationException" });
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
+            onSuccess({
+                items: [],
+                existMoreItems: false
+            });
         });
+
+        renderComponent();
 
         const nameInput = screen.getByLabelText(/nombre/i);
         const durationInput = screen.getByLabelText(/duración/i);
@@ -99,18 +111,19 @@ describe('CreateRoutine', () => {
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
 
         await waitFor(() =>
-            expect(screen.getByText("project.exceptions.InvalidRoutineDurationException")).toBeInTheDocument()
+            expect(screen.getByText("La duración debe ser un número positivo.")).toBeInTheDocument()
         );
     });
 
     test("Rutina Creada Correctamente", async () => {
-        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" },
                     { id: 2, name: "Squat", descripcion: "A lower body exercise that primarily targets the quadriceps, hamstrings, and glutes.", grupoMuscular: "PIERNA" },
                     { id: 3, name: "Pull Up", descripcion: "An upper body exercise that primarily targets the back and biceps.", grupoMuscular: "ESPALDA" }
-                ]
+                ],
+                existMoreItems: false
             });
         });
 
@@ -171,11 +184,15 @@ describe('CreateRoutine', () => {
     });
 
     test("Rutina Creada Sin Nombre", async () => {
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
+            onSuccess({
+                items: [],
+                existMoreItems: false
+            });
+        });
+
         renderComponent();
 
-        routineService.createRoutine.mockImplementation((name, exercises, duration, isPublic, onSuccess, onError) => {
-            onError({ globalError: "project.exceptions.InvalidRoutineNameException" });
-        });
 
         const durationInput = screen.getByLabelText(/duración/i);
 
@@ -186,17 +203,20 @@ describe('CreateRoutine', () => {
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
 
         await waitFor(() =>
-            expect(screen.getByText("project.exceptions.InvalidRoutineNameException")).toBeInTheDocument()
+            expect(screen.getByText("El nombre es obligatorio.")).toBeInTheDocument()
         );
         expect(window.location.hash).toBe('#/routines/create-routine');
     });
 
     test("Rutina Creada Sin Duración", async () => {
-        renderComponent();
-
-        routineService.createRoutine.mockImplementation((name, exercises, duration, isPublic, onSuccess, onError) => {
-            onError({ globalError: "project.exceptions.InvalidRoutineDurationException" });
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
+            onSuccess({
+                items: [],
+                existMoreItems: false
+            });
         });
+
+        renderComponent();
 
         const nameInput = screen.getByLabelText(/nombre/i);
 
@@ -207,28 +227,31 @@ describe('CreateRoutine', () => {
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
 
         await waitFor(() =>
-            expect(screen.getByText("project.exceptions.InvalidRoutineDurationException")).toBeInTheDocument()
+            expect(screen.getByText("La duración debe ser un número positivo.")).toBeInTheDocument()
         );
         expect(window.location.hash).toBe('#/routines/create-routine');
     });
 
     test("checkbox desmarcado por defecto (rutina privada)", () => {
-        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
             onSuccess({
-                items: []
+                items: [],
+                existMoreItems: false
             });
         });
 
         renderComponent();
         
-        const checkbox = screen.getByRole('checkbox');
+        const label = screen.getByText('Rutina Publica');
+        const checkbox = label.previousSibling;
         expect(checkbox).not.toBeChecked();
     });
 
     test("etiqueta del checkbox es estática y no cambia", () => {
-        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
             onSuccess({
-                items: []
+                items: [],
+                existMoreItems: false
             });
         });
 
@@ -237,7 +260,7 @@ describe('CreateRoutine', () => {
         const label = screen.getByText('Rutina Publica');
         expect(label).toBeInTheDocument();
         
-        const checkbox = screen.getByRole('checkbox');
+        const checkbox = label.previousSibling;
         fireEvent.click(checkbox);
         
         expect(screen.getByText('Rutina Publica')).toBeInTheDocument();
@@ -248,11 +271,12 @@ describe('CreateRoutine', () => {
     });
 
     test("crea rutina como pública cuando el checkbox está marcado", async () => {
-        exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
             onSuccess({
                 items: [
                     { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO" }
-                ]
+                ],
+                existMoreItems: false
             });
         });
 
@@ -273,6 +297,8 @@ describe('CreateRoutine', () => {
 
         const nameInput = screen.getByLabelText(/nombre/i);
         const durationInput = screen.getByLabelText(/duración/i);
+        const publicLabel = screen.getByText('Rutina Publica');
+        const checkbox = publicLabel.previousSibling;
 
         fireEvent.change(nameInput, {
             target: { value: 'Rutina Pública' },
@@ -280,8 +306,66 @@ describe('CreateRoutine', () => {
         fireEvent.change(durationInput, {
             target: { value: '45' },
         });
+        
+        fireEvent.click(checkbox);
+        fireEvent.click(screen.getByLabelText('Push Up'));
+        
+        fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
 
+        await waitFor(() =>
+            expect(screen.getByText("Rutina creada Exitosamente")).toBeInTheDocument()
+        );
+    });
 
+    test("muestra error cuando usuario no premium selecciona más de 5 ejercicios", async () => {
+        // Mock con 6 ejercicios disponibles de una vez
+        exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
+            onSuccess({
+                items: [
+                    { id: 1, name: "Push Up", descripcion: "Exercise 1", grupoMuscular: "PECHO" },
+                    { id: 2, name: "Squat", descripcion: "Exercise 2", grupoMuscular: "PIERNA" },
+                    { id: 3, name: "Pull Up", descripcion: "Exercise 3", grupoMuscular: "ESPALDA" },
+                    { id: 4, name: "Bench Press", descripcion: "Exercise 4", grupoMuscular: "PECHO" },
+                    { id: 5, name: "Deadlift", descripcion: "Exercise 5", grupoMuscular: "ESPALDA" },
+                    { id: 6, name: "Lunges", descripcion: "Exercise 6", grupoMuscular: "PIERNA" }
+                ],
+                existMoreItems: false
+            });
+        });
+
+        renderComponent(); // usuario no premium por defecto
+
+        const nameInput = screen.getByLabelText(/nombre/i);
+        const durationInput = screen.getByLabelText(/duración/i);
+
+        fireEvent.change(nameInput, {
+            target: { value: 'Rutina Test' },
+        });
+        fireEvent.change(durationInput, {
+            target: { value: '60' },
+        });
+
+        // Esperar a que los ejercicios se carguen
+        await waitFor(() => {
+            expect(screen.getByLabelText('Push Up')).toBeInTheDocument();
+        });
+
+        // Seleccionar 6 ejercicios (más del límite de 5 para no premium)
+        fireEvent.click(screen.getByLabelText('Push Up'));
+        fireEvent.click(screen.getByLabelText('Squat'));
+        fireEvent.click(screen.getByLabelText('Pull Up'));
+        fireEvent.click(screen.getByLabelText('Bench Press'));
+        fireEvent.click(screen.getByLabelText('Deadlift'));
+        fireEvent.click(screen.getByLabelText('Lunges'));
+
+        // Enviar el formulario
+        fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
+
+        // Verificar que se muestra el mensaje de error
+        await waitFor(() => {
+            const errorText = screen.getByText(/Como entrenador no premium/i);
+            expect(errorText).toBeInTheDocument();
+        });
     });
 
 });

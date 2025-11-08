@@ -121,4 +121,55 @@ public class SearchServiceTest {
         assertTrue(resultsNull.get("routines").isEmpty());
         assertTrue(resultsNull.get("exercises").isEmpty());
     }
+
+    @Test
+    public void testFindSuggestionsFiltersAdminsForNonAdmin() {
+        Users admin = createUser("adminUser", Users.RoleType.ADMIN);
+        Users regularUser = createUser("regularUser", Users.RoleType.USER);
+        
+        List<SearchSuggestionDto> suggestionsUnauthenticated = searchService.findSuggestions("admin", 5);
+        assertTrue(suggestionsUnauthenticated.stream()
+                .noneMatch(s -> s.getType().equals("user") && s.getId().equals(admin.getId())));
+        
+        List<SearchSuggestionDto> suggestionsAsUser = searchService.findSuggestions("admin", 5, regularUser.getId());
+        assertTrue(suggestionsAsUser.stream()
+                .noneMatch(s -> s.getType().equals("user") && s.getId().equals(admin.getId())));
+    }
+
+    @Test
+    public void testFindSuggestionsShowsAdminsForAdmin() {
+        Users admin1 = createUser("admin1", Users.RoleType.ADMIN);
+        Users admin2 = createUser("admin2", Users.RoleType.ADMIN);
+        
+        List<SearchSuggestionDto> suggestionsAsAdmin = searchService.findSuggestions("admin", 5, admin1.getId());
+        assertTrue(suggestionsAsAdmin.stream()
+                .anyMatch(s -> s.getType().equals("user") && s.getId().equals(admin2.getId())));
+    }
+
+    @Test
+    public void testFindFullResultsFiltersAdminsForNonAdmin() {
+        Users admin = createUser("adminUser", Users.RoleType.ADMIN);
+        Users regularUser = createUser("regularUser", Users.RoleType.USER);
+        Users trainer = createUser("trainerUser", Users.RoleType.TRAINER);
+        
+        Map<String, List<SearchFullDto>> resultsUnauthenticated = searchService.findFullResults("user", null, null, 10);
+        assertTrue(resultsUnauthenticated.get("users").stream()
+                .noneMatch(u -> u.getId().equals(admin.getId())));
+        assertTrue(resultsUnauthenticated.get("users").stream()
+                .anyMatch(u -> u.getId().equals(regularUser.getId()) || u.getId().equals(trainer.getId())));
+        
+        Map<String, List<SearchFullDto>> resultsAsUser = searchService.findFullResults("user", null, null, 10, regularUser.getId());
+        assertTrue(resultsAsUser.get("users").stream()
+                .noneMatch(u -> u.getId().equals(admin.getId())));
+    }
+
+    @Test
+    public void testFindFullResultsShowsAdminsForAdmin() {
+        Users admin1 = createUser("admin1", Users.RoleType.ADMIN);
+        Users admin2 = createUser("admin2", Users.RoleType.ADMIN);
+        
+        Map<String, List<SearchFullDto>> resultsAsAdmin = searchService.findFullResults("admin", null, null, 10, admin1.getId());
+        assertTrue(resultsAsAdmin.get("users").stream()
+                .anyMatch(u -> u.getId().equals(admin2.getId())));
+    }
 }
