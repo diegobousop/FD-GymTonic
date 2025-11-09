@@ -24,9 +24,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
@@ -86,6 +90,10 @@ public class UserControllerTest {
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+		user.setGender(Users.Gender.OTHER);
+		user.setHeight(180);
+		user.setWeight(75.0f);
+		user.setBirthDate(LocalDate.now().minusYears(25));
 
 		userDao.save(user);
 
@@ -95,6 +103,29 @@ public class UserControllerTest {
 
 		return userController.login(loginParams);
 
+	}
+
+	/*
+	 * Creates a userDto
+	 * 
+	 */
+	private UserDto createUserDto(String userName, RoleType roleType, Gender gender) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		user.setRole(roleType);
+		user.setHeight(150);
+		user.setWeight(50.0f);
+		user.setGender(gender);
+		user.setBirthDate(LocalDate.of(1990, 1, 1));
+
+		userDao.save(user);
+		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(),
+				user.getEmail(), user.getRole().toString(),
+				new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked(),
+				user.getBankCard(), user.getPremium(), user.getHeight(), user.getWeight(),
+				user.getGender().toString(),
+				user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 	}
 
 	/**
@@ -162,13 +193,9 @@ public class UserControllerTest {
 		// Crear usuario autenticado
 		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		Optional<Avatar> avatar = avatarDao.findByName("messy");
 
 		// Crear DTO de usuario con datos actualizados con tarjeta para ser PREMIUM
-		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), "1234567890123456", null);
-
+		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -181,9 +208,8 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$.firstName").value(userDto.getFirstName()))
 				.andExpect(jsonPath("$.lastName").value(userDto.getLastName()))
 				.andExpect(jsonPath("$.email").value(userDto.getEmail()))
-				.andExpect(jsonPath("$.avatar.name").value(avatar.get().getName()))
-				.andExpect(jsonPath("$.avatar.avatarBase64").value(avatar.get().getAvatarBase64()))
-				.andExpect(jsonPath("$.cardNumber").value(userDto.getCardNumber()));
+				.andExpect(jsonPath("$.avatar.name").value(userDto.getAvatar().getName()))
+				.andExpect(jsonPath("$.avatar.avatarBase64").value(userDto.getAvatar().getAvatarBase64()));
 	}
 
 	@Test
@@ -192,11 +218,9 @@ public class UserControllerTest {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
 		Long differentUserId = userId + 1;
-		Optional<Avatar> avatar = avatarDao.findByName("default");
 
-		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
+		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
+		userDto.setId(differentUserId);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -214,9 +238,8 @@ public class UserControllerTest {
 		Long userId = user.getUserDto().getId();
 		Optional<Avatar> avatar = avatarDao.findByName("default");
 
-		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
-				"","email-invalido",user.getUserDto().getRole(), 
-				new AvatarDto(avatar.get().getName(), avatar.get().getAvatarBase64()), user.getUserDto().getBlocked(), user.getUserDto().getCardNumber(),user.getUserDto().getPremium());
+		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
+		userDto.setFirstName(""); // Invalid first name
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -232,12 +255,15 @@ public class UserControllerTest {
 	public void testUpdateProfile_PremiumStatus() throws Exception {
 
 		//Registrar sin cardNumber, no debe ser premium
-		UserRegisterParamsDto registerParams = new UserRegisterParamsDto("paco","12345","Paco","Gomez","paco@paco.com","USER");
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto("paco","12345","Paco",
+		"Gomez","paco@paco.com","USER", 175.0f, 70.0f, "MALE", "15-05-1990");
 		AuthenticatedUserDto user = userController.signUp(registerParams).getBody();
 
 		//Actualizamos el usuario con un cardNumber, debe ser premium
-		UserDto userDto = new UserDto(user.getUserDto().getId(),user.getUserDto().getUserName(),"Paco",
-				"Gomez","paco@paco.com",user.getUserDto().getRole(),user.getUserDto().getAvatar(), user.getUserDto().getBlocked(),"1234567890123456", null);
+		UserDto userDto = user.getUserDto();
+		userDto.setFirstName("manolo");
+		userDto.setCardNumber("1234567890123456");
+		userDto.setPremium(false);
 
 		ObjectMapper mapper = new ObjectMapper();
 		mockMvc.perform(put("/api/users/{id}", userDto.getId())

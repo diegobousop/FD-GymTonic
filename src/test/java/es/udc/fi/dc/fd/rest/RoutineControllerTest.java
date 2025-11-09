@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +89,10 @@ public class RoutineControllerTest {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
                 user.setPremium(premium);
+		user.setGender(Users.Gender.OTHER);
+		user.setHeight(180);
+		user.setWeight(75.0f);
+		user.setBirthDate(LocalDate.now().minusYears(25));
 
 		userDao.save(user);
 

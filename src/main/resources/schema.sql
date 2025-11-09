@@ -1,17 +1,16 @@
-
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS User_Follow;
+
 DROP TABLE IF EXISTS Serie;
+DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Training;
-DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Routine;
-DROP TABLE IF EXISTS User_Follow;
-DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Exercise;
+DROP TABLE IF EXISTS Blockuser;
+
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Avatar;
-DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Images;
 DROP TABLE IF EXISTS Icons;
 
@@ -40,6 +39,10 @@ CREATE TABLE Users (
     premium BOOLEAN DEFAULT FALSE,
     blocked BOOLEAN NOT NULL DEFAULT FALSE,
     bankCard VARCHAR(16),
+    weight FLOAT NOT NULL, -- Weight in kilograms
+    height BIGINT NOT NULL, -- Height in centimeters
+    gender TINYINT NOT NULL, /* 0: Male, 1: Female, 2: Other */
+    birthdate DATE NOT NULL,
     FOREIGN KEY (avatar) REFERENCES Avatar(id)
 );
 

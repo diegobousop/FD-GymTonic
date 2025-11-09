@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
@@ -65,10 +67,19 @@ public class RoutineServiceTest {
     @Autowired
     private RoutineFollowDao routineFollowDao;
 
-    private Users createUser(String userName) {
-        Optional<Avatar> avatar = avatarDao.findByName("default");
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
-    }
+    private static final String PASSWORD = "12345";
+
+	private Users createUser(String userName, RoleType role, Gender gender) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+        user.setRole(role);
+        user.setGender(gender);
+        user.setHeight(190);
+        user.setWeight(80);
+        user.setBirthDate(LocalDate.now());
+		return user;
+	}
+
 
     private Routine createRoutine(String name, Users creator) {
         return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
@@ -90,7 +101,7 @@ public class RoutineServiceTest {
 	@Test
 	public void testSignUpAndLoginFromId() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Users.Gender.OTHER);
 
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -474,7 +485,7 @@ public class RoutineServiceTest {
 
     @Test(expected = RoutineLimitReachedException.class)
     public void testCreateRoutineLimitReached() throws Exception {
-        Users creator = createUser("paco");
+        Users creator = createUser("paco", RoleType.TRAINER, Gender.MALE);
         creator.setPremium(false);
         userService.signUp(creator, RoleType.TRAINER);
 
@@ -487,7 +498,7 @@ public class RoutineServiceTest {
 
     @Test(expected = RoutineExerciseLimitReachedException.class)
     public void testModifyRoutineExerciseLimitReached() throws Exception {
-        Users creator = createUser("paco");
+        Users creator = createUser("paco", RoleType.TRAINER, Gender.MALE);
         creator.setPremium(false);
         userService.signUp(creator, RoleType.TRAINER);
         
@@ -731,7 +742,7 @@ public class RoutineServiceTest {
     @Test
     public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         // Crear usuario y rutina con nombres únicos
-        Users user = createUser("user_" + System.currentTimeMillis());
+        Users user = createUser("user_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
         userService.signUp(user, Users.RoleType.USER);
 
         Users trainer = userService.login("admin1", "12345");
@@ -767,8 +778,8 @@ public class RoutineServiceTest {
         Routine routine = createRoutine("routine_" + System.currentTimeMillis(), trainer);
         routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<>(), routine.getDuration(), true);
 
-        Users user1 = createUser("user1_" + System.currentTimeMillis());
-        Users user2 = createUser("user2_" + System.currentTimeMillis());
+        Users user1 = createUser("user1_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
+        Users user2 = createUser("user2_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
         userService.signUp(user1, Users.RoleType.USER);
         userService.signUp(user2, Users.RoleType.USER);
 

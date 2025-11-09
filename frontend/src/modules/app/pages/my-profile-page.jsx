@@ -62,28 +62,21 @@ const MyProfilePage = () => {
           </div>
 
           <BubbleButton 
-          icon={<SVG_ICONS.CreateRoutineIcon />}
-          onClick={
-            () => {
-              navigate('/profileUpdate');
-            }
-          }
+            icon={<SVG_ICONS.CreateRoutineIcon />}
+            ariaLabel="Editar perfil"
+            onClick={() => { navigate('/profileUpdate'); }}
           />
 
           <BubbleButton 
-          icon={<SVG_ICONS.PasswordIcon />}
-          onClick={
-            () => {
-              navigate('/change-password');
-            }
-          }
+            icon={<SVG_ICONS.PasswordIcon />}
+            ariaLabel="Cambiar contraseña"
+            onClick={() => { navigate('/change-password'); }}
           />
 
           <BubbleButton 
-          icon={<SVG_ICONS.LogoutIcon />}
-          onClick={() => {
-            handleLogout();
-          }}
+            icon={<SVG_ICONS.LogoutIcon />}
+            ariaLabel="Cerrar sesión"
+            onClick={() => { handleLogout(); }}
           />
 
         </div>

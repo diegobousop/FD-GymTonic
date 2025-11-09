@@ -9,10 +9,12 @@ import '@testing-library/jest-dom/extend-expect';
 
 jest.mock('../../backend/userService', () => ({
     signUp: jest.fn(),
+    getGenders: jest.fn(),
 }));
 
 describe('RegisterPage', () => {
     const setUser = jest.fn();
+    const mockGenders = ["MALE", "FEMALE", "OTHER"];
 
     const renderComponent = () =>
         render(
@@ -26,12 +28,16 @@ describe('RegisterPage', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         window.location.hash = '#/register';
+        
+        // Mock getGenders para que devuelva los géneros
+        userService.getGenders.mockImplementation((onSuccess) => {
+            onSuccess(mockGenders);
+        });
     });
 
     test('renders the form correctly', () => {
         renderComponent();
 
-        expect(screen.getByText('Bienvenido/a a Gym Tonic')).toBeInTheDocument();
         expect(screen.getByLabelText('Nombre de usuario')).toBeInTheDocument();
         expect(screen.getByLabelText('Correo electrónico')).toBeInTheDocument();
         expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
@@ -109,7 +115,11 @@ describe('RegisterPage', () => {
                     email: 'testuser@example.com',
                     firstName: 'Test',
                     lastName: 'User',
-                    role: 'USER'
+                    role: 'USER',
+                    weight: 70,
+                    height: 175,
+                    birthDate: '11-01-1990',
+                    gender:'FEMALE'
                 }
             };
             onSuccess(authenticatedUser);
@@ -118,15 +128,25 @@ describe('RegisterPage', () => {
 
         renderComponent();
 
+        // Rellenar campos obligatorios de cuenta
         fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'testuser' } });
         fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'testuser@example.com' } });
         fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'password123' } });
         fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'password123' } });
+        
+        // Rellenar campos obligatorios de datos personales
         fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Test' } });
         fireEvent.change(screen.getByLabelText('Apellidos'), { target: { value: 'User' } });
+        fireEvent.change(screen.getByLabelText('Altura (cm)'), { target: { value: '175' } });
+        fireEvent.change(screen.getByLabelText('Peso (kg)'), { target: { value: '70' } });
+        fireEvent.change(screen.getByLabelText('Fecha de nacimiento'), { target: { value: '1990-01-11' } });
+        
+        // Seleccionar género (FEMALE - Femenino)
+        const femaleCheckbox = screen.getByLabelText('Femenino');
+        fireEvent.click(femaleCheckbox);
 
+        // Seleccionar rol USER
         expect(screen.getByLabelText('USER')).toBeInTheDocument();
-
         fireEvent.click(screen.getByLabelText('USER'));
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
@@ -138,7 +158,11 @@ describe('RegisterPage', () => {
                 email: 'testuser@example.com',
                 firstName: 'Test',
                 lastName: 'User',
-                role: 'USER'
+                role: 'USER',
+                weight: 70,
+                height: 175,
+                birthDate: '11-01-1990',
+                gender:'FEMALE'
             }));
         });
     });

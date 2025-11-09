@@ -7,6 +7,8 @@ import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +39,6 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -178,6 +178,19 @@ public class UserController {
 
 		Users user = toUser(userDto);
 		Users.RoleType role = userDto.getRole() != null && userDto.getRole().equals("TRAINER") ? Users.RoleType.TRAINER : Users.RoleType.USER;
+		Users.Gender gender = userDto.getGender() != null && userDto.getGender().equals("MALE") ? Users.Gender.MALE :
+			userDto.getGender() != null && userDto.getGender().equals("FEMALE") ? Users.Gender.FEMALE : Users.Gender.OTHER;
+		user.setGender(gender);
+		if (userDto.getBirthDate() != null && !userDto.getBirthDate().isEmpty()) {
+			user.setBirthDate(toLocalDate(userDto.getBirthDate()));
+		}
+		if (userDto.getHeight() > 0) {
+			user.setHeight((int) userDto.getHeight());
+		}
+		if (userDto.getWeight() > 0) {
+			user.setWeight(userDto.getWeight());
+		}
+
 		userService.signUp(user, role);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId())
@@ -241,7 +254,8 @@ public class UserController {
 		}
 
 		return toUserDto(
-				userService.updateProfile(id, userDto.getFirstName(), userDto.getLastName(), userDto.getEmail(), userDto.getAvatar().getName(), userDto.getCardNumber()));
+				userService.updateProfile(id, userDto.getFirstName(), userDto.getLastName(), userDto.getEmail(), userDto.getAvatar().getName(), userDto.getCardNumber(),
+				 userDto.getHeight(), userDto.getWeight(), userDto.getGender(), userDto.getBirthDate()));
 
 	}
 
@@ -310,6 +324,11 @@ public class UserController {
 		return userService.getFollowersCount(userId);
 	}
 
+	@GetMapping("/getGenders")
+	public List<String> getGenders() {
+		return userService.getGenders();
+	}
+
 	/**
 	 * Generate service token.
 	 *
@@ -322,5 +341,14 @@ public class UserController {
 
 		return jwtGenerator.generate(jwtInfo);
 
+	}
+
+	// Pasa de un String con formato "yyyy-MM-dd" a LocalDate
+	private LocalDate toLocalDate(String birthDate) {
+		String [] parts = birthDate.split("-");
+		int day = Integer.parseInt(parts[0]);
+		int month = Integer.parseInt(parts[1]);
+		int year = Integer.parseInt(parts[2]);
+		return LocalDate.of(year, month, day);
 	}
 }

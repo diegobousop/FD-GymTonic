@@ -3,12 +3,11 @@ package es.udc.fi.dc.fd.rest.dtos;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.Block;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.Users;
 
 
 /**
@@ -29,8 +28,9 @@ public class UserConversor {
 	 * @return the user dto
 	 */
 	public static final UserDto toUserDto(Users user) {
-		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), 
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked(), user.getBankCard(),user.getPremium());
+		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(),
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked(), user.getBankCard(), user.getPremium(),
+		user.getHeight(), user.getWeight(), user.getGender().toString(), user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 	}
 
 	/**
