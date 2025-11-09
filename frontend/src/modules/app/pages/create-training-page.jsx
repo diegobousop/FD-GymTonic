@@ -232,7 +232,12 @@ const CreateTraining = () => {
          </div>
 
 
-        <RoutineSeriesPanel routine={selectedRoutineDetails} isLoading={loading} />
+        <RoutineSeriesPanel
+            routine={selectedRoutineDetails}
+            isLoading={loading}
+            onRoutineChange={setSelectedRoutineDetails}
+        />
+
 
     </div>
   )

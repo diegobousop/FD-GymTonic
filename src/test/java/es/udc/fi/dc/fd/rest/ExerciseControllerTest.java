@@ -404,11 +404,11 @@ public class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(4)))
-                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
-                .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.items", hasSize(8)))
+                .andExpect(jsonPath("$.items[4].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[4].peso").value(10))
+                .andExpect(jsonPath("$.items[5].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[5].peso").value(10))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
@@ -439,11 +439,11 @@ public class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(3)))
-                .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
-                .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.items", hasSize(7)))
+                .andExpect(jsonPath("$.items[4].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[4].peso").value(10))
+                .andExpect(jsonPath("$.items[5].repeticiones").value(20))
+                .andExpect(jsonPath("$.items[5].peso").value(10))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
