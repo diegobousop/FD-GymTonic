@@ -181,7 +181,15 @@ public class UserController {
 		Users.Gender gender = userDto.getGender() != null && userDto.getGender().equals("MALE") ? Users.Gender.MALE :
 			userDto.getGender() != null && userDto.getGender().equals("FEMALE") ? Users.Gender.FEMALE : Users.Gender.OTHER;
 		user.setGender(gender);
-		user.setBirthDate(toLocalDate(userDto.getBirthDate()));
+		if (userDto.getBirthDate() != null && !userDto.getBirthDate().isEmpty()) {
+			user.setBirthDate(toLocalDate(userDto.getBirthDate()));
+		}
+		if (userDto.getHeight() > 0) {
+			user.setHeight((int) userDto.getHeight());
+		}
+		if (userDto.getWeight() > 0) {
+			user.setWeight(userDto.getWeight());
+		}
 
 		userService.signUp(user, role);
 
