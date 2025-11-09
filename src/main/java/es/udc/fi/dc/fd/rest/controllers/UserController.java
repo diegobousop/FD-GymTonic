@@ -8,6 +8,7 @@ import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -313,6 +314,11 @@ public class UserController {
 	@GetMapping("/followers/count")
 	public int getFollowersCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
 		return userService.getFollowersCount(userId);
+	}
+
+	@GetMapping("/getGenders")
+	public List<String> getGenders() {
+		return userService.getGenders();
 	}
 
 	/**

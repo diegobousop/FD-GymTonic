@@ -1,7 +1,9 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import org.h2.engine.User;
 import org.springframework.format.annotation.NumberFormat;
 
+import es.udc.fi.dc.fd.model.entities.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -64,6 +66,8 @@ public class UserDto {
 	/** The birth date. */
 	private String birthDate;
 
+	private float imc;
+
 
 	/**
 	 * Instantiates a new user dto.
@@ -103,7 +107,9 @@ public class UserDto {
 		this.premium = premium;
 		this.height = height;
 		this.weight = weight;
+		this.gender = gender;
 		this.birthDate = birthDate;
+		this.imc = weight / ((height / 100f) * (height / 100f));
 	} 	
 
 
@@ -413,6 +419,23 @@ public class UserDto {
 	 */
 	public void setBirthDate(String birthDate) {
 		this.birthDate = birthDate;
+	}
+
+	/**
+	 * Gets the imc.
+	 *
+	 * @return the imc
+	 */
+	public float getImc() {
+		return imc;
+	}
+
+	/**
+	 * Sets the imc.
+	 *
+	 * @param imc the new imc
+	 */	public void setImc(float imc) {
+		this.imc = imc;
 	}
 }
 

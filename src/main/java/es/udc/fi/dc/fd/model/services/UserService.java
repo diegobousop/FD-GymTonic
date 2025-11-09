@@ -141,6 +141,6 @@ public interface UserService {
 	 * Get the diferents genders for users
 	 * @return list of genders
 	 */
-	List<Users.Gender> getGenders();
+	List<String> getGenders();
 
 }

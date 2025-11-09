@@ -39,10 +39,9 @@ CREATE TABLE Users (
     premium BOOLEAN DEFAULT FALSE,
     blocked BOOLEAN NOT NULL DEFAULT FALSE,
     bankCard VARCHAR(16),
-    weight FLOAT NOT NULL,
-    height INT NOT NULL,
+    weight FLOAT NOT NULL, -- Weight in kilograms
+    height BIGINT NOT NULL, -- Height in centimeters
     gender TINYINT NOT NULL, /* 0: Male, 1: Female, 2: Other */
-    imc FLOAT,
     birthdate DATE NOT NULL,
     FOREIGN KEY (avatar) REFERENCES Avatar(id)
 );

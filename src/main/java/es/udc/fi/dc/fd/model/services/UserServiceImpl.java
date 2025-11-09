@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
@@ -147,7 +148,6 @@ public class UserServiceImpl implements UserService {
 		user.setWeight(weight);
 		if(gender != null && !gender.isEmpty()) user.setGender(Users.Gender.valueOf(gender));
 		if(birthDate != null && !birthDate.isEmpty()) user.setBirthDate(toLocalDate(birthDate));
-		user.setImc(user.calculateImc()); 
 
 		// Actualizar premium y tarjeta
 		if(cardNumber != null && !cardNumber.isEmpty()) {
@@ -386,8 +386,10 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<Gender> getGenders() {
-		return Arrays.asList(Gender.values());
+	public List<String> getGenders() {
+		return Arrays.asList(Gender.values()).stream()
+				.map(Gender::name)
+				.collect(Collectors.toList());
 	}
 
 }

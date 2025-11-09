@@ -81,9 +81,6 @@ public class Users {
 	/** The gender. */
 	private Gender gender;
 
-	/** The IMC (Body Mass Index). */
-	private float imc;
-
 	/** The birth date. */
 	private LocalDate birthDate;
 
@@ -425,22 +422,6 @@ public class Users {
 	}	
 
 	/**
-	 * Gets the imc.
-	 * @return the imc
-	 */	
-	public float getImc() {
-		return imc;
-	}
-
-	/**
-	 * Sets the imc.
-	 * @param imc the new imc
-	 */
-	public void setImc(float imc) {
-		this.imc = imc;
-	}
-
-	/**
 	 * Gets the birth date.
 	 *
 	 * @return the birth date
@@ -458,8 +439,6 @@ public class Users {
 		this.birthDate = birthDate;
 	}
 
-	public float calculateImc() {
-		return this.weight / ((this.height/100) * (this.height/100)); // height in meters
-	}
+
 
 }
