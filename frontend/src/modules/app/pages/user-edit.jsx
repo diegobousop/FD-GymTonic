@@ -275,7 +275,7 @@ const UserEdit = () => {
         const lastNameErr = !trimmedLastName ? 'Los apellidos son obligatorios' : (hasDigits(trimmedLastName) ? 'Los apellidos no pueden contener números' : null)
         let weightErr = !weight ? 'El peso es obligatorio' : (isNaN(weight) ? 'El peso debe ser un número' : null)
         let heightErr = !height ? 'La altura es obligatoria' : (isNaN(height) ? 'La altura debe ser un número' : null)
-        const birthDateErr = !birthDate ? 'La fecha de nacimiento es obligatoria' : null
+        let birthDateErr = !birthDate ? 'La fecha de nacimiento es obligatoria' : (!isValidDate(birthDate) ? 'La fecha no es válida' : null)
         const genderErr = !gender ? 'El género es obligatorio' : null
         heightErr = (height<0)? 'La altura no puede ser negativa' : heightErr
         weightErr = (weight<0)? 'El peso no puede ser negativo' : weightErr
@@ -318,6 +318,39 @@ const UserEdit = () => {
             return `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
         return dateString;
+    };
+
+        // Función para validar fecha
+    function isValidDate(dateString){
+      if (!dateString) return false;
+      
+      // Verificar formato yyyy-MM-dd
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(dateString)) return false;
+      
+      const date = new Date(dateString);
+      
+      // Verificar que la fecha sea válida
+      if (isNaN(date.getTime())) return false;
+      
+      // Verificar que no sea una fecha futura
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (date > today) return false;
+      
+      // Verificar que la persona tenga al menos 13 años
+      const minAge = 13;
+      const minDate = new Date();
+      minDate.setFullYear(minDate.getFullYear() - minAge);
+      if (date > minDate) return false;
+      
+      // Verificar que la persona no tenga más de 120 años
+      const maxAge = 120;
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() - maxAge);
+      if (date < maxDate) return false;
+      
+      return true;
     };
 }
 
