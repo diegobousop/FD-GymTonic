@@ -1,7 +1,9 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import org.h2.engine.User;
 import org.springframework.format.annotation.NumberFormat;
 
+import es.udc.fi.dc.fd.model.entities.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -52,6 +54,20 @@ public class UserDto {
 	/** The card number. */
 	private String cardNumber;
 
+	/** The height. */
+	private int height;
+
+	/** The weight. */
+	private float weight;
+
+	/** The gender. */
+	private String gender;
+
+	/** The birth date. */
+	private String birthDate;
+
+	private float imc;
+
 
 	/**
 	 * Instantiates a new user dto.
@@ -70,8 +86,14 @@ public class UserDto {
 	 * @param avatar the avatar
 	 * @param blocked the blocked
 	 * @param cardNumber the card number
+	 * @param premium the premium
+	 * @param height the height
+	 * @param weight the weight
+	 * @param gender the gender
+	 * @param birthDate the birth date
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked, String cardNumber, Boolean premium) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked, String cardNumber, Boolean premium,
+			int height, float weight, String gender, String birthDate) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -83,7 +105,12 @@ public class UserDto {
 		this.blocked = blocked;
 		this.cardNumber = cardNumber;
 		this.premium = premium;
-	} 
+		this.height = height;
+		this.weight = weight;
+		this.gender = gender;
+		this.birthDate = birthDate;
+		this.imc = weight / ((height / 100f) * (height / 100f));
+	} 	
 
 
 	/**
@@ -321,6 +348,94 @@ public class UserDto {
 	 */
 	public void setCardNumber(String cardNumber) {
 		this.cardNumber = cardNumber;
+	}
+
+	/**
+	 * Gets the height.
+	 *
+	 * @return the height
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * Sets the height.
+	 *
+	 * @param height the new height
+	 */
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	/**
+	 * Gets the weight.
+	 *
+	 * @return the weight
+	 */
+	public float getWeight() {
+		return weight;
+	}
+
+	/**
+	 * Sets the weight.
+	 *
+	 * @param weight the new weight
+	 */
+	public void setWeight(float weight) {
+		this.weight = weight;
+	}
+
+	/**
+	 * Gets the gender.
+	 *
+	 * @return the gender
+	 */
+	public String getGender() {
+		return gender;
+	} 
+
+	/**
+	 * Sets the gender.
+	 * @param gender the new gender
+	 */	
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	/**
+	 * Gets the birth date.
+	 *
+	 * @return the birth date
+	 */
+	public String getBirthDate() {
+		return birthDate;
+	}
+
+	/**
+	 * Sets the birth date.
+	 *
+	 * @param birthDate the new birth date
+	 */
+	public void setBirthDate(String birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	/**
+	 * Gets the imc.
+	 *
+	 * @return the imc
+	 */
+	public float getImc() {
+		return imc;
+	}
+
+	/**
+	 * Sets the imc.
+	 *
+	 * @param imc the new imc
+	 */	public void setImc(float imc) {
+		this.imc = imc;
 	}
 }
 

@@ -54,10 +54,14 @@ public interface UserService {
 	 * @param email the email
 	 * @param avatarName the avatar name
 	 * @param cardNumber the card number
+	 * @param height the height
+	 * @param weight the weight
+	 * @param gender the gender
+	 * @param birthDate the birth date
 	 * @return the user
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
-	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber) throws InstanceNotFoundException;
+	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber, int height, float weight, String gender, String birthDate) throws InstanceNotFoundException;
 	
 	/**
 	 * Change password.
@@ -132,5 +136,11 @@ public interface UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	int getFollowersCount(Long id) throws InstanceNotFoundException;
+
+	/*
+	 * Get the diferents genders for users
+	 * @return list of genders
+	 */
+	List<String> getGenders();
 
 }

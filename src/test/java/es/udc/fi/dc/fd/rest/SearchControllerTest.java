@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -47,6 +48,10 @@ public class SearchControllerTest {
     private Users createUser(String username, Users.RoleType role) {
         Users u = new Users(username, "12345", "First", "Last", username + "@mail.com", null);
         u.setRole(role);
+        u.setGender(Users.Gender.OTHER);
+        u.setHeight(180);
+        u.setWeight(75.0f);
+        u.setBirthDate(LocalDate.now().minusYears(25));
         usersDao.save(u);
         return u;
     }
