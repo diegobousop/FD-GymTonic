@@ -20,6 +20,7 @@ const ProfilePage = () => {
   const [error, setError] = useState('');
   const [followersCount, setFollowersCount] = useState(0);
   const [loadingCount, setLoadingCount] = useState(false);
+  const [edad, setEdad] = useState(0);
 
   React.useEffect(() => {
     if (user) {
@@ -28,6 +29,11 @@ const ProfilePage = () => {
       }, (err) => {
         setError('Error al cargar el perfil');
       });
+
+      // Calcular la edad del usuario
+      if (user.birthDate) {
+        setEdad(calcularEdad(user.birthDate));
+      }
 
       // Solo mostrar contador si no es admin
       if (user.role !== 'ADMIN') {
@@ -66,6 +72,8 @@ const ProfilePage = () => {
               <div><strong>Email:</strong> {user.email}</div>
               <div><strong>Nombre:</strong> {user.firstName}</div>
               <div><strong>Apellido:</strong> {user.lastName}</div>
+              <div><strong>Edad:</strong> {edad}</div>
+              <div><strong> Fecha Nacimiento:</strong> {user.birthDate}</div>
               {/* Mostrar contador de seguidores/subscriptores solo si no es admin */}
               {user.role !== 'ADMIN' && (
                 <div>
@@ -79,36 +87,61 @@ const ProfilePage = () => {
                 </div>
               )}
             </div>
-
-            <SendButton
-            children="Editar perfil"
-            onClick={
-              () => {
-                navigate('/profileUpdate');
-              }
-            }
-            />
-
-            <SendButton
-            children="Cambiar contraseña"
-            onClick={
-              () => {
-                navigate('/change-password');
-              }
-            }
-            />
-
           </div>
         </div>
       ) : (
         <div>Cargando datos...</div>
       )}
+      <div className="flex flex-row space-x-4 mt-6">
+        <SendButton
+            children="Editar perfil"
+            onClick={
+              () => {
+              navigate('/profileUpdate');
+            }
+          }
+        />
 
-      <SendButton children="Cerrar sesión" isLoading={false} onClick={() => {
-        handleLogout();
-      }}/>
+        <SendButton
+            children="Cambiar contraseña"
+            onClick={
+              () => {
+              navigate('/change-password');
+            }
+          }
+        />
+
+        <SendButton children="Cerrar sesión" isLoading={false} onClick={() => {
+          handleLogout();
+        }}/>
+      </div>
     </div>
   );
+
+  // Función para calcular la edad a partir de la fecha de nacimiento
+  function calcularEdad(fechaNacimiento) {
+    if (!fechaNacimiento) return 0;
+    
+    // Formato esperado: "dd-MM-yyyy"
+    const partes = fechaNacimiento.split('-');
+    const dia = parseInt(partes[0]);
+    const mes = parseInt(partes[1]) - 1; 
+    const ano = parseInt(partes[2]);
+    
+    const fechaNac = new Date(ano, mes, dia);
+    const hoy = new Date();
+    
+    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mesActual = hoy.getMonth();
+    const diaActual = hoy.getDate();
+    
+    // Ajustar si aún no ha cumplido años este año
+    if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
+      edad--;
+    }
+    
+    return edad;
+  };
 }
 
 export default ProfilePage

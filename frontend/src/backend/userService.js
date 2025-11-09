@@ -142,3 +142,11 @@ export const getFollowersCount = (onSuccess, onErrors) =>
     onSuccess,
     onErrors
   );
+
+export const getGenders = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/getGenders`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
