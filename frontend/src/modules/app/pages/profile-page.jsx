@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import SendButton from '../components/common/send-button';
+import Spinner from '../components/common/spinner';
+
 import { getProfile, getFollowersCount } from '../../../backend/userService';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -53,12 +54,17 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="w-full mx-auto mt-10 p-6 bg-auto ">
+    <div className="w-full mt-5 py-5 bg-auto ">
       {error && <div className="text-red-600 mb-2">{error}</div>}
 
       {profile ? (
-        <div className="flex flex-col space-y-4 text-white">
-          <div className="flex flex-row space-y-2 text-white justify-start gap-4 items-center">
+        <div className="flex flex-col text-white pb-5">
+          <div className="flex flex-row border-b border-b-[#990000] items-center px-5 pb-10">
+            <img src={profile.avatar.avatarBase64} alt="Profile" className="w-24 h-24 object-cover ml-5 "/>
+            <h1 className="ml-5">{profile.userName}</h1>
+          </div>
+
+          <div className="flex flex-row space-y-2 text-white justify-start gap-4 items-center p-10">
             <div className="flex flex-col">
               <div>
                 <strong>Email:</strong> {profile.email}
@@ -89,24 +95,9 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-
-          <div className="flex flex-row space-x-4 mt-6">
-            <SendButton
-              children="Editar perfil"
-              onClick={() => {
-                navigate('/profileUpdate');
-              }}
-            />
-            <SendButton
-              children="Cambiar contraseña"
-              onClick={() => {
-                navigate('/change-password');
-              }}
-            />
-          </div>
         </div>
       ) : (
-        <div>Cargando datos...</div>
+        <Spinner />
       )}
     </div>
   );

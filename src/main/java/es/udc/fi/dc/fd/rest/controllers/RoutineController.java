@@ -222,7 +222,7 @@ public class RoutineController {
         }
 
         //id usuario, descripcion, duracion, visibilidad, lista de ejercicios con repes
-        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
+        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series, params.getRoutineId());
     }
 
         @PostMapping("/{routineId}/follow")

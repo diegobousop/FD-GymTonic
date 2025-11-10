@@ -40,7 +40,7 @@ public interface RoutineService {
 
     List<Serie> getDefaultRoutineSeries(Long routineId, Long exerciseId) throws InstanceNotFoundException;
 
-    Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException;
+    Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series, Long routineId) throws InstanceNotFoundException;
 
     boolean followRoutine(Long userId, Long routineId) throws InstanceNotFoundException, PermissionException;
 

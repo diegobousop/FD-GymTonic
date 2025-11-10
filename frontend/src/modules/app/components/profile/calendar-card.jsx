@@ -17,10 +17,8 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
     backend.routineService.getTrainingCalendarStats(
       activeStartDate.getFullYear(),
       (data) => {
-        // Si la API te devuelve directamente el array mostrado en el ejemplo:
         const items = Array.isArray(data) ? data : (data?.trainings || [])
         setTrainingData(items)
-        console.log("Datos del calendario de entrenamientos:", data);
       },
       (err) => console.error(err)
     )
@@ -121,9 +119,7 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
         next2Label={null}
         prevLabel="‹"
         nextLabel="›"
-        tileDisabled={({ date, view }) =>
-          view === 'month' && date.getDay() === 0 && date < new Date()
-        }
+        tileDisabled={() => false}
         tileClassName={({ date, view }) => {
           if (view !== 'month') return undefined
           const classes = []

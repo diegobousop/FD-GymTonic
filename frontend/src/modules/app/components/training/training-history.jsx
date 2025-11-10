@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext} from 'react'
+import {useEffect, useState} from 'react'
 import backend from "../../../../backend";
 import { Link } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
     //control
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
     //recientes
     const [page, setPage] = useState(0);
     const [existMoreItems, setExistMoreItems] = useState(false);
@@ -28,7 +29,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
     const viewLastTrainings = (pageNumber) => {
         setLoading(true);
         backend.routineService.viewUserTrainings(
-          pageNumber,
+        pageNumber,
         size,
           (data) => {
             setTrainingData(data.items);
@@ -37,7 +38,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
             setLoading(false);
           },
           (err) => {
-            setError(err || "Error inesperado al cargar rutinas");
+            setError(err || "Error inesperado al cargar entrenamientos");
             setLoading(false);
           }
         );
@@ -58,7 +59,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
             setLoading(false);
           },
           (err) => {
-            setError(err || "Error inesperado al cargar rutinas");
+            setError(err || "Error inesperado al cargar entrenamientos");
             setLoading(false);
           }
         );
@@ -66,10 +67,10 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
     
     useEffect(() => {
       if (!dayFilterActivated) {
-        viewLastTrainings(0);
+        viewLastTrainings(page);
       }
       else {
-        viewDayTrainings(0);
+        viewDayTrainings(filterPage);
       }
     }, [dayFilterActivated, selectedDay]);
 
@@ -94,7 +95,20 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
           
        </div>
       ) : trainingData.length === 0 && dayFilterActivated ? (
+
        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-row items-center mt-10 ml-10 gap-10">
+            {dayFilterActivated && (
+            <p className="flex flex-row bg-[#262626] text-white p-2 rounded-full px-5 border items-center ">
+              <button onClick={() => {
+                setFilterActivated(false);
+              }}>
+                <SVG_ICONS.CancelIcon className="w-8 h-8 text-white mr-3"/>
+              </button>
+              Entrenos el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}
+              </p>
+            )}
+          </div>
           <SVG_ICONS.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
           <p className="text-white text-center items-center ml-10">Ningún entrenamiento registrado para el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}.</p>
        </div>
@@ -122,12 +136,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
                 <img src={user.avatar.avatarBase64} alt={training.name} className="w-[40px] h-[40px]  my-2" />
 
                 <div className="flex flex-col w-full">
-                  <Link 
-                    to={`/profile/${training.creatorId}`}
-                    className="inline-block w-fit text-white hover:text-[#CA0D0A] cursor-pointer"
-                  >
-                    {training.creatorUserName}
-                  </Link>
+                  <p className="inline-block w-fit text-white hover:text-[#CA0D0A]">{training.creatorUserName}</p>
                   <p className="mb-5">{formatDate(training.creationDate)}</p>
                   <p className="font-semibold text-[25px] text-white mb-3">{training.name}</p>
                   <p className="mb-3 text-white">{training.description}</p>

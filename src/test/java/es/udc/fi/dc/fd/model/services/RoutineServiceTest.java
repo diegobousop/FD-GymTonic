@@ -690,7 +690,8 @@ public class RoutineServiceTest {
             "Description of training",
             45L,
             true,
-            series
+            series,
+            routine.getId()
         );
 
         assertEquals("Training 1", createdTraining.getName());
@@ -713,7 +714,8 @@ public class RoutineServiceTest {
             "Description",
             30L,
             true,
-            new ArrayList<Serie>()
+            new ArrayList<Serie>(),
+            1L
         );
     }
 
@@ -735,7 +737,8 @@ public class RoutineServiceTest {
             "Description",
             30L,
             true,
-            new ArrayList<Serie>(){{add(serie);}}
+            new ArrayList<Serie>(){{add(serie);}},
+            1L
         );
     }
 
@@ -797,4 +800,141 @@ public class RoutineServiceTest {
         assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user1.getId())));
         assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user2.getId())));
     }
+
+    @Test
+    public void testFindTrainingsEmptyForNewUser() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        Users newUser = createUser("noTrainingsUser_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
+        userService.signUp(newUser, Users.RoleType.USER);
+
+        List<Training> trainings = routineService.findTrainings(newUser.getId(), PageRequest.of(0, 10)).getContent();
+        assertEquals(0, trainings.size());
+    }
+
+    @Test
+    public void findOwnCreatedTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            creator.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(creator.getId(), PageRequest.of(0, 10)).getContent();
+        assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+    @Test
+    public void userFindOwnCreatedTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            user.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(user.getId(), PageRequest.of(0, 10)).getContent();
+        assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+    @Test
+    public void userFindDayOwnCreatedTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            user.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        // Usar la fecha actual para la búsqueda por día
+        LocalDate today = LocalDate.now();
+        int day = today.getDayOfMonth();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+
+        List<Training> trainings = routineService.findTrainingsByDay(
+            user.getId(),
+            day,
+            month,
+            year,
+            PageRequest.of(0, 10)
+        ).getContent();
+
+        assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+
+    @Test
+    public void userFindDayOwnCreatedTrainingNotFound() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        routineService.createTrainingFromRoutine(
+            user.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        // Fecha futura para que no encuentre el entrenamiento
+        LocalDate today = LocalDate.now();
+        int day = today.getDayOfMonth();
+        int month = today.getMonthValue();
+        int year = today.getYear() + 1; 
+
+        List<Training> trainings = routineService.findTrainingsByDay(
+            user.getId(),
+            day,
+            month,
+            year,
+            PageRequest.of(0, 10)
+        ).getContent();
+
+        assertEquals(0, trainings.size());
+    }
+
+
 }

@@ -325,7 +325,7 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
-    public Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
+    public Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series, Long routineId) throws InstanceNotFoundException {
         Users user = permissionChecker.checkUser(userId);
 
         Training training = new Training();
@@ -339,6 +339,12 @@ public class RoutineServiceImpl implements RoutineService {
 
         trainingDao.save(training);
 
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
 
         for (Serie serie : series) {
 
@@ -354,7 +360,7 @@ public class RoutineServiceImpl implements RoutineService {
 
             newSerie.setExercise(optionalExercise.get());
             newSerie.setTraining(training);
-            newSerie.setRoutine(null);
+            newSerie.setRoutine(routine);
 
             serieDao.save(newSerie);
         }
@@ -420,7 +426,6 @@ public class RoutineServiceImpl implements RoutineService {
     @Override
     public Page<Training> findTrainings(Long userId, Pageable pageable) throws InstanceNotFoundException, PermissionException {
 
-        Users user = permissionChecker.checkUser(userId);
 
         Page<Training> trainingsPage = trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
 
@@ -444,7 +449,7 @@ public class RoutineServiceImpl implements RoutineService {
 
     @Override
     public Page<Training> findTrainingsByDay(Long userId, int day, int month, int year, Pageable pageable) throws InstanceNotFoundException, PermissionException {
-        Users user = permissionChecker.checkUser(userId);
+        permissionChecker.checkUser(userId);
 
         LocalDate startDate = LocalDate.of(year, month, day);
         LocalDateTime start = startDate.atStartOfDay();

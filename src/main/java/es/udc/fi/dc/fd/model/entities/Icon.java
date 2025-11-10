@@ -13,6 +13,14 @@ public class Icon {
     private String name;
     private String iconBase64;
 
+    public Icon() {
+    }
+
+    public Icon(String name, String iconBase64) {
+        this.name = name;
+        this.iconBase64 = iconBase64;
+    }
+
     @Id 
     @GeneratedValue
     public Long getId() {
