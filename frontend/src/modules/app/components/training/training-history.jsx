@@ -16,12 +16,12 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
     //recientes
     const [page, setPage] = useState(0);
     const [existMoreItems, setExistMoreItems] = useState(false);
-    const size = 2;
+    const size = 5;
 
     //filtro
     const [filterPage, setFilterPage] = useState(0);
     const [filterExistMoreItems, setFilterExistMoreItems] = useState(false);
-    const filterSize = 2;
+    const filterSize = 5;
 
 
     const [trainingData, setTrainingData] = useState([]);

@@ -8,7 +8,7 @@ const BubbleButton = ({ iconKey, icon: IconProp, ariaLabel, testId, size = 60, o
     <button
       type="button"
       onClick={onClick}
-      className={`p-3 rounded-full bg-[#262626] flex items-center justify-center ${className}`}
+      className={`p-3 rounded-full bg-[#262626] flex items-center justify-center ${className} hover:bg-[#3a3a3a]`}
       style={{ width: size, height: size }}
       aria-label={ariaLabel || iconKey || 'bubble-button'}
       title={ariaLabel || iconKey || 'bubble-button'}

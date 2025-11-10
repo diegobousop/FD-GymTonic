@@ -53,9 +53,9 @@ const MyProfilePage = () => {
             <p className="text-white">{followerCount} seguidores   </p>
           </div>
 
-          { user && (user.role === 'ADMIN') &&
+          { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
             <button
-              className="bg-[#262626] p-3 rounded-full px-5"
+              className="bg-[#262626] p-3 rounded-full px-5 hover:bg-[#3a3a3a]"
               onClick={() => { navigate('/routines/my-routines'); }}
               >
               Mis rutinas
@@ -90,6 +90,7 @@ const MyProfilePage = () => {
           selectedDay={selectedDay}
           dayFilterActivated={dayFilterActivated}
           setFilterActivated={setDayFilterActivated}
+          ariaLabel="Historial de entrenamientos"
         />
         <CalendarCard 
           user={user}

@@ -64,12 +64,16 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
   const today = new Date()
   today.setHours(0,0,0,0)
   const from = new Date(today)
-  from.setDate(today.getDate() - 27) // último 28 días (4 semanas)
+  
+  from.setDate(today.getDate() - 6) // últimos 7 días
 
   const thisWeekCount = trainingData.filter(t => {
     const d = parseYmd(t.date)
     return d && d >= from && d <= today
   }).length
+
+  
+  from.setDate(today.getDate() - 27) // último 28 días (4 semanas)
 
   const last4WeeksCount = trainingData.filter(t => {
     const d = parseYmd(t.date)
@@ -165,10 +169,6 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
       })()}
 
       <style>{`
-        @font-face {
-          font-family: 'KabelLTStd-Book';
-          src: url('../public/assets/fonts/KabelLTStd-Book.otf') format('opentype');
-        }
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Space+Grotesk:wght@300..700&display=swap');
         .react-calendar-custom,
         .react-calendar-custom * {

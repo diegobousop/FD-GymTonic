@@ -10,7 +10,7 @@ import { getProfile, getFollowersCount } from "../../backend/userService";
 
 jest.mock('react-calendar', () => ({
   __esModule: true,
-  default: (props) => <div data-testid="mock-calendar" {...props} />
+  default: ({ className }) => <div data-testid="mock-calendar" className={className} />
 }));
 
 const mockNavigate = jest.fn();
@@ -100,4 +100,6 @@ describe("ProfilePage", () => {
 
         expect(mockHandleLogout).toHaveBeenCalledTimes(1);
     });
+
+
 });
