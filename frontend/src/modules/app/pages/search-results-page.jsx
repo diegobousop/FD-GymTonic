@@ -5,6 +5,7 @@ import Routine from "../components/common/routine.jsx";
 import { UserContext } from "../components/common/user-provider";
 import backend  from "../../../backend/index.js";
 import {useToast} from "../components/common/toast-provider.jsx";
+import { Link } from "react-router-dom";
 
 const SearchResultsPage = () => {
   const { user } = useContext(UserContext);
@@ -172,10 +173,15 @@ const SearchResultsPage = () => {
                           <img
                             src={userItem.avatarBase64}
                             alt={userItem.name}
-                            className="w-10 h-10 rounded-full object-cover"
+                            className="w-10 h-10 object-cover"
                           />
                         )}
-                        <span>{userItem.name}</span>
+                        <Link 
+                            to={`/profile/${userItem.id}`}
+                            className="inline-block w-fit text-white hover:text-[#CA0D0A] cursor-pointer"
+                        >
+                          {userItem.name}
+                        </Link>
                       </div>
                       {userItem.id !== user.id && (
                         <button 

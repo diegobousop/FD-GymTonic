@@ -17,17 +17,20 @@ public class TrainingParamsDto {
 
     private List<ExerciseRoutineParamsDto> exercises;
 
+    private Long routineId;
+
     public TrainingParamsDto() {
 
     }
 
     public TrainingParamsDto(String name, String description, Long duration, boolean visibility,
-            List<ExerciseRoutineParamsDto> exercises) {
+            List<ExerciseRoutineParamsDto> exercises, Long routineId) {
         this.name = name;
         this.description = description;
         this.duration = duration;
         this.visibility = visibility;
         this.exercises = exercises;
+        this.routineId = routineId;
     }
 
     @NotNull
@@ -71,5 +74,13 @@ public class TrainingParamsDto {
 
     public void setExercises(List<ExerciseRoutineParamsDto> exercises) {
         this.exercises = exercises;
+    }
+
+    public Long getRoutineId() {
+        return routineId;
+    }
+
+    public void setRoutineId(Long routineId) {
+        this.routineId = routineId;
     }
 }

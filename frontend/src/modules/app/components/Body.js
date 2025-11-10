@@ -12,6 +12,7 @@ import IntroPage from "../pages/intro-page";
 import LoginPage from "../pages/login-page";
 import RegisterPage from "../pages/register-page";
 import HomePage from "../pages/home-page";
+import MyProfilePage from "../pages/my-profile-page";
 import ProfilePage from "../pages/profile-page";
 import CreateRoutine  from "../pages/create-routine-page";
 import UserEdit from "../pages/user-edit";
@@ -62,7 +63,7 @@ const Body = () => {
     <div>
       {/* Renderiza NavBar solo si activePage no es 'intro' */}
       {showNavAndMenu && <NavBar activePage={activePage} />}
-      <div className="flex flex-row h-screen">
+      <div className="flex flex-row h-full">
         {/* Renderiza SideMenu solo si activePage no es 'intro' */}
         {showNavAndMenu && (
           <SideMenu activePage={activePage} setActivePage={setActivePage} />
@@ -74,7 +75,10 @@ const Body = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/start" element={<IntroPage />} />
             <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
-            <Route path="/profile" element={<ProtectedPath path={<ProfilePage />} />} />
+            <Route path="/profile" element={<ProtectedPath path={<MyProfilePage />} />} />
+            <Route path="/profile/:id" element={
+              <ProtectedPath path={<ProfilePage />} />
+            } />
             <Route path="/test" element={<ProtectedPath path={<Test />} />} />
             <Route path="/routines/create-routine" element={
               <ProtectedPath role={["TRAINER", "ADMIN"]} path={<CreateRoutine />} />

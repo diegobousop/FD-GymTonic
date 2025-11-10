@@ -75,6 +75,16 @@ public class Exercise {
         this.validator=null;
     }
 
+    public Exercise(String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries,  Icon icon) {
+        this.exerciseName = exerciseName;
+        this.exerciseDescription = exerciseDescripcion;
+        this.grupoMuscular = grupo;
+        this.numeroSeries = numeroSeries;
+        this.icon = icon;
+        this.validated = false;
+        this.validator=null;
+    }
+
     
     public Exercise(long id, String exerciseName, String exerciseDescripcion, grupoMuscular grupo, int numeroSeries, Users creator, Icon icon) {
         this.id=id;

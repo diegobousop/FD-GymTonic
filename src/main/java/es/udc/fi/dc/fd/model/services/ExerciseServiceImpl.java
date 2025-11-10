@@ -228,4 +228,9 @@ public class ExerciseServiceImpl implements ExerciseService {
         exerciseDao.save(foundExercise.get());
     }
 
+    @Override
+    public List<Serie> findExerciseSeriesInTraining(Long trainingId, Long exerciseId) {
+        return serieDao.findByExerciseIdAndTrainingId(exerciseId, trainingId);
+    }
+
 }

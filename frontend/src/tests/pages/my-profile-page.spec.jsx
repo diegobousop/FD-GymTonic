@@ -1,7 +1,17 @@
-
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import '@testing-library/jest-dom/extend-expect';
+
+import { HashRouter as Router } from 'react-router-dom';
+import MyProfilePage from "../../modules/app/pages/my-profile-page";
+import { UserContext } from "../../modules/app/components/common/user-provider";
+import { getProfile, getFollowersCount } from "../../backend/userService";
+
+
+jest.mock('react-calendar', () => ({
+  __esModule: true,
+  default: ({ className }) => <div data-testid="mock-calendar" className={className} />
+}));
 
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -14,10 +24,7 @@ jest.mock("../../backend/userService", () => ({
     getFollowersCount: jest.fn(),
 }));
 
-import { HashRouter as Router } from 'react-router-dom';
-import ProfilePage from "../../modules/app/pages/profile-page";
-import { UserContext } from "../../modules/app/components/common/user-provider";
-import { getProfile, getFollowersCount } from "../../backend/userService";
+
 
 describe("ProfilePage", () => {
     const mockUser = {
@@ -25,8 +32,9 @@ describe("ProfilePage", () => {
         firstName: "John",
         lastName: "Doe",
         userName: "user1",
-        id:1,
-        role: "USER"
+        id: 1,
+        role: "USER",
+        avatar: { avatarBase64: "data:image/png;base64,AAA" } // <- añade avatar
     };
 
     const renderWithContext = (user = mockUser, overrides = {}) => {
@@ -38,7 +46,7 @@ describe("ProfilePage", () => {
         return render(
             <UserContext.Provider value={{ ...defaultContext, ...overrides }}>
                 <Router>
-                    <ProfilePage />
+                    <MyProfilePage />
                 </Router>
             </UserContext.Provider>
         );
@@ -64,10 +72,8 @@ describe("ProfilePage", () => {
 
         renderWithContext({ ...mockUser, role: 'USER' });
 
-        
-        expect(screen.getByText(/test@example.com/i)).toBeInTheDocument();
-        expect(screen.getByText(/John/i)).toBeInTheDocument();
-        expect(screen.getByText(/Doe/i)).toBeInTheDocument();
+
+        expect(screen.getByText("user1")).toBeInTheDocument();
     });
 
     it("muestra mensaje de error si getProfile falla", async () => {
@@ -84,11 +90,16 @@ describe("ProfilePage", () => {
     });
 
     it("llama a handleLogout cuando se hace click en el botón", () => {
-        const handleLogout = jest.fn();
-        getFollowersCount.mockImplementation((onSuccess) => onSuccess(0));
-        renderWithContext({ ...mockUser, role: 'USER' }, { handleLogout });
+        getProfile.mockImplementation((_, onSuccess) => onSuccess({}));
+        const mockHandleLogout = jest.fn();
 
-        fireEvent.click(screen.getByRole("button", { name: /Cerrar sesión/i }));
-        expect(handleLogout).toHaveBeenCalled();
+        renderWithContext(undefined, { handleLogout: mockHandleLogout });
+
+        const logoutButton = screen.getByLabelText(/cerrar sesión/i);
+        fireEvent.click(logoutButton);
+
+        expect(mockHandleLogout).toHaveBeenCalledTimes(1);
     });
+
+
 });

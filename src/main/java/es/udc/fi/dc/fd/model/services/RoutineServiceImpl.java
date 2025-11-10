@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -324,20 +325,26 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
-    public Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series) throws InstanceNotFoundException {
+    public Training createTrainingFromRoutine(Long userId, String trainingName, String trainingDescription, Long duration, Boolean isPublic, List<Serie> series, Long routineId) throws InstanceNotFoundException {
         Users user = permissionChecker.checkUser(userId);
 
         Training training = new Training();
         training.setName(trainingName);
         training.setDescription(trainingDescription);
         training.setCreationDate(LocalDateTime.now().withNano(0));
-        training.setIsPublic(isPublic != null ? isPublic : true);
+        training.setIsPublic(isPublic);
         training.setUser(user);
         training.setCreationDate(LocalDateTime.now().withNano(0));
         training.setDuration(duration);
 
         trainingDao.save(training);
 
+        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
+        if (optionalRoutine.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", routineId);
+        }
+
+        Routine routine = optionalRoutine.get();
 
         for (Serie serie : series) {
 
@@ -353,7 +360,7 @@ public class RoutineServiceImpl implements RoutineService {
 
             newSerie.setExercise(optionalExercise.get());
             newSerie.setTraining(training);
-            newSerie.setRoutine(null);
+            newSerie.setRoutine(routine);
 
             serieDao.save(newSerie);
         }
@@ -416,4 +423,65 @@ public class RoutineServiceImpl implements RoutineService {
         return new Block<>(followers, followsPage.hasNext());
     }
 
+    @Override
+    public Page<Training> findTrainings(Long userId, Pageable pageable) throws InstanceNotFoundException, PermissionException {
+
+
+        Page<Training> trainingsPage = trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
+
+        return trainingsPage;
+    }
+
+    @Override
+    public List<Exercise> findTrainingExercises(Long trainingId) throws InstanceNotFoundException {
+        return exerciseDao.findExercisesByTrainingId(trainingId);
+    }
+
+    @Override
+    public List<Training> findTrainingsByYear(Long userId, int year) throws InstanceNotFoundException, PermissionException {
+        Users user = permissionChecker.checkUser(userId);
+
+        LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+        LocalDateTime end = LocalDateTime.of(year, 12, 31, 23, 59, 59);    
+
+        return trainingDao.findByUserIdAndCreationDateBetween(userId, start, end);
+    }    
+
+    @Override
+    public Page<Training> findTrainingsByDay(Long userId, int day, int month, int year, Pageable pageable) throws InstanceNotFoundException, PermissionException {
+        permissionChecker.checkUser(userId);
+
+        LocalDate startDate = LocalDate.of(year, month, day);
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = startDate.atTime(23, 59, 59);
+
+        return trainingDao.findByUserIdAndCreationDateBetweenOrderByCreationDateDesc(userId, start, end, pageable);
+    }
+
+    @Override
+    public Routine getRoutineByTraining(Long trainingId) throws InstanceNotFoundException {
+        Optional<Training> optionalTraining = trainingDao.findById(trainingId);
+        if (optionalTraining.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+
+        Training training = optionalTraining.get();
+
+        List<Serie> series = serieDao.findByTrainingId(training.getId());
+
+        if (series.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.routine", "No routine associated with training id: " + trainingId);
+        }
+
+        Serie firstSerie = series.get(0);
+        Routine routine = firstSerie.getRoutine();
+
+        if (routine == null) {
+            throw new InstanceNotFoundException("project.entities.routine", "No routine associated with training id: " + trainingId);
+        }
+
+        return routine;
+    }
+
 }
+

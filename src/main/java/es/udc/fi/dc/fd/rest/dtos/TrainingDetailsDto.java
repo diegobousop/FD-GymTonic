@@ -1,0 +1,137 @@
+package es.udc.fi.dc.fd.rest.dtos;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class TrainingDetailsDto {
+    private Long id;
+    private String name;
+    private Long duration;
+    private String description;
+    private List<ExerciseRoutineDto> exercises;
+    private LocalDateTime creationDate;
+    private Long creatorId;
+    private String creatorUserName;
+    private Long routineId;
+    private String routineName;
+    private boolean isPublic;
+
+
+    public TrainingDetailsDto() {
+    }
+
+    public TrainingDetailsDto(
+        Long id, 
+        String name, 
+        String description, 
+        Long duration, 
+        LocalDateTime creationDate, 
+        Long creatorId,
+        String creatorUserName, 
+        Long routineId, 
+        String routineName, 
+        List<ExerciseRoutineDto> exercises,
+        boolean isPublic) {
+            
+        this.id = id;
+        this.name = name;
+        this.duration = duration;
+        this.description = description;
+        this.exercises = exercises;
+        this.creationDate = creationDate;
+        this.creatorId = creatorId;
+        this.creatorUserName = creatorUserName;
+        this.routineName = routineName;
+        this.isPublic = isPublic;
+        this.routineId = routineId;
+
+    }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Long duration) {
+        this.duration = duration;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<ExerciseRoutineDto> getExercises() {
+        return exercises;
+    }
+
+    public void setExercises(List<ExerciseRoutineDto> exercises) {
+        this.exercises = exercises;
+    }
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public String getCreatorUserName() {
+        return creatorUserName;
+    }
+
+    public void setCreatorUserName(String creatorUserName) {
+        this.creatorUserName = creatorUserName;
+    }
+
+    public String getRoutineName() {
+        return routineName;
+    }
+
+    public void setRoutineName(String routineName) {
+        this.routineName = routineName;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public Long getRoutineId() {
+        return routineId;
+    }
+
+    public void setRoutineId(Long routineId) {
+        this.routineId = routineId;
+    }
+
+    public Long getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Long creatorId) {
+        this.creatorId = creatorId;
+    }
+
+}

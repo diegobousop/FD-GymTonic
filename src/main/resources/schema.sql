@@ -98,7 +98,7 @@ CREATE TABLE Training (
     creationDate TIMESTAMP NOT NULL,
     isPublic BOOLEAN DEFAULT TRUE,
     userId BIGINT NOT NULL,
-    routineId BIGINT,
+    duration BIGINT NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
