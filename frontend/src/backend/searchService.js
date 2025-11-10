@@ -5,7 +5,7 @@ const BASE_PATH = "/search";
 export const getSearchSuggestions = (query, onSuccess, onErrors) => {
   const encodedQuery = encodeURIComponent(query);
   return appFetch(
-    `${BASE_PATH}/suggestions?q=${encodedQuery}`,
+    `${BASE_PATH}/suggestions?text=${encodedQuery}`,
     fetchConfig("GET"),
     onSuccess,
     onErrors
@@ -18,6 +18,7 @@ export const searchResults = (params, onSuccess, onErrors) => {
   if (params.text) queryParams.append("text", params.text);
   if (params.trainerName) queryParams.append("trainerName", params.trainerName);
   if (params.muscleGroup) queryParams.append("muscleGroup", params.muscleGroup);
+  if (params.difficulty) queryParams.append("difficulty", params.difficulty);
   if (params.limit) queryParams.append("limit", params.limit);
 
   return appFetch(

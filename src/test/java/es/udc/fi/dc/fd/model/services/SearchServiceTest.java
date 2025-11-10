@@ -98,7 +98,7 @@ public class SearchServiceTest {
 
     @Test
     public void testFindFullResultsWithoutFilters() {
-        Map<String, List<SearchFullDto>> results = searchService.findFullResults("bench", null, null, 10);
+        Map<String, List<SearchFullDto>> results = searchService.findFullResults("bench", null, null, null, 10);
         assertNotNull(results);
         assertTrue(results.get("exercises").stream()
                 .anyMatch(e -> e.getName().equals(exerciseBench.getExerciseName())));
@@ -110,8 +110,8 @@ public class SearchServiceTest {
 
     @Test
     public void testFindFullResultsEmptyText() {
-        Map<String, List<SearchFullDto>> resultsEmpty = searchService.findFullResults("", null, null, 10);
-        Map<String, List<SearchFullDto>> resultsNull = searchService.findFullResults(null, null, null, 10);
+        Map<String, List<SearchFullDto>> resultsEmpty = searchService.findFullResults("", null, null, null, 10);
+        Map<String, List<SearchFullDto>> resultsNull = searchService.findFullResults(null, null, null, null, 10);
         assertNotNull(resultsEmpty);
         assertNotNull(resultsNull);
         assertTrue(resultsEmpty.get("users").isEmpty());

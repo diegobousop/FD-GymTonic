@@ -3,23 +3,34 @@ import { useSearchParams } from "react-router-dom";
 import { searchResults } from "../../../backend/searchService.js";
 import Routine from "../components/common/routine.jsx";
 import { UserContext } from "../components/common/user-provider";
-import backend  from "../../../backend/index.js";
-import {useToast} from "../components/common/toast-provider.jsx";
+import backend from "../../../backend/index.js";
+import { useToast } from "../components/common/toast-provider.jsx";
 
 const SearchResultsPage = () => {
   const { user } = useContext(UserContext);
   const [searchParams] = useSearchParams();
-  const [results, setResults] = useState({ users: [], routines: [], exercises: [] });
+  const [results, setResults] = useState({
+    users: [],
+    routines: [],
+    exercises: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [itemTypeFilter, setItemTypeFilter] = useState("TODO");
   const { showToast } = useToast();
 
+  // --------------------
+  // Parámetros de búsqueda
+  // --------------------
   const query = searchParams.get("text") || "";
   const trainerName = searchParams.get("trainerName") || "";
   const muscleGroup = searchParams.get("muscleGroup") || "";
+  const difficulty = searchParams.get("difficulty") || "";
   const size = 5;
 
+  // --------------------
+  // Fetch de resultados
+  // --------------------
   const fetchResults = useCallback(() => {
     if (!query.trim()) {
       setResults({ users: [], routines: [], exercises: [] });
@@ -30,8 +41,16 @@ const SearchResultsPage = () => {
     setError(null);
 
     searchResults(
-      { text: query, trainerName, muscleGroup, page: 0, size },
+      {
+        text: query,
+        trainerName,
+        muscleGroup,
+        difficulty,
+        page: 0,
+        size,
+      },
       (data) => {
+        // Procesar rutinas
         const routinesWithSeries = data.routines.map((routine) => ({
           id: routine.id,
           name: routine.name,
@@ -42,10 +61,15 @@ const SearchResultsPage = () => {
               name: e.name,
               numeroSeries: e.numeroSeries ?? 0,
             })) || [],
-          dificultad: routine.dificultad || "INTERMEDIO",
+          difficulty: routine.difficulty || "INTERMEDIO",
         }));
 
-        setResults({ ...data, routines: routinesWithSeries });
+        setResults({
+          users: data.users,
+          routines: routinesWithSeries,
+          exercises: data.exercises,
+        });
+
         setLoading(false);
       },
       () => {
@@ -53,90 +77,86 @@ const SearchResultsPage = () => {
         setLoading(false);
       }
     );
-  }, [query, trainerName, muscleGroup]);
+  }, [query, trainerName, muscleGroup, difficulty]);
 
   useEffect(() => {
     fetchResults();
   }, [fetchResults]);
 
-  const filterByType = (type) => setItemTypeFilter(type);
-
-  // Llamada para seguir al usuario
+  // --------------------
+  // Seguir / Dejar de seguir
+  // --------------------
   const handleFollowUser = (userId) => {
-    const targetUser = results.users.find(u => u.id === userId);
+    const targetUser = results.users.find((u) => u.id === userId);
     const userName = targetUser?.name || "este usuario";
-    
+
     backend.userService.followUser(
       userId,
       (success) => {
-        if (success) {
-          // Éxito: ahora lo sigues
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: true } : u
-            ),
-          }));
-          showToast(`Has comenzado a seguir a ${userName}`, 'success');
-        } else {
-          // False: ya lo seguías - mostrar botón de dejar de seguir
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: true } : u
-            ),
-          }));
-          showToast(`Ya sigues a ${userName}`, 'error');
-        }
+        setResults((prev) => ({
+          ...prev,
+          users: prev.users.map((u) =>
+            u.id === userId ? { ...u, isFollowing: true } : u
+          ),
+        }));
+
+        showToast(
+          success
+            ? `Has comenzado a seguir a ${userName}`
+            : `Ya sigues a ${userName}`,
+          success ? "success" : "error"
+        );
       },
-      (error) => {
-        console.error(error);
-        showToast("Error al seguir al usuario.", 'error');
+      (err) => {
+        console.error(err);
+        showToast("Error al seguir al usuario.", "error");
       }
     );
   };
 
-  // Llamada para dejar de seguir al usuario
   const handleUnfollowUser = (userId) => {
-    const targetUser = results.users.find(u => u.id === userId);
+    const targetUser = results.users.find((u) => u.id === userId);
     const userName = targetUser?.name || "este usuario";
-    
+
     backend.userService.unfollowUser(
       userId,
       (success) => {
-        if (success) {
-          // Éxito: dejaste de seguirlo
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: false } : u
-            ),
-          }));
-          showToast(`Has dejado de seguir a ${userName}`, 'success');
-        } else {
-          // False: no lo seguías - mostrar botón de seguir
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: false } : u
-            ),
-          }));
-          showToast(`No seguías a ${userName}`, 'error');
-        }
+        setResults((prev) => ({
+          ...prev,
+          users: prev.users.map((u) =>
+            u.id === userId ? { ...u, isFollowing: false } : u
+          ),
+        }));
+
+        showToast(
+          success
+            ? `Has dejado de seguir a ${userName}`
+            : `No seguías a ${userName}`,
+          success ? "success" : "error"
+        );
       },
-      (error) => {
-        console.error(error);
-        showToast("Error al dejar de seguir al usuario.", 'error');
+      (err) => {
+        console.error(err);
+        showToast("Error al dejar de seguir al usuario.", "error");
       }
     );
-  }
+  };
 
+  // --------------------
+  // Filtrado visual
+  // --------------------
+  const filterByType = (type) => setItemTypeFilter(type);
+
+  // --------------------
+  // Render
+  // --------------------
   return (
-    <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">      
+    <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">
       <p className="mb-4 text-gray-300">
         Mostrando resultados para: <b>{query || "..."}</b>
       </p>
 
+      {/* Filtros tipo */}
       <div className="mb-6 flex gap-2">
         {["TODO", "RUTINAS", "EJERCICIOS", "USUARIOS"].map((type) => (
           <button
@@ -146,17 +166,23 @@ const SearchResultsPage = () => {
             } hover:bg-gray-600`}
             onClick={() => filterByType(type)}
           >
-            {type === "TODO" ? "Todo" : type.charAt(0) + type.slice(1).toLowerCase()}
+            {type === "TODO"
+              ? "Todo"
+              : type.charAt(0) + type.slice(1).toLowerCase()}
           </button>
         ))}
       </div>
 
+      {/* Loading / Error */}
       {loading ? (
         <p>Cargando resultados...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="flex flex-col gap-6">
+          {/* ------------------------- */}
+          {/* USUARIOS */}
+          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "USUARIOS") &&
             results.users?.length > 0 && (
               <div>
@@ -177,20 +203,23 @@ const SearchResultsPage = () => {
                         )}
                         <span>{userItem.name}</span>
                       </div>
+
                       {userItem.id !== user.id && (
-                        <button 
-                          onClick={() => 
-                            userItem.isFollowing 
-                              ? handleUnfollowUser(userItem.id) 
+                        <button
+                          onClick={() =>
+                            userItem.isFollowing
+                              ? handleUnfollowUser(userItem.id)
                               : handleFollowUser(userItem.id)
-                          } 
+                          }
                           className={`${
-                            userItem.isFollowing 
-                              ? 'bg-gray-600 hover:bg-gray-700' 
-                              : 'bg-green-600 hover:bg-green-700'
+                            userItem.isFollowing
+                              ? "bg-gray-600 hover:bg-gray-700"
+                              : "bg-green-600 hover:bg-green-700"
                           } text-white px-3 py-1 rounded-md text-sm`}
                         >
-                          {userItem.isFollowing ? 'Dejar de seguir' : 'Seguir'}
+                          {userItem.isFollowing
+                            ? "Dejar de seguir"
+                            : "Seguir"}
                         </button>
                       )}
                     </li>
@@ -199,6 +228,9 @@ const SearchResultsPage = () => {
               </div>
             )}
 
+          {/* ------------------------- */}
+          {/* RUTINAS */}
+          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "RUTINAS") &&
             results.routines?.length > 0 && (
               <div>
@@ -211,6 +243,9 @@ const SearchResultsPage = () => {
               </div>
             )}
 
+          {/* ------------------------- */}
+          {/* EJERCICIOS */}
+          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "EJERCICIOS") &&
             results.exercises?.length > 0 && (
               <div>
@@ -223,7 +258,9 @@ const SearchResultsPage = () => {
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-medium">{exercise.name}</span>
-                        <span className="text-sm text-gray-300">{exercise.grupoMuscular}</span>
+                        <span className="text-sm text-gray-300">
+                          {exercise.grupoMuscular}
+                        </span>
                       </div>
                     </li>
                   ))}
@@ -231,11 +268,14 @@ const SearchResultsPage = () => {
               </div>
             )}
 
-          {(!results.users?.length &&
-            !results.routines?.length &&
-            !results.exercises?.length) && (
-            <p className="text-gray-400">No se encontraron resultados.</p>
-          )}
+          {/* ------------------------- */}
+          {/* SIN RESULTADOS */}
+          {/* ------------------------- */}
+          {!results.users.length &&
+            !results.routines.length &&
+            !results.exercises.length && (
+              <p className="text-gray-400">No se encontraron resultados.</p>
+            )}
         </div>
       )}
     </div>

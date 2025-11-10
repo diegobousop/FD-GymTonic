@@ -38,6 +38,7 @@ public class SearchController {
             @RequestParam(required = false) String text,
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) String muscleGroup,
+            @RequestParam(required = false) String difficulty,
             @RequestParam(defaultValue = "20") int limit) {
 
         if (text == null || text.isBlank()) {
@@ -49,8 +50,7 @@ public class SearchController {
         }
 
         return ResponseEntity.ok(
-                searchService.findFullResults(text.trim(), trainerName, muscleGroup, limit)
+                searchService.findFullResults(text.trim(), trainerName, muscleGroup, difficulty, limit)
         );
     }
 }
-
