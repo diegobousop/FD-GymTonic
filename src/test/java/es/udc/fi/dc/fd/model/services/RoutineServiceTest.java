@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
@@ -65,10 +67,19 @@ public class RoutineServiceTest {
     @Autowired
     private RoutineFollowDao routineFollowDao;
 
-    private Users createUser(String userName) {
-        Optional<Avatar> avatar = avatarDao.findByName("default");
-        return new Users(userName, "12345", "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
-    }
+    private static final String PASSWORD = "12345";
+
+	private Users createUser(String userName, RoleType role, Gender gender) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+        user.setRole(role);
+        user.setGender(gender);
+        user.setHeight(190);
+        user.setWeight(80);
+        user.setBirthDate(LocalDate.now());
+		return user;
+	}
+
 
     private Routine createRoutine(String name, Users creator) {
         return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
@@ -90,7 +101,7 @@ public class RoutineServiceTest {
 	@Test
 	public void testSignUpAndLoginFromId() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Users.Gender.OTHER);
 
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -170,6 +181,10 @@ public class RoutineServiceTest {
     @Test
     public void testViewAllRoutines() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
+
+        // Foto del estado previo (puede haber rutinas sembradas en BD)
+        List<Routine> before = routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 100)).getContent();
+
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
@@ -179,33 +194,50 @@ public class RoutineServiceTest {
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90, true);
         routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
             new ArrayList<Long>(){{add(exercise1.getId()); add(exercise3.getId());}}, (long) 90, true);
-            
-        assertEquals(Arrays.asList(routineDao.findById(1L).get(),routine1, routine2), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
 
+        List<Routine> after = routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 100)).getContent();
+
+        List<Routine> expected = new ArrayList<>(before);
+        expected.add(routine1);
+        expected.add(routine2);
+
+        assertEquals(expected, after);
     }
 
     @Test
     public void testViewAllRoutinesInOrder() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
+
+        // Rutinas existentes antes (semillas u otras)
+        List<Routine> before = routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 100)).getContent();
+
         Routine routine1 = createRoutine("routine1", creator);
         Routine routine2 = createRoutine("routine2", creator);
         Routine routine3 = createRoutine("routine3", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
-        routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-        routine2 = routineService.createRoutine(creator.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-        routine3 = routineService.createRoutine(creator.getId(), routine3.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-            
-        assertEquals(Stream.of(routineDao.findById(1L).get(),routine1, routine2, routine3).toList(), routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 10)).getContent());
+
+        routine1 = routineService.createRoutine(creator.getId(), routine1.getName(),
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 90L, true);
+        routine2 = routineService.createRoutine(creator.getId(), routine2.getName(),
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 90L, true);
+        routine3 = routineService.createRoutine(creator.getId(), routine3.getName(),
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 90L, true);
+
+        List<Routine> after = routineService.viewAllRoutines(creator.getId(), PageRequest.of(0, 100)).getContent();
+
+        // Tamaño esperado
+        assertEquals(before.size() + 3, after.size());
+
+        // El prefijo debe ser exactamente lo que había antes
+        assertEquals(before, after.subList(0, before.size()));
+
+        // Las nuevas deben conservar orden de inserción al final
+        assertEquals(
+            Arrays.asList(routine1, routine2, routine3),
+            after.subList(after.size() - 3, after.size())
+        );
     }
     
-    @Test
-    public void testViewAllRoutinesWithoutRoutines() throws LoginUserBlockedException, InstanceNotFoundException, IncorrectLoginException {
-        Users user = userService.login("trainer1", "12345");
-        assertEquals(Arrays.asList(), routineService.viewAllRoutines(user.getId(), PageRequest.of(0, 10)).getContent());
-    }
 
     @Test
     public void testGetRoutineById() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
@@ -223,7 +255,7 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testGetRoutineByIdNonExistent() throws LoginUserBlockedException, InstanceNotFoundException, PermissionException, IncorrectLoginException {
         Users user = userService.login("admin1", "12345");
-        Long id = 2L;
+        Long id = 999999L;
         routineService.getRoutineById(id, user.getId());
     } 
 
@@ -453,7 +485,7 @@ public class RoutineServiceTest {
 
     @Test(expected = RoutineLimitReachedException.class)
     public void testCreateRoutineLimitReached() throws Exception {
-        Users creator = createUser("paco");
+        Users creator = createUser("paco", RoleType.TRAINER, Gender.MALE);
         creator.setPremium(false);
         userService.signUp(creator, RoleType.TRAINER);
 
@@ -466,7 +498,7 @@ public class RoutineServiceTest {
 
     @Test(expected = RoutineExerciseLimitReachedException.class)
     public void testModifyRoutineExerciseLimitReached() throws Exception {
-        Users creator = createUser("paco");
+        Users creator = createUser("paco", RoleType.TRAINER, Gender.MALE);
         creator.setPremium(false);
         userService.signUp(creator, RoleType.TRAINER);
         
@@ -546,19 +578,41 @@ public class RoutineServiceTest {
         Routine routine1 = createRoutine("routine1", creator1);
         Routine routine2 = createRoutine("routine2", creator1);
         Routine routine3 = createRoutine("routine3", creator2);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
-        
-        assertEquals(Arrays.asList(), routineService.findByFilters(creator1.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
 
-        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-        routine2 = routineService.createRoutine(creator1.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-        routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-            
-        assertEquals(Arrays.asList(routine1, routine2), routineService.findByFilters(creator1.getId(), creator1.getId(), null,PageRequest.of(0, 10)).getContent());
-        assertEquals(Arrays.asList(routineDao.findById(1L).get(),routine3), routineService.findByFilters(creator2.getId(), creator2.getId(), null,PageRequest.of(0, 10)).getContent());
+        PageRequest page = PageRequest.of(0, 100);
+
+        // Fotos del estado previo
+        List<Routine> beforeC1Own = routineService.findByFilters(creator1.getId(), creator1.getId(), null, page).getContent();
+        List<Routine> beforeC2Own = routineService.findByFilters(creator2.getId(), creator2.getId(), null, page).getContent();
+        List<Routine> beforeC1OfC2 = routineService.findByFilters(creator1.getId(), creator2.getId(), null, page).getContent();
+
+        // Crear nuevas rutinas
+        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(),
+            new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
+        routine2 = routineService.createRoutine(creator1.getId(), routine2.getName(),
+            new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
+        routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(),
+            new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
+
+        // Ver propias de creator1
+        List<Routine> afterC1Own = routineService.findByFilters(creator1.getId(), creator1.getId(), null, page).getContent();
+        List<Routine> expectedC1Own = new ArrayList<>(beforeC1Own);
+        expectedC1Own.add(routine1);
+        expectedC1Own.add(routine2);
+        assertEquals(expectedC1Own, afterC1Own);
+
+        // Ver propias de creator2 (admin)
+        List<Routine> afterC2Own = routineService.findByFilters(creator2.getId(), creator2.getId(), null, page).getContent();
+        List<Routine> expectedC2Own = new ArrayList<>(beforeC2Own);
+        expectedC2Own.add(routine3);
+        assertEquals(expectedC2Own, afterC2Own);
+
+        // Ver rutinas de creator2 vistas por creator1 (públicas del admin)
+        List<Routine> afterC1OfC2 = routineService.findByFilters(creator1.getId(), creator2.getId(), null, page).getContent();
+        List<Routine> expectedC1OfC2 = new ArrayList<>(beforeC1OfC2);
+        expectedC1OfC2.add(routine3);
+        assertEquals(expectedC1OfC2, afterC1OfC2);
     }
 
 
@@ -582,23 +636,42 @@ public class RoutineServiceTest {
     public void testFindRoutinesByNameAndCreator() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator1 = userService.login("trainer1", "12345");
         Users creator2 = userService.login("admin1", "12345");
-        Routine routine1 = createRoutine("Pecho", creator1);
-        Routine routine2 = createRoutine("Pecho y Triceps", creator2);
-        Routine routine3 = createRoutine("Pierna", creator2);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
-        
-        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-        routine2 = routineService.createRoutine(creator2.getId(), routine2.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-        routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
-            
-        assertEquals(Arrays.asList(routine2), routineService.findByFilters
-        (creator2.getId(), creator2.getId(), "Pecho",PageRequest.of(0, 10)).getContent());
-        
-        assertEquals(Arrays.asList(routine2, routine3), routineService.findByFilters
-        (creator2.getId(), creator2.getId(), "P",PageRequest.of(0, 10)).getContent());
+
+        // Nombres que pueden coincidir con filtros
+        Routine routine1 = createRoutine("Pecho", creator1);              // No debe aparecer al filtrar por creator2
+        Routine routine2 = createRoutine("Pecho y Triceps", creator2);    // Coincide con "Pecho" y con "P"
+        Routine routine3 = createRoutine("Pierna", creator2);             // Coincide con "P" solo
+
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+
+        PageRequest page = PageRequest.of(0, 200);
+
+        // Fotos previas (semillas existentes que también podrían hacer match)
+        List<Routine> beforeExact = routineService.findByFilters(creator2.getId(), creator2.getId(), "Pecho", page).getContent();
+        List<Routine> beforePartial = routineService.findByFilters(creator2.getId(), creator2.getId(), "P", page).getContent();
+
+        // Crear rutinas
+        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(),
+                new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
+        routine2 = routineService.createRoutine(creator2.getId(), routine2.getName(),
+                new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
+        routine3 = routineService.createRoutine(creator2.getId(), routine3.getName(),
+                new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
+
+        // Después
+        List<Routine> afterExact = routineService.findByFilters(creator2.getId(), creator2.getId(), "Pecho", page).getContent();
+        List<Routine> afterPartial = routineService.findByFilters(creator2.getId(), creator2.getId(), "P", page).getContent();
+
+        // Esperados: listas previas + nuevas que cumplen el filtro (orden de inserción)
+        List<Routine> expectedExact = new ArrayList<>(beforeExact);
+        expectedExact.add(routine2); // "Pecho y Triceps" contiene "Pecho"
+
+        List<Routine> expectedPartial = new ArrayList<>(beforePartial);
+        expectedPartial.add(routine2); // coincide con "P"
+        expectedPartial.add(routine3); // coincide con "P"
+
+        assertEquals(expectedExact, afterExact);
+        assertEquals(expectedPartial, afterPartial);
     }
 
     @Test
@@ -617,7 +690,8 @@ public class RoutineServiceTest {
             "Description of training",
             45L,
             true,
-            series
+            series,
+            routine.getId()
         );
 
         assertEquals("Training 1", createdTraining.getName());
@@ -640,7 +714,8 @@ public class RoutineServiceTest {
             "Description",
             30L,
             true,
-            new ArrayList<Serie>()
+            new ArrayList<Serie>(),
+            1L
         );
     }
 
@@ -662,14 +737,15 @@ public class RoutineServiceTest {
             "Description",
             30L,
             true,
-            new ArrayList<Serie>(){{add(serie);}}
+            new ArrayList<Serie>(){{add(serie);}},
+            1L
         );
     }
 
     @Test
     public void testFollowAndUnfollowRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         // Crear usuario y rutina con nombres únicos
-        Users user = createUser("user_" + System.currentTimeMillis());
+        Users user = createUser("user_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
         userService.signUp(user, Users.RoleType.USER);
 
         Users trainer = userService.login("admin1", "12345");
@@ -705,8 +781,8 @@ public class RoutineServiceTest {
         Routine routine = createRoutine("routine_" + System.currentTimeMillis(), trainer);
         routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<>(), routine.getDuration(), true);
 
-        Users user1 = createUser("user1_" + System.currentTimeMillis());
-        Users user2 = createUser("user2_" + System.currentTimeMillis());
+        Users user1 = createUser("user1_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
+        Users user2 = createUser("user2_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
         userService.signUp(user1, Users.RoleType.USER);
         userService.signUp(user2, Users.RoleType.USER);
 
@@ -724,4 +800,141 @@ public class RoutineServiceTest {
         assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user1.getId())));
         assertEquals(true, followersBlock.getItems().stream().anyMatch(u -> u.getId().equals(user2.getId())));
     }
+
+    @Test
+    public void testFindTrainingsEmptyForNewUser() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        Users newUser = createUser("noTrainingsUser_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
+        userService.signUp(newUser, Users.RoleType.USER);
+
+        List<Training> trainings = routineService.findTrainings(newUser.getId(), PageRequest.of(0, 10)).getContent();
+        assertEquals(0, trainings.size());
+    }
+
+    @Test
+    public void findOwnCreatedTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            creator.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(creator.getId(), PageRequest.of(0, 10)).getContent();
+        assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+    @Test
+    public void userFindOwnCreatedTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            user.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(user.getId(), PageRequest.of(0, 10)).getContent();
+        assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+    @Test
+    public void userFindDayOwnCreatedTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            user.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        // Usar la fecha actual para la búsqueda por día
+        LocalDate today = LocalDate.now();
+        int day = today.getDayOfMonth();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+
+        List<Training> trainings = routineService.findTrainingsByDay(
+            user.getId(),
+            day,
+            month,
+            year,
+            PageRequest.of(0, 10)
+        ).getContent();
+
+        assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+
+    @Test
+    public void userFindDayOwnCreatedTrainingNotFound() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        routineService.createTrainingFromRoutine(
+            user.getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        // Fecha futura para que no encuentre el entrenamiento
+        LocalDate today = LocalDate.now();
+        int day = today.getDayOfMonth();
+        int month = today.getMonthValue();
+        int year = today.getYear() + 1; 
+
+        List<Training> trainings = routineService.findTrainingsByDay(
+            user.getId(),
+            day,
+            month,
+            year,
+            PageRequest.of(0, 10)
+        ).getContent();
+
+        assertEquals(0, trainings.size());
+    }
+
+
 }

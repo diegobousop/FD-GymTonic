@@ -1,6 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
-import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Notification;
@@ -38,12 +34,9 @@ import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
-import es.udc.fi.dc.fd.rest.controllers.NotificationController;
-import es.udc.fi.dc.fd.rest.controllers.RoutineController;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -61,8 +54,7 @@ public class NotificationControllerTest {
     @Autowired
     private RoutineService routineService;
 
-    @Autowired
-    private NotificationController notificationController;
+
     @Autowired
     private NotificationService notificationService;
 
@@ -85,6 +77,10 @@ public class NotificationControllerTest {
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+		user.setGender(Users.Gender.OTHER);
+		user.setHeight(180);
+		user.setWeight(75.0f);
+		user.setBirthDate(LocalDate.now().minusYears(25));
 
 		userDao.save(user);
 
@@ -96,11 +92,6 @@ public class NotificationControllerTest {
 
 	}
 
-    private ObjectMapper createObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        return mapper;
-    }
 
     @Test
     public void testGetNotifications() throws Exception {

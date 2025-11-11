@@ -1,8 +1,11 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
@@ -138,7 +142,8 @@ public class UserServiceImpl implements UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	@Override
-	public Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber)
+	public Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber,
+		 int height, float weight, String gender, String birthDate)
 			throws InstanceNotFoundException {
 
 		Users user = permissionChecker.checkUser(id);
@@ -146,6 +151,10 @@ public class UserServiceImpl implements UserService {
 		user.setFirstName(firstName);
 		user.setLastName(lastName);
 		user.setEmail(email);
+		user.setHeight(height);
+		user.setWeight(weight);
+		if(gender != null && !gender.isEmpty()) user.setGender(Users.Gender.valueOf(gender));
+		if(birthDate != null && !birthDate.isEmpty()) user.setBirthDate(toLocalDate(birthDate));
 
 		// Actualizar premium y tarjeta
 		if(cardNumber != null && !cardNumber.isEmpty()) {
@@ -443,4 +452,30 @@ public class UserServiceImpl implements UserService {
 		}
 		return user.getFollowers().size();
 	}
+
+	@Override
+	public int getFollowingCount(Long userId) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		if(user.getFollowing() == null) {
+			return 0;
+		}
+		return user.getFollowing().size();
+	}
+
+	// Pasa de un String con formato "dd-MM-yyyy" a LocalDate
+	private LocalDate toLocalDate(String birthDate) {
+		String [] parts = birthDate.split("-");
+		int day = Integer.parseInt(parts[0]);
+		int month = Integer.parseInt(parts[1]);
+		int year = Integer.parseInt(parts[2]);
+		return LocalDate.of(year, month, day);
+	}
+
+	@Override
+	public List<String> getGenders() {
+		return Arrays.asList(Gender.values()).stream()
+				.map(Gender::name)
+				.collect(Collectors.toList());
+	}
+
 }

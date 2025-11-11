@@ -221,7 +221,7 @@ const CreateTraining = () => {
               <VisibilityInput
                   name="visibility"
                   label="Visibilidad"
-                  initialValue={0}
+                  initialValue={1}
                   value={visibility}
                   onChange={(e) => setVisibility(e.target.value)}
               />
@@ -232,7 +232,12 @@ const CreateTraining = () => {
          </div>
 
 
-        <RoutineSeriesPanel routine={selectedRoutineDetails} isLoading={loading} />
+        <RoutineSeriesPanel
+            routine={selectedRoutineDetails}
+            isLoading={loading}
+            onRoutineChange={setSelectedRoutineDetails}
+        />
+
 
     </div>
   )

@@ -18,6 +18,7 @@ spring:
   sql:
     init:
       mode: always
+      encoding: UTF-8
   devtools:
     restart:
       trigger-file: reload

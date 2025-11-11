@@ -7,16 +7,25 @@ public class UserRegisterParamsDto {
     private String lastName;
     private String email;
     private String role;
+    private float height;
+    private float weight;
+    private String gender;
+    private String birthDate;
 
     public UserRegisterParamsDto() {}
 
-    public UserRegisterParamsDto(String userName, String password, String firstName, String lastName, String email, String role) {
+    public UserRegisterParamsDto(String userName, String password, String firstName, String lastName, String email, String role, float height,
+     float weight, String gender, String birthDate) {
         this.userName = userName;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.role = role;
+        this.height = height;
+        this.weight = weight;
+        this.gender = gender;
+        this.birthDate = birthDate;
     }
     public String getUserName() {
         return userName;
@@ -53,5 +62,29 @@ public class UserRegisterParamsDto {
     }
     public void setRole(String role) {
         this.role = role;
+    }
+    public float getHeight() {
+        return height;
+    }
+    public void setHeight(float height) {
+        this.height = height;
+    }
+    public float getWeight() {
+        return weight;
+    }
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+    public String getGender() {
+        return gender;
+    }
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+    public String getBirthDate() {
+        return birthDate;
+    }
+    public void setBirthDate(String birthDate) {
+        this.birthDate = birthDate;
     }
 }

@@ -61,9 +61,10 @@ const Navbar = ({ activePage }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 flex flex-row items-center justify-start h-[77px] z-[20] border-b-[1px] border-[#ff0000] bg-[#000000]">
+    <div className="fixed top-0 left-0 right-0 flex flex-row items-center justify-start h-[77px] z-[20]
+     border-b-[1px] border-[#990000] bg-[#000000]">
       <Link to="/home">
-        <img src={logo?.base64} alt="logo" className="h-12 ml-12" />
+        <img src={logo?.base64} alt="logo" className="h-12 ml-16" />
       </Link>
 
       <div className="flex flex-row ml-4 items-center w-full">

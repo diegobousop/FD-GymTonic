@@ -1,10 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,20 +10,27 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import es.udc.fi.dc.fd.rest.controllers.UserController;
-import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
 import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
-
-import org.springframework.test.web.servlet.ResultActions;
+import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.rest.controllers.UserController;
+import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
+import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 
 /**
  * The Class UserControllerTest.
@@ -404,11 +407,11 @@ public class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(4)))
+                .andExpect(jsonPath("$.items", hasSize(8)))
                 .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[0].peso").value(40))
                 .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.items[1].peso").value(45))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test
@@ -439,11 +442,11 @@ public class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsBytes(exerciseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(3)))
+                .andExpect(jsonPath("$.items", hasSize(7)))
                 .andExpect(jsonPath("$.items[0].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[0].peso").value(10))
+                .andExpect(jsonPath("$.items[0].peso").value(40))
                 .andExpect(jsonPath("$.items[1].repeticiones").value(20))
-                .andExpect(jsonPath("$.items[1].peso").value(10))
+                .andExpect(jsonPath("$.items[1].peso").value(45))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
     @Test

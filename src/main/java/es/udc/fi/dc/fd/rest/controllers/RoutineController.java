@@ -31,8 +31,10 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.Block;
+import es.udc.fi.dc.fd.model.services.ExerciseService;
 import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
@@ -51,9 +53,10 @@ import es.udc.fi.dc.fd.rest.dtos.RoutineDetailsDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.SerieConversor;
+import es.udc.fi.dc.fd.rest.dtos.TrainingDetailsDto;
 import es.udc.fi.dc.fd.rest.dtos.TrainingParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.UserConversor;
-
+import es.udc.fi.dc.fd.rest.dtos.CalendarStatsDto;
 
 
 
@@ -63,6 +66,9 @@ public class RoutineController {
     
     @Autowired
     private RoutineService routineService;
+
+    @Autowired
+    private ExerciseService exerciseService;
 
     @Autowired
     private MessageSource messageSource;
@@ -216,7 +222,7 @@ public class RoutineController {
         }
 
         //id usuario, descripcion, duracion, visibilidad, lista de ejercicios con repes
-        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series);
+        routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series, params.getRoutineId());
     }
 
         @PostMapping("/{routineId}/follow")
@@ -248,5 +254,62 @@ public class RoutineController {
         Block<Users> followersBlock = routineService.getFollowersByRoutine(routineId, userId, pageable);
 
         return UserConversor.toBlockResumeUserDto(followersBlock);
+    }
+
+    @GetMapping("/findTrainings")
+    public BlockDto<TrainingDetailsDto> findRoutinesWithTrainings(
+            @RequestAttribute Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Training> trainingsPage = routineService.findTrainings(userId, pageable);
+
+        List<TrainingDetailsDto> items = new ArrayList<>();
+
+        for (Training t : trainingsPage.getContent()) {
+            List<ExerciseRoutineDto> exercises = new ArrayList<>();
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
+                List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series));
+            }
+            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
+        }
+
+        return new BlockDto<>(items, trainingsPage.hasNext());
+    }
+
+    @GetMapping("/getTrainingCalendarStats")
+    public CalendarStatsDto getTrainingCalendarStats(@RequestAttribute Long userId, @RequestParam int year) throws InstanceNotFoundException, PermissionException {
+        return RoutineConversor.toCalendarStatsDto(routineService.findTrainingsByYear(userId, year));
+    }
+
+    @GetMapping("/findDayTrainings")
+    public BlockDto<TrainingDetailsDto> findDayTrainings(
+            @RequestAttribute Long userId,
+            @RequestParam int day,
+            @RequestParam int month,
+            @RequestParam int year,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Training> trainingsPage = routineService.findTrainingsByDay(userId, day, month, year, pageable);
+
+        List<TrainingDetailsDto> items = new ArrayList<>();
+
+        for (Training t : trainingsPage.getContent()) {
+            List<ExerciseRoutineDto> exercises = new ArrayList<>();
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
+                List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series));
+            }
+            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
+        }
+
+        return new BlockDto<>(items, trainingsPage.hasNext());
     }
 }

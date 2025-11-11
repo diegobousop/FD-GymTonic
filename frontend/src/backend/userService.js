@@ -161,23 +161,19 @@ export const getFollowersCount = (onSuccess, onErrors) =>
     onErrors
   );
 
-// ... todo tu código actual arriba
+export const getFollowingCount = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/following/count`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
 
-export default {
-  viewAllUsers,
-  banUser,
-  blockUser,
-  login,
-  tryLoginFromServiceToken,
-  signUp,
-  getProfile,
-  logout,
-  updateProfile,
-  changePassword,
-  getBlockedUsers,
-  followUser,
-  unfollowUser,
-  getFollowers,
-  getFollowing,
-  getFollowersCount,
-};
+export const getGenders = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/getGenders`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
