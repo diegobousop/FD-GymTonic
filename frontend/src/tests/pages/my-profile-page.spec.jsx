@@ -5,7 +5,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { HashRouter as Router } from 'react-router-dom';
 import MyProfilePage from "../../modules/app/pages/my-profile-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
-import { getProfile, getFollowersCount } from "../../backend/userService";
+import { getProfile, getFollowersCount, getFollowingCount } from "../../backend/userService";
 
 
 jest.mock('react-calendar', () => ({
@@ -22,6 +22,7 @@ jest.mock('react-router-dom', () => ({
 jest.mock("../../backend/userService", () => ({
     getProfile: jest.fn(),
     getFollowersCount: jest.fn(),
+    getFollowingCount: jest.fn(),
 }));
 
 
@@ -57,6 +58,9 @@ describe("ProfilePage", () => {
         getFollowersCount.mockImplementation((onSuccess, onError) => {
             onSuccess(0);
         });
+        getFollowingCount.mockImplementation((onSuccess, onError) => {
+            onSuccess(0);
+        });
     });
 
     it("muestra 'Cargando datos...' cuando no hay usuario", () => {
@@ -69,16 +73,20 @@ describe("ProfilePage", () => {
             onSuccess({ email: "test@example.com", firstName: "John", lastName: "Doe" })
         );
         getFollowersCount.mockImplementation((onSuccess) => onSuccess(5));
+        getFollowingCount.mockImplementation((onSuccess) => onSuccess(3));
 
         renderWithContext({ ...mockUser, role: 'USER' });
 
 
         expect(screen.getByText("user1")).toBeInTheDocument();
+        expect(screen.getByText(/5 seguidores/i)).toBeInTheDocument();
+        expect(screen.getByText(/3 seguidos/i)).toBeInTheDocument();
     });
 
     it("muestra mensaje de error si getProfile falla", async () => {
         getProfile.mockImplementation((_, __, onError) => onError("error"));
         getFollowersCount.mockImplementation((onSuccess) => onSuccess(0));
+        getFollowingCount.mockImplementation((onSuccess) => onSuccess(0));
 
         renderWithContext({ ...mockUser, role: 'USER' });
 

@@ -323,6 +323,11 @@ public class UserController {
 		return userService.getFollowersCount(userId);
 	}
 
+	@GetMapping("/following/count")
+	public int getFollowingCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
+		return userService.getFollowingCount(userId);
+	}
+
 	@GetMapping("/getGenders")
 	public List<String> getGenders() {
 		return userService.getGenders();

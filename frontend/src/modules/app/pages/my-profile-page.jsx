@@ -3,9 +3,9 @@ import TrainingHistory from '../components/training/training-history'
 import BubbleButton from '../components/common/bubble-button'
 import CalendarCard from '../components/profile/calendar-card'
 
-import { getProfile, getFollowersCount } from "../../../backend/userService"
+import { getProfile, getFollowersCount, getFollowingCount } from "../../../backend/userService"
 import { UserContext } from '../components/common/user-provider';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 import { SVG_ICONS } from '../../../config/constants'
 
@@ -15,6 +15,7 @@ const MyProfilePage = () => {
 
   const { user, setUser, handleLogout } = useContext(UserContext);
   const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
 
@@ -33,10 +34,17 @@ const MyProfilePage = () => {
 
       getFollowersCount(
         (count) => {
-        setFollowerCount(count);
-      }, (err) => {
-        setError('Error al cargar el número de seguidores');
-      });
+          setFollowerCount(count);
+        }, (err) => {
+          setError('Error al cargar el número de seguidores');
+        });
+
+      getFollowingCount(
+        (count) => {
+          setFollowingCount(count);
+        }, (err) => {
+          setError('Error al cargar el número de seguidos');
+        });
     }
   }, [user]);
 
@@ -50,7 +58,21 @@ const MyProfilePage = () => {
           <div className="flex flex-col ml-5 w-[50%]">
             
             <h1>{user.userName}</h1>
-            <p className="text-white">{followerCount} seguidores   </p>
+            <div className="flex items-center gap-2 text-white">
+              <Link
+                to="/profile/followers"
+                className="underline hover:text-blue-400 w-fit"
+              >
+                {followerCount} seguidores
+              </Link>
+              <span>·</span>
+              <Link
+                to="/profile/following"
+                className="underline hover:text-blue-400 w-fit"
+              >
+                {followingCount} seguidos
+              </Link>
+            </div>
           </div>
 
           { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&

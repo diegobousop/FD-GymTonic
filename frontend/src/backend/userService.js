@@ -143,6 +143,14 @@ export const getFollowersCount = (onSuccess, onErrors) =>
     onErrors
   );
 
+export const getFollowingCount = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/following/count`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
 export const getGenders = (onSuccess, onErrors) =>
   appFetch(
     `/users/getGenders`,
