@@ -67,6 +67,13 @@ public class Users {
 	/** The following. */
 	private List<Users> following;
 
+	/** List of users that we blocked */
+	private List<Users> blockedUsers;
+	
+	/** List of users that blocked us */
+	private List<Users> whoBlockUs;
+
+
 
 	/**
 	 * Instantiates a new user.
@@ -96,7 +103,7 @@ public class Users {
 	}
 
 	public Users( String userName, String password, String firstName, String lastName, String email,
-			Avatar avatar, RoleType role, List<Users> followers, List<Users> following) {
+			Avatar avatar, RoleType role, List<Users> followers, List<Users> following, List<Users> blockedUsers, List<Users> usersWhoBlockUs) {
 		this.userName = userName;
 		this.password = password;
 		this.firstName = firstName;
@@ -106,6 +113,8 @@ public class Users {
 		this.role = role;
 		this.followers = followers;
 		this.following = following;
+		this.blockedUsers = blockedUsers;
+		this.whoBlockUs = usersWhoBlockUs;
 	}
 
 	/**
@@ -327,6 +336,7 @@ public class Users {
 		return followers;
 	}
 
+	
 	/**
 	 * Sets the followers.
 	 * @param followers the new followers
@@ -334,6 +344,24 @@ public class Users {
 	public void setFollowers(List<Users> followers) {
 		this.followers = followers;
 	}
+	
+	@ManyToMany
+	@JoinTable(name = "BlockUser", 
+			joinColumns = @JoinColumn(name = "idBlocker"),
+			inverseJoinColumns = @JoinColumn(name = "idBlocked")
+	)
+	public List<Users> getBlockedUsers(){
+		return blockedUsers;
+	}
+
+	public void setBlockedUsers(List<Users> blockedUsers){this.blockedUsers = blockedUsers;}
+
+
+	@ManyToMany(mappedBy = "blockedUsers")
+	public List<Users> getWhoBlockUs(){return whoBlockUs;}
+
+	public void setWhoBlockUs(List<Users> whoBlockUs){this.whoBlockUs = whoBlockUs;}
+
 
 	/**
 	 * Gets the following.

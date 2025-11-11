@@ -7,7 +7,11 @@ import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -39,10 +43,6 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 
@@ -323,6 +323,16 @@ public class UserController {
 	public int getFollowersCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
 		return userService.getFollowersCount(userId);
 	}
+
+	@GetMapping("/getBlocked")
+	public List<Long> getBlocked(@RequestAttribute Long userId) throws InstanceNotFoundException{
+		return Optional.ofNullable(userService.getBlocked(userId))
+									.orElse(Collections.emptyList())
+									.stream()
+									.map(Users::getId)
+									.collect(Collectors.toList());
+	}
+	
 
 
 	/**

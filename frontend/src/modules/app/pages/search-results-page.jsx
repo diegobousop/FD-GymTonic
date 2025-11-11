@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { searchResults } from "../../../backend/searchService.js";
 import Routine from "../components/common/routine.jsx";
 import { UserContext } from "../components/common/user-provider";
-import backend from "../../../backend/index.js";
+import backend from "../../../backend";
 import { useToast } from "../components/common/toast-provider.jsx";
 
 const SearchResultsPage = () => {
@@ -14,6 +14,7 @@ const SearchResultsPage = () => {
   const [error, setError] = useState(null);
   const [itemTypeFilter, setItemTypeFilter] = useState("TODO");
   const { showToast } = useToast();
+
 
   const query = searchParams.get("text") || "";
   const trainerName = searchParams.get("trainerName") || "";
@@ -58,6 +59,15 @@ const SearchResultsPage = () => {
   useEffect(() => {
     fetchResults();
   }, [fetchResults]);
+
+  useEffect(() => {
+    backend.userService.getBlockedUsers(
+      (data) => {
+        user.idBlocked = data;
+      },
+      (err) => {setError(err || "Error inesperado al recuperar usuarios baneados")}
+    )
+  }, []);
 
   const filterByType = (type) => setItemTypeFilter(type);
 
@@ -136,12 +146,15 @@ const SearchResultsPage = () => {
       userId,
       (success) => {
         if (success) {
-          setResults((prev) => ({
+          setResults(prev => ({
             ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isBlocked: true, isFollowing: false } : u
-            ),
+            users: prev.users.map(u =>
+              u.id === userId ? { ...u, isBlocked: true } : u
+            )
           }));
+  
+          if (!user.idBlocked) user.idBlocked = [];
+          user.idBlocked.push(userId);
           showToast(`Has bloqueado a ${userName}`, 'success');
         } else {
           showToast(`Ya tenías bloqueado a ${userName}`, 'error');
@@ -202,7 +215,7 @@ const SearchResultsPage = () => {
                       </div>
                       {userItem.id !== user.id && (
                         <div className="flex gap-2">
-                          {!userItem.isBlocked && (
+                          {!userItem.isBanned && (
                             <button
                               onClick={() =>
                                 userItem.isFollowing
@@ -218,17 +231,19 @@ const SearchResultsPage = () => {
                               {userItem.isFollowing ? "Dejar de seguir" : "Seguir"}
                             </button>
                           )}
-                          <button
-                            onClick={() => handleBlockUser(userItem.id)}
-                            disabled={userItem.isBlocked}
-                            className={`${
-                              userItem.isBlocked
-                                ? "bg-red-900 cursor-not-allowed"
-                                : "bg-red-600 hover:bg-red-700"
-                            } text-white px-3 py-1 rounded-md text-sm`}
-                          >
-                            {userItem.isBlocked ? "Bloqueado" : "Bloquear"}
-                          </button>
+                          {userItem.id !== user.id && user.role !== "ADMIN"&& userItem.rol !== "ADMIN" && (
+                            <button
+                              onClick={() => handleBlockUser(userItem.id)}
+                              disabled={user.idBlocked?.includes(userItem.id)}
+                              className={`${
+                                user.idBlocked?.includes(userItem.id)
+                                  ? "bg-red-900 cursor-not-allowed"
+                                  : "bg-red-600 hover:bg-red-700"
+                              } text-white px-3 py-1 rounded-md text-sm`}
+                            >
+                              {user.idBlocked?.includes(userItem.id) ? "Bloqueado" : "Bloquear"}
+                            </button>
+                          )}
                         </div>
                       )}
                     </li>

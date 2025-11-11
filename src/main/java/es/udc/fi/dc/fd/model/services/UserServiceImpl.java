@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,8 @@ public class UserServiceImpl implements UserService {
 		user.setRole(roleType);
 		user.setFollowers(new ArrayList<Users>());
 		user.setFollowing(new ArrayList<Users>());
+		user.setBlockedUsers(new ArrayList<Users>());
+		user.setWhoBlockUs(new ArrayList<Users>());
 		if(user.getAvatar() == null) user.setAvatar(avatarDao.findByName("default").get());
 
 		userDao.save(user);
@@ -266,6 +269,13 @@ public class UserServiceImpl implements UserService {
 		Users blocker = permissionChecker.checkUser(idBlocker);
 		Users blocked = permissionChecker.checkUser(idBlocked);
 
+		//los admins no pueden ser bloqueados ni bloquear
+		if (blocked.getRole() == RoleType.ADMIN)
+			throw new PermissionException("project.entites.BlockUser", idBlocked);
+		
+		if (blocker.getRole() == RoleType.ADMIN)
+			throw new PermissionException("project.entites.BlockUser", idBlocker);
+
 		if(blocker.getFollowers().contains(blocked)){
 			//el usuario que bloqueado sigue al que le bloquea
 			blocker.getFollowers().remove(blocked); 
@@ -278,12 +288,30 @@ public class UserServiceImpl implements UserService {
 			blocker.getFollowing().remove(blocked);
 		}
 
-		BlockUser userBlock = new BlockUser(idBlocker, idBlocked);
+		if (blocker.getBlockedUsers() == null) {
+			blocked.setBlockedUsers(new ArrayList<Users>());
+		}
 
-		blockUserDao.save(userBlock);
+		if (blocked.getWhoBlockUs() == null) {
+			blocker.setWhoBlockUs(new ArrayList<Users>());
+		}
 
-		return userBlock;
+		blocker.getBlockedUsers().add(blocked);
+		blocked.getWhoBlockUs().add(blocker);
+
+		userDao.save(blocked);
+		userDao.save(blocker);
+
+		return blockUserDao.getByIdBlockerAndIdBlocked(idBlocker, idBlocked);
 	}
+
+	@Override
+	public List<Users> getBlocked(Long id) throws InstanceNotFoundException{
+		Users user = permissionChecker.checkUser(id);
+
+		return user.getBlockedUsers();
+	}
+
 
 
 	@Override
@@ -314,7 +342,7 @@ public class UserServiceImpl implements UserService {
 			throw new PermissionException("project.entities.users", followedId);
 		}
 
-		// Cannot follow someone who has been blocked (system-wide block)
+		// Cannot follow someone who has been banned (system-wide block)
 		if (followed.getBanned() != null && followed.getBanned()) {
 			throw new PermissionException("project.entities.users", followedId);
 		}

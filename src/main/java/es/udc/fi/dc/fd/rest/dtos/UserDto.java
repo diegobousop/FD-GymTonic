@@ -1,7 +1,10 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import java.util.List;
+
 import org.springframework.format.annotation.NumberFormat;
 
+import es.udc.fi.dc.fd.model.entities.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -52,6 +55,9 @@ public class UserDto {
 	/** The card number. */
 	private String cardNumber;
 
+	/** List of blocked users */
+	private List<Long> idBlocked;
+
 
 	/**
 	 * Instantiates a new user dto.
@@ -71,6 +77,21 @@ public class UserDto {
 	 * @param banned the banned
 	 * @param cardNumber the card number
 	 */
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList) {
+
+		this.id = id;
+		this.userName = userName != null ? userName.trim() : null;
+		this.firstName = firstName.trim();
+		this.lastName = lastName.trim();
+		this.email = email.trim();
+		this.role = role;
+		this.avatar = avatar;
+		this.banned = banned;
+		this.cardNumber = cardNumber;
+		this.premium = premium;
+		this.idBlocked = idBlockedList;
+	} 
+
 	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium) {
 
 		this.id = id;
@@ -109,6 +130,7 @@ public class UserDto {
 		this.avatar = avatar;
 		this.banned = banned;
 	} 
+
 		
 	/**
 	 * Gets the id.
@@ -322,5 +344,8 @@ public class UserDto {
 	public void setCardNumber(String cardNumber) {
 		this.cardNumber = cardNumber;
 	}
-}
+
+	public List<Long> getIdBlocked(){return idBlocked;}
+	public void setIdBlocked(List<Long> idBlocked){this.idBlocked = idBlocked; }
+}	
 

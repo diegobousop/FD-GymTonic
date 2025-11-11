@@ -111,6 +111,16 @@ export const changePassword = (user, oldPassword, newPassword, onSuccess, onErro
   );
 };
 
+export const getBlockedUsers = (onSuccess, onErrors) => 
+  appFetch(
+    `/users/getBlocked`,
+    fetchConfig("GET"),
+    onSuccess,
+    async (err) => {
+      onErrors("Error inesperado")
+    }
+  )
+
 export const followUser = (userId, onSuccess, onErrors) =>
   appFetch(
     `/users/follow/${userId}`,
@@ -150,3 +160,24 @@ export const getFollowersCount = (onSuccess, onErrors) =>
     onSuccess,
     onErrors
   );
+
+// ... todo tu código actual arriba
+
+export default {
+  viewAllUsers,
+  banUser,
+  blockUser,
+  login,
+  tryLoginFromServiceToken,
+  signUp,
+  getProfile,
+  logout,
+  updateProfile,
+  changePassword,
+  getBlockedUsers,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowing,
+  getFollowersCount,
+};

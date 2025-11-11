@@ -102,7 +102,7 @@ const ViewAllUsers = () => {
                   : "bg-red-800 text-white hover:bg-red-900"
               }`}
             >
-              {userItem.banned ? "Bloqueado" : "Bloquear"}
+              {userItem.banned ? "Banneado" : "Bannear"}
             </button>
     )}
         </div>

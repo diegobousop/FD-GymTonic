@@ -3,7 +3,9 @@ package es.udc.fi.dc.fd.rest.dtos;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.Block;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -29,8 +31,15 @@ public class UserConversor {
 	 * @return the user dto
 	 */
 	public static final UserDto toUserDto(Users user) {
+		List<Long> idBlockedList = Optional.ofNullable(user.getBlockedUsers())
+									.orElse(Collections.emptyList())
+									.stream()
+									.map(Users::getId)
+									.collect(Collectors.toList());
+
+
 		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(), 
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(), user.getBankCard(),user.getPremium());
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(), user.getBankCard(),user.getPremium(), idBlockedList);
 	}
 
 	/**

@@ -131,6 +131,14 @@ public interface UserService {
 	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
 
 	/**
+	 * Get blocked useres
+	 * @param id the id
+	 * @return list of blocked
+	 * @throws InstanceNotFoundException 
+	 */
+	List<Users> getBlocked(Long id) throws InstanceNotFoundException;
+
+	/**
 	 * Get followers count of a user
 	 * @param id the userId
 	 * @return count of followers
