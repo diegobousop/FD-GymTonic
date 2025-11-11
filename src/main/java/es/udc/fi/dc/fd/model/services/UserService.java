@@ -137,6 +137,14 @@ public interface UserService {
 	 */
 	int getFollowersCount(Long id) throws InstanceNotFoundException;
 
+	/**
+	 * Get following count of a user
+	 * @param id the userId
+	 * @return count of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	int getFollowingCount(Long id) throws InstanceNotFoundException;
+
 	/*
 	 * Get the diferents genders for users
 	 * @return list of genders

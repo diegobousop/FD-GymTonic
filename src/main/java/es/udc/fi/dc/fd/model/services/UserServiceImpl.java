@@ -376,6 +376,15 @@ public class UserServiceImpl implements UserService {
 		return user.getFollowers().size();
 	}
 
+	@Override
+	public int getFollowingCount(Long userId) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		if(user.getFollowing() == null) {
+			return 0;
+		}
+		return user.getFollowing().size();
+	}
+
 	// Pasa de un String con formato "dd-MM-yyyy" a LocalDate
 	private LocalDate toLocalDate(String birthDate) {
 		String [] parts = birthDate.split("-");
