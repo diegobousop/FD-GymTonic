@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import { searchResults } from "../../../backend/searchService.js";
-import Routine from "../components/common/routine.jsx";
+import Routine from "../components/routine/routine-card.jsx";
 import { UserContext } from "../components/common/user-provider";
 import backend from "../../../backend";
 import {useToast} from "../components/common/toast-provider.jsx";

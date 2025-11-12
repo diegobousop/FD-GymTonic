@@ -94,8 +94,8 @@ const Body = () => {
             <Route path="/admin/seeUsers" element={
               <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
             } />
-            <Route path="/admin/seeUsers" element={
-              <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
+            <Route path="/admin/blockExercises" element={
+              <ProtectedPath role={["ADMIN"]} path={<BlockExercises />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />

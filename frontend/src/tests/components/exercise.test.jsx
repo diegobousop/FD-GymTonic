@@ -11,6 +11,7 @@ jest.mock("../../backend", () => ({
     modifySerie: jest.fn(),
     createSerie: jest.fn(),
     deleteSerie: jest.fn(),
+    editRestTime: jest.fn(),
   },
 }));
 
@@ -39,18 +40,18 @@ describe("Exercise", () => {
       </UserContext.Provider>
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /✏️/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Editar Series/i }));
     expect(await screen.findByText(/editar series/i)).toBeInTheDocument();
   });
 
-  it("permite modificar repeticiones y peso de una serie", async () => {
+  it("permite modificar repeticiones, peso y tiempo de descanso de una serie", async () => {
     render(
       <UserContext.Provider value={{ user: { id: 1, role: "TRAINER", userName: "trainer1" } }}>
         <Exercise ex={exercise} routineId={routineId} routineCreator={"trainer1"} />
       </UserContext.Provider>
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /✏️/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Editar Series/i }));
 
     const repsInput = await screen.findByDisplayValue("12");
     fireEvent.change(repsInput, { target: { value: "14" } });
@@ -59,6 +60,10 @@ describe("Exercise", () => {
     const pesoInput = screen.getByDisplayValue("50");
     fireEvent.change(pesoInput, { target: { value: "55" } });
     expect(pesoInput.value).toBe("55");
+
+    const restInput = screen.getByLabelText("Tiempo de descanso");
+    fireEvent.change(restInput, { target: { value: "40" } });
+    expect(restInput.value).toBe("40");
   });
 
   it("permite añadir una nueva serie", async () => {
@@ -68,7 +73,7 @@ describe("Exercise", () => {
       </UserContext.Provider>
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /✏️/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Editar Series/i }));
 
     const addButton = await screen.findByRole("button", { name: /añadir serie/i });
     fireEvent.click(addButton);
@@ -85,7 +90,7 @@ describe("Exercise", () => {
     );
 
     // Abrir modal
-    fireEvent.click(screen.getByRole("button", { name: /✏️/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Editar Series/i }));
 
     // Esperamos a que aparezca el botón de eliminar de la última serie
     const deleteButton = await screen.findByTitle(/Eliminar serie/i);
@@ -95,35 +100,34 @@ describe("Exercise", () => {
 
     // Comprobamos que el input de la serie recién añadida desapareció
     const inputs = await screen.findAllByRole("spinbutton"); 
-    expect(inputs.length).toBe(4); 
+    expect(inputs.length).toBe(5); 
   });
 
 
-  it("confirma los cambios de repeticiones y peso al pulsar continuar", async () => {
+  it("confirma los cambios de repeticiones, peso y restTime al pulsar continuar", async () => {
     render(
       <UserContext.Provider value={{ user: { id: 1, role: "TRAINER", userName: "trainer1" } }}>
         <Exercise ex={exercise} routineId={routineId} routineCreator={"trainer1"} />
       </UserContext.Provider>
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /✏️/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Editar Series/i }));
 
     const repsInput = await screen.findByDisplayValue("12");
     fireEvent.change(repsInput, { target: { value: "14" } });
-
     const pesoInput = screen.getByDisplayValue("50");
     fireEvent.change(pesoInput, { target: { value: "55" } });
+
+    const restInput = screen.getByLabelText("Tiempo de descanso");
+    fireEvent.change(restInput, { target: { value: "40" } });
+    await waitFor(() => expect(restInput.value).toBe("40"));
 
     const continueButton = screen.getByRole("button", { name: /continuar/i });
     fireEvent.click(continueButton);
 
     await waitFor(() => {
       expect(backend.exerciseService.modifySerie).toHaveBeenCalledWith(
-        5, // id de la serie original
-        14, // reps modificadas
-        55, // peso modificado
-        expect.any(Function),
-        expect.any(Function)
+        5, 14, 55, expect.any(Function), expect.any(Function)
       );
     });
   });
