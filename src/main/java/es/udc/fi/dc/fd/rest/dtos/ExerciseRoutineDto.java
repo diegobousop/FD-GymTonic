@@ -28,9 +28,13 @@ public class ExerciseRoutineDto {
 
     private String exerciseImageBase64;
 
+    private int orderInRoutine;
+
+    private int restTime;
+
 
     public ExerciseRoutineDto(Long id, String name, String descripcion, grupoMuscular grupoMuscular, int numeroSeries, Difficulty difficulty, Equipment equipment,
-            List<SerieSummaryDto> series, String exerciseImageBase64) {
+            List<SerieSummaryDto> series, String exerciseImageBase64, int restTime, int orderInRoutine) {
         this.id = id;
         this.name = name;
         this.descripcion = descripcion;
@@ -40,6 +44,8 @@ public class ExerciseRoutineDto {
         this.difficulty = difficulty;
         this.equipment = equipment;
         this.series = series;
+        this.restTime = restTime;
+        this.orderInRoutine = orderInRoutine;
     }
 
     @NotNull
@@ -119,4 +125,14 @@ public class ExerciseRoutineDto {
     public void setExerciseImageBase64(String exerciseImageBase64) {
         this.exerciseImageBase64 = exerciseImageBase64;
     }
+
+    public int getOrderInRoutine() {return orderInRoutine;}
+
+    public void setOrderInRoutine(int orderInRoutine) {this.orderInRoutine = orderInRoutine;}
+
+    public int getRestTime() {return restTime;}
+
+    public void setRestTime(int restTime) {this.restTime = restTime;}
+
+
 }

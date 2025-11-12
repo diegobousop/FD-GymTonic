@@ -30,6 +30,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.Users;
@@ -53,6 +54,7 @@ import es.udc.fi.dc.fd.rest.dtos.RoutineDetailsDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.SerieConversor;
+import es.udc.fi.dc.fd.rest.dtos.SerieDto;
 import es.udc.fi.dc.fd.rest.dtos.TrainingDetailsDto;
 import es.udc.fi.dc.fd.rest.dtos.TrainingParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.UserConversor;
@@ -156,16 +158,19 @@ public class RoutineController {
 
         List<ExerciseRoutineDto> exerciseRoutineDtos = new ArrayList<>();
 
-        for (Exercise exercise : routine.getExercises()) {
+        for (RoutineExercise routineExercise : routine.getRoutineExercises()) {
+            Exercise exercise = routineExercise.getExercise();
+
             List<Serie> series = routineService.getDefaultRoutineSeries(routineId, exercise.getId());
-            ExerciseRoutineDto exerciseRoutineDtoItem = ExerciseConversor.toExerciseRoutineDto(exercise, series);
+
+            ExerciseRoutineDto exerciseRoutineDtoItem = ExerciseConversor.toExerciseRoutineDto(exercise, series, routineExercise);
             exerciseRoutineDtos.add(exerciseRoutineDtoItem);
         }
 
         RoutineDetailsDto routineDetails = RoutineDetailsConversor.toRoutineDetailsDto(routine, exerciseRoutineDtos);
 
-		return routineDetails;
-	}
+        return routineDetails;
+    }
 
 
     @PutMapping("/modifyRoutine/{routineId}")
@@ -177,14 +182,6 @@ public class RoutineController {
         return RoutineConversor.toRoutineDto(
             routineService.modifyRoutine(routineId, userId, params.getName(), params.getExercises(), params.getDuration(), params.getIsPublic())
         );
-    }
-
-    @PutMapping("/{routineId}/removeExercise/{exerciseId}")
-    public Boolean removeExerciseFromRoutine(
-            @PathVariable Long routineId,
-            @PathVariable Long exerciseId) throws InstanceNotFoundException {
-
-        return routineService.removeExerciseFromRoutine(exerciseId, routineId);
     }
 
     @DeleteMapping("/deleteRoutine/{routineId}")
@@ -272,7 +269,7 @@ public class RoutineController {
             Routine routine = routineService.getRoutineByTraining(t.getId());
             for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
                 List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
-                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series));
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
             }
             items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
         }
@@ -305,7 +302,7 @@ public class RoutineController {
             Routine routine = routineService.getRoutineByTraining(t.getId());
             for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
                 List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
-                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series));
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
             }
             items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
         }
