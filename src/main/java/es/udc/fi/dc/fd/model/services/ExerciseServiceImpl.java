@@ -21,7 +21,8 @@ import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 @Transactional
 public class ExerciseServiceImpl implements ExerciseService {
 
-    private final RoutineExerciseDao routineExerciseDao;
+    @Autowired
+    private RoutineExerciseDao routineExerciseDao;
 
     @Autowired
     private ExerciseDao exerciseDao;
@@ -37,10 +38,6 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Autowired
     private IconDao iconDao;
-
-    ExerciseServiceImpl(RoutineExerciseDao routineExerciseDao) {
-        this.routineExerciseDao = routineExerciseDao;
-    }
 
     @Override
     public Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
