@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -120,12 +121,14 @@ public class UserControllerTest {
 		user.setBirthDate(LocalDate.of(1990, 1, 1));
 
 		userDao.save(user);
-		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(),
-				user.getEmail(), user.getRole().toString(),
-				new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBlocked(),
-				user.getBankCard(), user.getPremium(), user.getHeight(), user.getWeight(),
-				user.getGender().toString(),
-				user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+		// return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(),
+		// 		user.getEmail(), user.getRole().toString(),
+		// 		new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(),
+		// 		user.getBankCard(), user.getPremium(), user.getBlockedUsers() ,user.getHeight(), user.getWeight(),
+		// 		user.getGender().toString(),
+		// 		user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+		return toUserDto(user);
 	}
 
 	/**
@@ -260,10 +263,12 @@ public class UserControllerTest {
 		AuthenticatedUserDto user = userController.signUp(registerParams).getBody();
 
 		//Actualizamos el usuario con un cardNumber, debe ser premium
+
 		UserDto userDto = user.getUserDto();
 		userDto.setFirstName("manolo");
 		userDto.setCardNumber("1234567890123456");
 		userDto.setPremium(false);
+
 
 		ObjectMapper mapper = new ObjectMapper();
 		mockMvc.perform(put("/api/users/{id}", userDto.getId())
@@ -302,53 +307,53 @@ public class UserControllerTest {
 	}
 
 	@Test
-	public void testBlockUser() throws Exception{
+	public void testBanUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isOk());
 	}
 
 	@Test
-	public void testBlockUserAlreadyBlocked() throws Exception{
+	public void testBanUserAlreadyBanned() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isOk());
 
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isBadRequest());
 	}
 
 	@Test
-	public void testBlockNullUser() throws Exception{
+	public void testBanNullUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 500)
+		mockMvc.perform(post("/api/users/ban/{id}", 500)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isNotFound());
 	}
 
 	@Test
-	public void testBlockByUser() throws Exception{
+	public void testBanByUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
 		new ObjectMapper();
 		
-		mockMvc.perform(post("/api/users/block/{id}", 1)
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
 		).andExpect(status().isForbidden());

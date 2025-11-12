@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS User_Follow;
@@ -20,12 +21,6 @@ CREATE TABLE Avatar (
     avatarBase64 MEDIUMTEXT NOT NULL
 );
 
-CREATE TABLE Blockuser (
-    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    idBlocker BIGINT NOT NULL,
-    idBlocked BIGINT NOT NULL,
-    dateBlock TIMESTAMP
-);
 
 CREATE TABLE Users (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -37,13 +32,21 @@ CREATE TABLE Users (
     avatar BIGINT,
     role TINYINT NOT NULL, /*0 User, 1 Trainer. 2 Admin*/
     premium BOOLEAN DEFAULT FALSE,
-    blocked BOOLEAN NOT NULL DEFAULT FALSE,
+    banned BOOLEAN NOT NULL DEFAULT FALSE,
     bankCard VARCHAR(16),
     weight FLOAT NOT NULL, -- Weight in kilograms
     height BIGINT NOT NULL, -- Height in centimeters
     gender TINYINT NOT NULL, /* 0: Male, 1: Female, 2: Other */
     birthdate DATE NOT NULL,
     FOREIGN KEY (avatar) REFERENCES Avatar(id)
+);
+CREATE TABLE Blockuser (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idBlocker BIGINT NOT NULL,
+    idBlocked BIGINT NOT NULL,
+    dateBlock TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idBlocker) REFERENCES Users(id),
+    FOREIGN KEY (idBlocked) REFERENCES Users(id)
 );
 
 CREATE TABLE Exercise (

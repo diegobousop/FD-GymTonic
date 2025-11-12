@@ -115,7 +115,8 @@ public class SearchServiceImpl implements SearchService {
                 .map(u -> SearchFullDto.fromUser(
                         u.getId(),
                         u.getUserName(),
-                        u.getAvatar() != null ? u.getAvatar().getAvatarBase64() : null
+                        u.getAvatar() != null ? u.getAvatar().getAvatarBase64() : null,
+                        u.getRole()
                 ))
                 .collect(Collectors.toList());
         resultMap.put("users", users);

@@ -22,14 +22,22 @@ export const viewAllUsers = ({page, size}, onSuccess, onErrors) =>
     onSuccess, 
     onErrors
   );
-
+  
+export const banUser = (userId, onSuccess, onErrors) => 
+  appFetch(
+    `/users/ban/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+    
 export const blockUser = (userId, onSuccess, onErrors) => 
   appFetch(
     `/users/block/${userId}`,
     fetchConfig("POST"),
     onSuccess,
     onErrors
-  );
+  )
 
 export const login = (
   userName,
@@ -103,6 +111,16 @@ export const changePassword = (user, oldPassword, newPassword, onSuccess, onErro
   );
 };
 
+export const getBlockedUsers = (onSuccess, onErrors) => 
+  appFetch(
+    `/users/getBlocked`,
+    fetchConfig("GET"),
+    onSuccess,
+    async (err) => {
+      onErrors("Error inesperado")
+    }
+  )
+
 export const followUser = (userId, onSuccess, onErrors) =>
   appFetch(
     `/users/follow/${userId}`,
@@ -158,3 +176,4 @@ export const getGenders = (onSuccess, onErrors) =>
     onSuccess,
     onErrors
   );
+

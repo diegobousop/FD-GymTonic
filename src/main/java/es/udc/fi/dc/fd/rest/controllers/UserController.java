@@ -7,9 +7,12 @@ import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 
 import java.net.URI;
+import java.util.Collections;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
@@ -34,6 +38,7 @@ import es.udc.fi.dc.fd.rest.common.JwtGenerator;
 import es.udc.fi.dc.fd.rest.common.JwtInfo;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
+import es.udc.fi.dc.fd.rest.dtos.BlockedByUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
@@ -288,9 +293,9 @@ public class UserController {
 		return toUserDto(userService.getUserById(userId));
 	}
 
-	@PostMapping("/block/{id}")
-	public void blockUser(@RequestAttribute Long userId, @PathVariable Long id) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
-		userService.blockUser(userId, id);
+	@PostMapping("/ban/{id}")
+	public void banUser(@RequestAttribute Long userId, @PathVariable Long id) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
+		userService.banUser(userId, id);
 	}
 
 	@GetMapping("/getUsers")
@@ -318,11 +323,29 @@ public class UserController {
 		return toBlockResumeUserDto(userService.getFollowing(userId, page, size));
 	}
 
+
+	@PostMapping("/block/{id}")
+	public BlockedByUserDto postBlockUser(@RequestAttribute Long userId, @PathVariable Long id)throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException{
+		BlockUser blockuser = userService.blockUser(userId, id);
+
+		return new BlockedByUserDto(blockuser.getId(), blockuser.getIdBlocked(), blockuser.getIdBlocker(), blockuser.getDateBlock());
+	}
+	
+
 	@GetMapping("/followers/count")
 	public int getFollowersCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
 		return userService.getFollowersCount(userId);
 	}
 
+	@GetMapping("/getBlocked")
+	public List<Long> getBlocked(@RequestAttribute Long userId) throws InstanceNotFoundException{
+		return Optional.ofNullable(userService.getBlocked(userId))
+									.orElse(Collections.emptyList())
+									.stream()
+									.map(Users::getId)
+									.collect(Collectors.toList());
+	}
+	
 	@GetMapping("/following/count")
 	public int getFollowingCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
 		return userService.getFollowingCount(userId);
@@ -332,6 +355,7 @@ public class UserController {
 	public List<String> getGenders() {
 		return userService.getGenders();
 	}
+
 
 	/**
 	 * Generate service token.

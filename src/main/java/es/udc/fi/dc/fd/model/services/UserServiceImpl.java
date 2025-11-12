@@ -22,7 +22,9 @@ import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -50,6 +52,9 @@ public class UserServiceImpl implements UserService {
 	private UserDao userDao;
 
 	@Autowired
+	private BlockUserDao blockUserDao;
+
+	@Autowired
 	private AvatarDao avatarDao;
 
 	/**
@@ -74,6 +79,8 @@ public class UserServiceImpl implements UserService {
 		user.setRole(roleType);
 		user.setFollowers(new ArrayList<Users>());
 		user.setFollowing(new ArrayList<Users>());
+		user.setBlockedUsers(new ArrayList<Users>());
+		user.setWhoBlockUs(new ArrayList<Users>());
 		if(user.getAvatar() == null) user.setAvatar(avatarDao.findByName("default").get());
 
 		userDao.save(user);
@@ -98,7 +105,7 @@ public class UserServiceImpl implements UserService {
 			throw new IncorrectLoginException(userName, password);
 		}
 
-		if(user.get().getBlocked())
+		if(user.get().getBanned())
 			throw new LoginUserBlockedException();
 
 		if (!passwordEncoder.matches(password, user.get().getPassword())) {
@@ -206,8 +213,8 @@ public class UserServiceImpl implements UserService {
 	 * @throws AlreadyBlockException the user was already blocked
 	 * @throws SelfBlockException the user cant block him self
 	 */
-		@Override
-		public void blockUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
+	@Override
+	public void banUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
 
 		if (!userDao.existsById(idBlocked)) 
 			throw new InstanceNotFoundException("project.entities.users", idBlocked);
@@ -215,10 +222,10 @@ public class UserServiceImpl implements UserService {
 		if (!userDao.existsById(idBlocker)) 
 			throw new InstanceNotFoundException("project.entities.users", idBlocker);
 			
+		Users user = userDao.findById(idBlocked).get();
 		Users blocker = userDao.findById(idBlocker).get();
 		Users blocked = userDao.findById(idBlocked).get();
-
-		if (blocked.getBlocked())
+		if (user.getBanned())
 			throw new AlreadyBlockException();
 
 		
@@ -227,7 +234,7 @@ public class UserServiceImpl implements UserService {
 
 		if(idBlocker == idBlocked)
 			throw new SelfBlockException();
-		
+
 		// Remove blocked user from all users who have them as a follower
 		// Iterate through all users that the blocked user is following
 		if (blocked.getFollowing() != null && !blocked.getFollowing().isEmpty()) {
@@ -244,10 +251,77 @@ public class UserServiceImpl implements UserService {
 			userDao.save(blocked);
 		}
 		
-		blocked.setBlocked(Boolean.valueOf(true));
+		blocked.setBanned(Boolean.valueOf(true));
 		
 		userDao.save(blocked);
 	}
+
+	@Override
+	public BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		if (!userDao.existsById(idBlocked)) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocked);
+
+		if (!userDao.existsById(idBlocker)) 
+			throw new InstanceNotFoundException("project.entities.users", idBlocker);
+
+		if(blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked)){
+			throw new AlreadyBlockException();
+		}
+
+		if(userDao.findById(idBlocked).get().getRole() == RoleType.ADMIN)
+			throw new PermissionException("project.entities.BlockUser", idBlocked);
+
+		if(idBlocker == idBlocked)
+			throw new SelfBlockException();
+
+
+		Users blocker = permissionChecker.checkUser(idBlocker);
+		Users blocked = permissionChecker.checkUser(idBlocked);
+
+		//los admins no pueden ser bloqueados ni bloquear
+		if (blocked.getRole() == RoleType.ADMIN)
+			throw new PermissionException("project.entites.BlockUser", idBlocked);
+		
+		if (blocker.getRole() == RoleType.ADMIN)
+			throw new PermissionException("project.entites.BlockUser", idBlocker);
+
+		if(blocker.getFollowers().contains(blocked)){
+			//el usuario que bloqueado sigue al que le bloquea
+			blocker.getFollowers().remove(blocked); 
+			blocked.getFollowing().remove(blocker);
+		}
+
+		if(blocked.getFollowers().contains(blocker)){
+			//el usuario que bloquea sigue al bloqueado
+			blocked.getFollowers().remove(blocker);
+			blocker.getFollowing().remove(blocked);
+		}
+
+		if (blocker.getBlockedUsers() == null) {
+			blocked.setBlockedUsers(new ArrayList<Users>());
+		}
+
+		if (blocked.getWhoBlockUs() == null) {
+			blocker.setWhoBlockUs(new ArrayList<Users>());
+		}
+
+		blocker.getBlockedUsers().add(blocked);
+		blocked.getWhoBlockUs().add(blocker);
+
+		userDao.save(blocked);
+		userDao.save(blocker);
+
+		return blockUserDao.getByIdBlockerAndIdBlocked(idBlocker, idBlocked);
+	}
+
+	@Override
+	public List<Users> getBlocked(Long id) throws InstanceNotFoundException{
+		Users user = permissionChecker.checkUser(id);
+
+		return user.getBlockedUsers();
+	}
+
+
 
 	@Override
 	public Users getUserById(Long id) throws InstanceNotFoundException {
@@ -277,8 +351,8 @@ public class UserServiceImpl implements UserService {
 			throw new PermissionException("project.entities.users", followedId);
 		}
 
-		// Cannot follow someone who has been blocked (system-wide block)
-		if (followed.getBlocked() != null && followed.getBlocked()) {
+		// Cannot follow someone who has been banned (system-wide block)
+		if (followed.getBanned() != null && followed.getBanned()) {
 			throw new PermissionException("project.entities.users", followedId);
 		}
 
@@ -292,6 +366,9 @@ public class UserServiceImpl implements UserService {
 		if (followed.getFollowers().contains(newFollower) || followerId.equals(followedId)) {
 			return false; // Already following or trying to follow myself
 		}
+
+		if((blockUserDao.existsByIdBlockerAndIdBlocked(followerId, followedId)) || (blockUserDao.existsByIdBlockerAndIdBlocked(followedId, followerId)))
+			return false; //si bloqueas a un usuario no lo puedes seguir, si un usuario te bloquea no lo puedes seguir
 
 		followed.getFollowers().add(newFollower);
 		newFollower.getFollowing().add(followed);

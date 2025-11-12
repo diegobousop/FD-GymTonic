@@ -58,7 +58,7 @@ public class Users {
 	private RoleType role;
 
 	/** Ban */
-	private Boolean blocked;
+	private Boolean banned;
 
 	/** The premium status. */
 	private Boolean premium;
@@ -72,6 +72,13 @@ public class Users {
 	/** The following. */
 	private List<Users> following;
 
+	/** List of users that we blocked */
+	private List<Users> blockedUsers;
+	
+	/** List of users that blocked us */
+	private List<Users> whoBlockUs;
+
+
 	/** The weight. */
 	private float weight;
 
@@ -83,6 +90,7 @@ public class Users {
 
 	/** The birth date. */
 	private LocalDate birthDate;
+
 
 
 	/**
@@ -109,11 +117,11 @@ public class Users {
 		this.lastName = lastName;
 		this.email = email;
 		this.avatar = avatar;
-		this.blocked = false;
+		this.banned = false;
 	}
 
 	public Users( String userName, String password, String firstName, String lastName, String email,
-			Avatar avatar, RoleType role, List<Users> followers, List<Users> following) {
+			Avatar avatar, RoleType role, List<Users> followers, List<Users> following, List<Users> blockedUsers, List<Users> usersWhoBlockUs) {
 		this.userName = userName;
 		this.password = password;
 		this.firstName = firstName;
@@ -123,6 +131,8 @@ public class Users {
 		this.role = role;
 		this.followers = followers;
 		this.following = following;
+		this.blockedUsers = blockedUsers;
+		this.whoBlockUs = usersWhoBlockUs;
 	}
 
 	/**
@@ -281,8 +291,8 @@ public class Users {
 	 *
 	 * @return the bool
 	 */
-	public Boolean getBlocked() {
-		return blocked;
+	public Boolean getBanned() {
+		return banned;
 	}
 
 	/**
@@ -290,8 +300,8 @@ public class Users {
 	 *
 	 * @param role the new role
 	 */
-	public void setBlocked(Boolean blocked) {
-		this.blocked = blocked;
+	public void setBanned(Boolean banned) {
+		this.banned = banned;
 	}
 
 	/**
@@ -344,6 +354,7 @@ public class Users {
 		return followers;
 	}
 
+	
 	/**
 	 * Sets the followers.
 	 * @param followers the new followers
@@ -351,6 +362,24 @@ public class Users {
 	public void setFollowers(List<Users> followers) {
 		this.followers = followers;
 	}
+	
+	@ManyToMany
+	@JoinTable(name = "BlockUser", 
+			joinColumns = @JoinColumn(name = "idBlocker"),
+			inverseJoinColumns = @JoinColumn(name = "idBlocked")
+	)
+	public List<Users> getBlockedUsers(){
+		return blockedUsers;
+	}
+
+	public void setBlockedUsers(List<Users> blockedUsers){this.blockedUsers = blockedUsers;}
+
+
+	@ManyToMany(mappedBy = "blockedUsers")
+	public List<Users> getWhoBlockUs(){return whoBlockUs;}
+
+	public void setWhoBlockUs(List<Users> whoBlockUs){this.whoBlockUs = whoBlockUs;}
+
 
 	/**
 	 * Gets the following.

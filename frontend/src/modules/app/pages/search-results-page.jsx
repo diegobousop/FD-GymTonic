@@ -3,9 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import { searchResults } from "../../../backend/searchService.js";
 import Routine from "../components/common/routine.jsx";
 import { UserContext } from "../components/common/user-provider";
-import backend  from "../../../backend/index.js";
+import backend from "../../../backend";
 import {useToast} from "../components/common/toast-provider.jsx";
 import { Link } from "react-router-dom";
+
 
 const SearchResultsPage = () => {
   const { user } = useContext(UserContext);
@@ -15,6 +16,7 @@ const SearchResultsPage = () => {
   const [error, setError] = useState(null);
   const [itemTypeFilter, setItemTypeFilter] = useState("TODO");
   const { showToast } = useToast();
+
 
   const query = searchParams.get("text") || "";
   const trainerName = searchParams.get("trainerName") || "";
@@ -60,18 +62,26 @@ const SearchResultsPage = () => {
     fetchResults();
   }, [fetchResults]);
 
+  useEffect(() => {
+    backend.userService.getBlockedUsers(
+      (data) => {
+        user.idBlocked = data;
+      },
+      (err) => {setError(err || "Error inesperado al recuperar usuarios baneados")}
+    )
+  }, []);
+
   const filterByType = (type) => setItemTypeFilter(type);
 
-  // Llamada para seguir al usuario
+  // Seguir usuario
   const handleFollowUser = (userId) => {
     const targetUser = results.users.find(u => u.id === userId);
     const userName = targetUser?.name || "este usuario";
-    
+
     backend.userService.followUser(
       userId,
       (success) => {
         if (success) {
-          // Éxito: ahora lo sigues
           setResults((prev) => ({
             ...prev,
             users: prev.users.map((u) =>
@@ -80,7 +90,6 @@ const SearchResultsPage = () => {
           }));
           showToast(`Has comenzado a seguir a ${userName}`, 'success');
         } else {
-          // False: ya lo seguías - mostrar botón de dejar de seguir
           setResults((prev) => ({
             ...prev,
             users: prev.users.map((u) =>
@@ -97,16 +106,15 @@ const SearchResultsPage = () => {
     );
   };
 
-  // Llamada para dejar de seguir al usuario
+  // Dejar de seguir usuario
   const handleUnfollowUser = (userId) => {
     const targetUser = results.users.find(u => u.id === userId);
     const userName = targetUser?.name || "este usuario";
-    
+
     backend.userService.unfollowUser(
       userId,
       (success) => {
         if (success) {
-          // Éxito: dejaste de seguirlo
           setResults((prev) => ({
             ...prev,
             users: prev.users.map((u) =>
@@ -115,7 +123,6 @@ const SearchResultsPage = () => {
           }));
           showToast(`Has dejado de seguir a ${userName}`, 'success');
         } else {
-          // False: no lo seguías - mostrar botón de seguir
           setResults((prev) => ({
             ...prev,
             users: prev.users.map((u) =>
@@ -130,10 +137,40 @@ const SearchResultsPage = () => {
         showToast("Error al dejar de seguir al usuario.", 'error');
       }
     );
-  }
+  };
+
+  // 🔒 Bloquear usuario
+  const handleBlockUser = (userId) => {
+    const targetUser = results.users.find(u => u.id === userId);
+    const userName = targetUser?.name || "este usuario";
+
+    backend.userService.blockUser(
+      userId,
+      (success) => {
+        if (success) {
+          setResults(prev => ({
+            ...prev,
+            users: prev.users.map(u =>
+              u.id === userId ? { ...u, isBlocked: true } : u
+            )
+          }));
+  
+          if (!user.idBlocked) user.idBlocked = [];
+          user.idBlocked.push(userId);
+          showToast(`Has bloqueado a ${userName}`, 'success');
+        } else {
+          showToast(`Ya tenías bloqueado a ${userName}`, 'error');
+        }
+      },
+      (error) => {
+        console.error(error);
+        showToast("Error al bloquear al usuario.", 'error');
+      }
+    );
+  };
 
   return (
-    <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">      
+    <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">
       <p className="mb-4 text-gray-300">
         Mostrando resultados para: <b>{query || "..."}</b>
       </p>
@@ -184,20 +221,37 @@ const SearchResultsPage = () => {
                         </Link>
                       </div>
                       {userItem.id !== user.id && (
-                        <button 
-                          onClick={() => 
-                            userItem.isFollowing 
-                              ? handleUnfollowUser(userItem.id) 
-                              : handleFollowUser(userItem.id)
-                          } 
-                          className={`${
-                            userItem.isFollowing 
-                              ? 'bg-gray-600 hover:bg-gray-700' 
-                              : 'bg-green-600 hover:bg-green-700'
-                          } text-white px-3 py-1 rounded-md text-sm`}
-                        >
-                          {userItem.isFollowing ? 'Dejar de seguir' : 'Seguir'}
-                        </button>
+                        <div className="flex gap-2">
+                          {!userItem.isBanned && (
+                            <button
+                              onClick={() =>
+                                userItem.isFollowing
+                                  ? handleUnfollowUser(userItem.id)
+                                  : handleFollowUser(userItem.id)
+                              }
+                              className={`${
+                                userItem.isFollowing
+                                  ? "bg-gray-600 hover:bg-gray-700"
+                                  : "bg-green-600 hover:bg-green-700"
+                              } text-white px-3 py-1 rounded-md text-sm`}
+                            >
+                              {userItem.isFollowing ? "Dejar de seguir" : "Seguir"}
+                            </button>
+                          )}
+                          {userItem.id !== user.id && user.role !== "ADMIN"&& userItem.rol !== "ADMIN" && (
+                            <button
+                              onClick={() => handleBlockUser(userItem.id)}
+                              disabled={user.idBlocked?.includes(userItem.id)}
+                              className={`${
+                                user.idBlocked?.includes(userItem.id)
+                                  ? "bg-red-900 cursor-not-allowed"
+                                  : "bg-red-600 hover:bg-red-700"
+                              } text-white px-3 py-1 rounded-md text-sm`}
+                            >
+                              {user.idBlocked?.includes(userItem.id) ? "Bloqueado" : "Bloquear"}
+                            </button>
+                          )}
+                        </div>
                       )}
                     </li>
                   ))}
@@ -229,7 +283,9 @@ const SearchResultsPage = () => {
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-medium">{exercise.name}</span>
-                        <span className="text-sm text-gray-300">{exercise.grupoMuscular}</span>
+                        <span className="text-sm text-gray-300">
+                          {exercise.grupoMuscular}
+                        </span>
                       </div>
                     </li>
                   ))}
@@ -237,11 +293,11 @@ const SearchResultsPage = () => {
               </div>
             )}
 
-          {(!results.users?.length &&
+          {!results.users?.length &&
             !results.routines?.length &&
-            !results.exercises?.length) && (
-            <p className="text-gray-400">No se encontraron resultados.</p>
-          )}
+            !results.exercises?.length && (
+              <p className="text-gray-400">No se encontraron resultados.</p>
+            )}
         </div>
       )}
     </div>

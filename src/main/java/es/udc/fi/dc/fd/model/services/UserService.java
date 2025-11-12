@@ -4,6 +4,7 @@ import java.util.List;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -90,9 +91,13 @@ public interface UserService {
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
 	 */
-	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
+	void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
 
 	Block<Users> getAllUser (int page, int size);
+
+	BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException;
+
+	
 
 	/**
 	 * Follow a user
@@ -128,6 +133,14 @@ public interface UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
+
+	/**
+	 * Get blocked useres
+	 * @param id the id
+	 * @return list of blocked
+	 * @throws InstanceNotFoundException 
+	 */
+	List<Users> getBlocked(Long id) throws InstanceNotFoundException;
 
 	/**
 	 * Get followers count of a user

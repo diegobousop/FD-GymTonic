@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.transaction.Transactional;
-
+import jakarta.validation.constraints.AssertTrue;
 
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -24,6 +24,7 @@ import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -49,6 +50,10 @@ public class UserServiceTest {
 
 	@Autowired
 	private AvatarDao avatarDao;
+
+
+	@Autowired
+	private BlockUserDao blockUserDao;
 
 	private static final String PASSWORD = "12345";
 
@@ -165,30 +170,32 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testBlockUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
+
+	public void testBanUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.ADMIN, Gender.OTHER);
+
 		userService.signUp(user, Users.RoleType.ADMIN);
 
 		Users userTest = createUser("userTest", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(userTest, Users.RoleType.USER);
 
-		userService.blockUser(user.getId(), userTest.getId());
-		assertTrue(userTest.getBlocked());
+		userService.banUser(user.getId(), userTest.getId());
+		assertTrue(userTest.getBanned());
 	}
 
 	@Test
-	public void testBlockUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.ADMIN, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.ADMIN);
 
-		userService.blockUser(user.getId(), 1L);
+		userService.banUser(user.getId(), 1L);
 		assertThrows(AlreadyBlockException.class, () -> {
-			userService.blockUser(user.getId(), 1L);
+			userService.banUser(user.getId(), 1L);
 		});
 	}
 
 	@Test 
-	public void testBlockByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -197,18 +204,18 @@ public class UserServiceTest {
 
 
 		assertThrows(PermissionException.class, () -> {
-			userService.blockUser(user.getId(), userTest.getId());
+			userService.banUser(user.getId(), userTest.getId());
 		});
 	}
 
 	@Test 
-	public void testBlockNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
 
 		assertThrows(InstanceNotFoundException.class, () -> {
-			userService.blockUser(user.getId(), 500L);
+			userService.banUser(user.getId(), 500L);
 		});
 	}
 
@@ -333,8 +340,31 @@ public class UserServiceTest {
 		assertEquals(user2, following.getItems().get(0));
 	}
 
+
+	@Test 
+	public void testBlockUser() throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		userService.blockUser(2L, 3L);
+		assertTrue(blockUserDao.existsByIdBlockerAndIdBlocked(2L, 3L));
+	}
+
+	@Test
+	public void testCheckFollowesAfterBlock() throws DuplicateInstanceException, AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		Users user1 = createUser("manolo", RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", RoleType.USER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+		if(userService.followUser(user1.getId(), user2.getId())){
+			userService.blockUser(user1.getId(), user2.getId());
+			assertEquals(user2.getFollowers().size(), 0);
+			assertEquals(user1.getFollowing().size(), 0);
+		}else{
+			assertTrue(false);
+		}
+}
+
 	@Test
 	public void testGetFollowersCount() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+
 		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
 		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
 		userService.signUp(user1, Users.RoleType.USER);
@@ -352,6 +382,7 @@ public class UserServiceTest {
 		userService.signUp(user3, Users.RoleType.USER);
 		assertTrue(userService.followUser(user3.getId(), user2.getId()));
 		assertEquals(2, userService.getFollowersCount(user2.getId()));
+
 	}
 
 	@Test
@@ -403,7 +434,7 @@ public class UserServiceTest {
 		assertEquals(1, userService.getFollowersCount(user2.getId()));
 
 		// Admin bloquea a user2
-		userService.blockUser(admin.getId(), user2.getId());
+		userService.banUser(admin.getId(), user2.getId());
 
 		userService.unfollowUser(user1.getId(), user2.getId());
 
@@ -430,7 +461,7 @@ public class UserServiceTest {
 		assertTrue(blocker.getFollowers().stream().anyMatch(u -> u.getId().equals(follower.getId())));
 
 		
-		userService.blockUser(admin.getId(), follower.getId());
+		userService.banUser(admin.getId(), follower.getId());
 		
 		
 		blocker = userService.getUserById(blocker.getId());
@@ -439,4 +470,5 @@ public class UserServiceTest {
 		assertFalse(containsFollower);
 		assertEquals(0, userService.getFollowersCount(blocker.getId()));
 	}
+
 }
