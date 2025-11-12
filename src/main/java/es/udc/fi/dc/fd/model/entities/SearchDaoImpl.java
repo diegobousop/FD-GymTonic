@@ -17,7 +17,7 @@ public class SearchDaoImpl implements SearchDao {
     @Override
     @SuppressWarnings("unchecked")
     public List<Object[]> findUserSuggestions(String text, int limit) {
-        return (List<Object[]>) entityManager
+        return entityManager
                 .createQuery("SELECT u.id, u.userName FROM Users u " +
                         "WHERE LOWER(u.userName) LIKE LOWER(CONCAT('%', :text, '%'))")
                 .setParameter("text", text)
@@ -28,7 +28,7 @@ public class SearchDaoImpl implements SearchDao {
     @Override
     @SuppressWarnings("unchecked")
     public List<Object[]> findRoutineSuggestions(String text, int limit) {
-        return (List<Object[]>) entityManager
+        return entityManager
                 .createQuery("SELECT r.id, r.name FROM Routine r " +
                         "WHERE LOWER(r.name) LIKE LOWER(CONCAT('%', :text, '%'))")
                 .setParameter("text", text)
@@ -39,7 +39,7 @@ public class SearchDaoImpl implements SearchDao {
     @Override
     @SuppressWarnings("unchecked")
     public List<Object[]> findExerciseSuggestions(String text, int limit) {
-        return (List<Object[]>) entityManager
+        return entityManager
                 .createQuery("SELECT e.id, e.exerciseName FROM Exercise e " +
                         "WHERE LOWER(e.exerciseName) LIKE LOWER(CONCAT('%', :text, '%'))")
                 .setParameter("text", text)

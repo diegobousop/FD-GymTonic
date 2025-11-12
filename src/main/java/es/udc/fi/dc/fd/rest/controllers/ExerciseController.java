@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import es.udc.fi.dc.fd.rest.dtos.ExerciseSummaryDto;
@@ -38,11 +37,10 @@ public class ExerciseController {
     @Autowired
     private MessageSource messageSource;
 
-    private final static String ALREADY_VALIDATED_EXCEPTION_CODE = "project.exceptions.AlreadyValidatedException";
+    private static final String ALREADY_VALIDATED_EXCEPTION_CODE = "project.exceptions.AlreadyValidatedException";
 
     @ExceptionHandler(AlreadyValidatedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ErrorsDto handleAlreadyValidatedException(AlreadyValidatedException exception, Locale locale){
         String errorMessage = messageSource.getMessage(ALREADY_VALIDATED_EXCEPTION_CODE,
         new Object[] {exception.getExerciseId()}, ALREADY_VALIDATED_EXCEPTION_CODE, locale);
@@ -77,16 +75,16 @@ public class ExerciseController {
     }
 
     @PostMapping("/Series")
-    public BlockDto<SerieDto> CreateSeries(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
-            throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public BlockDto<SerieDto> createSeries(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
+            throws InstanceNotFoundException {
 
         return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise), Optional.ofNullable(numSeries),routineId ).getItems()),false);
 
     }
 
     @PostMapping("/Series/create")
-    public SerieDto CreateSerie(@RequestParam long exerciseId, @RequestParam long routineId)
-        throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public SerieDto createSerie(@RequestParam long exerciseId, @RequestParam long routineId)
+        throws InstanceNotFoundException {
         return SerieConversor.toSerieDto((exerciseService.createSerie(exerciseId,routineId)));
     }
 
@@ -99,7 +97,7 @@ public class ExerciseController {
     @PutMapping("/Series")
     public SerieDto modifySerie(@RequestParam long serieId,
                                 @RequestParam int repeticiones,
-                                @RequestParam int peso) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
+                                @RequestParam int peso) throws DuplicateInstanceException {
         return SerieConversor.toSerieDto(exerciseService.editSerie(exerciseService.getSerie(serieId),repeticiones,peso));
     }
     @GetMapping("/Series")

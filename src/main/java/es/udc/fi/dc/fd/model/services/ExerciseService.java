@@ -23,7 +23,7 @@ public interface ExerciseService {
 
     Serie createSerie(long exercise, long routine) throws InstanceNotFoundException;
 
-    Boolean removeSerie(long SerieId) throws InstanceNotFoundException;
+    Boolean removeSerie(long serieId) throws InstanceNotFoundException;
 
     Serie editSerie(Serie serie,int repeticiones, int peso) throws DuplicateInstanceException;
 

@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
@@ -62,9 +62,10 @@ public class UserServiceImpl implements UserService {
 	 *
 	 * @param user the user
 	 * @throws DuplicateInstanceException the duplicate instance exception
+	 * @throws InstanceNotFoundException 
 	 */
 	@Override
-	public void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException {
+	public void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException, InstanceNotFoundException {
 
 		if (userDao.existsByUserName(user.getUserName())) {
 			throw new DuplicateInstanceException("project.entities.user", user.getUserName());
@@ -77,11 +78,15 @@ public class UserServiceImpl implements UserService {
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
-		user.setFollowers(new ArrayList<Users>());
-		user.setFollowing(new ArrayList<Users>());
-		user.setBlockedUsers(new ArrayList<Users>());
-		user.setWhoBlockUs(new ArrayList<Users>());
-		if(user.getAvatar() == null) user.setAvatar(avatarDao.findByName("default").get());
+		user.setFollowers(new ArrayList<>());
+		user.setFollowing(new ArrayList<>());
+		user.setBlockedUsers(new ArrayList<>());
+		user.setWhoBlockUs(new ArrayList<>());
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		if(!avatar.isPresent()) {
+			throw new InstanceNotFoundException("project.entities.avatar", "default");
+		}
+		if(user.getAvatar() == null) user.setAvatar(avatar.get());
 
 		userDao.save(user);
 
@@ -105,7 +110,7 @@ public class UserServiceImpl implements UserService {
 			throw new IncorrectLoginException(userName, password);
 		}
 
-		if(user.get().getBanned())
+		if(Boolean.TRUE.equals(user.get().getBanned()))
 			throw new LoginUserBlockedException();
 
 		if (!passwordEncoder.matches(password, user.get().getPassword())) {
@@ -177,8 +182,6 @@ public class UserServiceImpl implements UserService {
 
 		userDao.save(user);
 
-		System.out.println("USER SERVICE: " + user);
-
 		return user;
 	}
 
@@ -214,7 +217,7 @@ public class UserServiceImpl implements UserService {
 	 * @throws SelfBlockException the user cant block him self
 	 */
 	@Override
-	public void banUser(Long idBlocker, Long idBlocked) throws SelfBlockException, AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
+	public void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
 
 		if (!userDao.existsById(idBlocked)) 
 			throw new InstanceNotFoundException("project.entities.users", idBlocked);
@@ -222,38 +225,41 @@ public class UserServiceImpl implements UserService {
 		if (!userDao.existsById(idBlocker)) 
 			throw new InstanceNotFoundException("project.entities.users", idBlocker);
 			
-		Users user = userDao.findById(idBlocked).get();
-		Users blocker = userDao.findById(idBlocker).get();
-		Users blocked = userDao.findById(idBlocked).get();
-		if (user.getBanned())
+		Optional<Users> user = userDao.findById(idBlocked);
+		if(user.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
+		Optional<Users> blocker = userDao.findById(idBlocker);
+		if(blocker.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocker);
+		Users userEnt = user.get();
+		Users blockerEnt = blocker.get();
+		if (Boolean.TRUE.equals(userEnt.getBanned()))
 			throw new AlreadyBlockException();
 
 		
-		if (blocker.getRole() != RoleType.ADMIN)
+		if (blockerEnt.getRole() != RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocker);
 
-		if(idBlocker == idBlocked)
+		if(Objects.equals(idBlocker, idBlocked))
 			throw new SelfBlockException();
 
 		// Remove blocked user from all users who have them as a follower
 		// Iterate through all users that the blocked user is following
-		if (blocked.getFollowing() != null && !blocked.getFollowing().isEmpty()) {
+		if (userEnt.getFollowing() != null && !userEnt.getFollowing().isEmpty()) {
 			// Create a copy of the list to avoid ConcurrentModificationException
-			java.util.List<Users> followingCopy = new ArrayList<>(blocked.getFollowing());
+			java.util.List<Users> followingCopy = new ArrayList<>(userEnt.getFollowing());
 			for (Users followed : followingCopy) {
-				if (followed.getFollowers() != null && followed.getFollowers().contains(blocked)) {
-					followed.getFollowers().remove(blocked);
+				if (followed.getFollowers() != null && followed.getFollowers().contains(userEnt)) {
+					followed.getFollowers().remove(userEnt);
 					userDao.save(followed);
 				}
 			}
 			// Clear the blocked user's following list
-			blocked.getFollowing().clear();
-			userDao.save(blocked);
+			userEnt.getFollowing().clear();
+			userDao.save(userEnt);
 		}
 		
-		blocked.setBanned(Boolean.valueOf(true));
+		userEnt.setBanned(Boolean.valueOf(true));
 		
-		userDao.save(blocked);
+		userDao.save(userEnt);
 	}
 
 	@Override
@@ -268,10 +274,17 @@ public class UserServiceImpl implements UserService {
 			throw new AlreadyBlockException();
 		}
 
-		if(userDao.findById(idBlocked).get().getRole() == RoleType.ADMIN)
+		Optional<Users> user = userDao.findById(idBlocked);
+		if(user.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
+
+		Optional<Users> blockedOptional = userDao.findById(idBlocked);
+
+		if(blockedOptional.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
+
+		if(blockedOptional.get().getRole() == RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocked);
 
-		if(idBlocker == idBlocked)
+		if(Objects.equals(idBlocker, idBlocked))
 			throw new SelfBlockException();
 
 
@@ -298,11 +311,11 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (blocker.getBlockedUsers() == null) {
-			blocked.setBlockedUsers(new ArrayList<Users>());
+			blocked.setBlockedUsers(new ArrayList<>());
 		}
 
 		if (blocked.getWhoBlockUs() == null) {
-			blocker.setWhoBlockUs(new ArrayList<Users>());
+			blocker.setWhoBlockUs(new ArrayList<>());
 		}
 
 		blocker.getBlockedUsers().add(blocked);
@@ -325,8 +338,9 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Users getUserById(Long id) throws InstanceNotFoundException {
-		if (!userDao.existsById(id)) throw new InstanceNotFoundException("project.entities.user", id);
-		return userDao.findById(id).get();
+		Optional<Users> user = userDao.findById(id);
+		if (user.isEmpty()) throw new InstanceNotFoundException("project.entities.user", id);
+		return user.get();
 	}
 
 	@Override
@@ -336,9 +350,7 @@ public class UserServiceImpl implements UserService {
 
 		Slice<Users> slice = userDao.findAllByOrderByIdAsc(pageable);
 
-		Block<Users> block = new Block<>(slice.getContent(), slice.hasNext());
-
-		return block;
+		return new Block<>(slice.getContent(), slice.hasNext());
 	}
 
 	@Override
@@ -357,10 +369,10 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if(followed.getFollowers()==null) {
-			followed.setFollowers(new ArrayList<Users>());
+			followed.setFollowers(new ArrayList<>());
 		}
 		if(newFollower.getFollowing()==null) {
-			newFollower.setFollowing(new ArrayList<Users>());
+			newFollower.setFollowing(new ArrayList<>());
 		}
 
 		if (followed.getFollowers().contains(newFollower) || followerId.equals(followedId)) {
@@ -406,11 +418,11 @@ public class UserServiceImpl implements UserService {
 
 		//Si no tiene seguidores se devuelve una lista vacía
 		if(user.getFollowers() == null) {
-			return new Block<Users>(new ArrayList<Users>(), false);
+			return new Block<>(new ArrayList<>(), false);
 		}
 
 		Slice<Users> slice = user.getFollowers().stream()
-				.skip(page * size)
+				.skip(page * (long)size)
 				.limit(size)
 				.collect(java.util.stream.Collectors.collectingAndThen(
 						java.util.stream.Collectors.toList(),
@@ -431,11 +443,11 @@ public class UserServiceImpl implements UserService {
 
 		//Si no tiene seguidos se devuelve una lista vacía
 		if(user.getFollowing() == null) {
-			return new Block<Users>(new ArrayList<Users>(), false);
+			return new Block<>(new ArrayList<>(), false);
 		}
 
 		Slice<Users> slice = user.getFollowing().stream()
-				.skip(page * size)
+				.skip(page * (long)size)
 				.limit(size)
 				.collect(java.util.stream.Collectors.collectingAndThen(
 						java.util.stream.Collectors.toList(),
@@ -475,7 +487,7 @@ public class UserServiceImpl implements UserService {
 	public List<String> getGenders() {
 		return Arrays.asList(Gender.values()).stream()
 				.map(Gender::name)
-				.collect(Collectors.toList());
+				.toList();
 	}
 
 }

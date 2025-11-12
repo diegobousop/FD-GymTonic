@@ -1,7 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +41,6 @@ import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -98,10 +96,6 @@ public class RoutineControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper;
-    }
-
-    private Routine createRoutine(String name, Users creator) {
-        return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType, Boolean premium)
@@ -913,7 +907,7 @@ public class RoutineControllerTest {
 
         List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
         
-        Training createdTraining = routineService.createTrainingFromRoutine(
+        routineService.createTrainingFromRoutine(
             user.getUserDto().getId(),
             "Training 1",
             "Description of training",
@@ -942,7 +936,7 @@ public class RoutineControllerTest {
         Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
             new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
 
-        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
         
 
 

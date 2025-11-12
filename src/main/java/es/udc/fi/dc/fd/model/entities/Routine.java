@@ -27,7 +27,7 @@ public class Routine {
         FACIL,       // 0
         INTERMEDIO,  // 1
         DIFICIL      // 2
-    };
+    }
 
     public Routine() {
     }
@@ -45,14 +45,6 @@ public class Routine {
         this.isPublic = isPublic;
     }
 
-    public Routine(Long id,String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
-        this.name = name;
-        this.exercises = exercises;
-        this.creator = creator;
-        this.duration = duration;
-        this.modificationDate = modificationDate;
-        this.isPublic = isPublic;
-    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

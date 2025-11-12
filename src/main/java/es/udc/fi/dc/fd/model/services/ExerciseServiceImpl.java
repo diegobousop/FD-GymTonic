@@ -1,7 +1,9 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.lang.StackWalker.Option;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 import es.udc.fi.dc.fd.model.entities.*;
@@ -11,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
@@ -35,6 +36,10 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Autowired
     private IconDao iconDao;
+
+    private static final String ADMIN_STRING = "ADMIN";
+    private static final String TRAINER_STRING = "TRAINER";
+
 
     @Override
     public Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
@@ -61,17 +66,17 @@ public class ExerciseServiceImpl implements ExerciseService {
             throw new PermissionException("project.entities.exercise", exercise.getExerciseName());
         }
 
-        if(validator.get().getRole().toString().equals("ADMIN")){ // si el que añade es admin, se valida directamente
+        if(validator.get().getRole().toString().equals(ADMIN_STRING)){ // si el que añade es admin, se valida directamente
             exercise.setValidated(true);
             exercise.setValidator(validator.get());
         }
 
         //si el que añade es trainer y es premium, puede añadir ejercicios
-        if(validator.get().getRole().toString().equals("TRAINER") && creator.get().getPremium()) { 
+        if(validator.get().getRole().toString().equals(TRAINER_STRING) && Boolean.TRUE.equals(creator.get().getPremium())) { 
             exercise.setValidated(false);
         }
 
-        if(validator.get().getRole().toString().equals("TRAINER") && !creator.get().getPremium()) {
+        if(validator.get().getRole().toString().equals(TRAINER_STRING) && Boolean.TRUE.equals(!creator.get().getPremium())) {
             throw new PermissionException("project.entities.exercise", exercise);
         }
 
@@ -128,16 +133,21 @@ public class ExerciseServiceImpl implements ExerciseService {
         if (!routineDao.existsById(routine))
             throw new InstanceNotFoundException("project.entities.routine", routine);
         aux=getSeriesByExerciseAndRoutine(exercise, routine).getItems().size();
-        Serie serie= new Serie(0,0,aux+1,exerciseDao.findById(exercise).get(),routineDao.getReferenceById(routine));
+        Optional<Exercise> ex= exerciseDao.findById(exercise);
+        if(ex.isEmpty()){
+            throw new InstanceNotFoundException("project.entities.exercise", exercise);
+        }
+        Exercise exerciseEnt= ex.get();
+        Serie serie= new Serie(0,0,aux+1,exerciseEnt,routineDao.getReferenceById(routine));
         serieDao.save(serie);
         return serie;
     }
 
     @Override
-    public Boolean removeSerie(long SerieId) throws InstanceNotFoundException {
-        if(!serieDao.existsById(SerieId)) throw new InstanceNotFoundException("project.entities.serie", SerieId);
-        serieDao.deleteById(SerieId);
-        return (!serieDao.existsById(SerieId));
+    public Boolean removeSerie(long serieId) throws InstanceNotFoundException {
+        if(!serieDao.existsById(serieId)) throw new InstanceNotFoundException("project.entities.serie", serieId);
+        serieDao.deleteById(serieId);
+        return (!serieDao.existsById(serieId));
     }
 
     @Override
@@ -150,18 +160,20 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Override
     public Serie getSerie(Long id)throws NoSuchElementException {
-        if (serieDao.findById(id).isEmpty())
+        Optional<Serie> aux= serieDao.findById(id);
+        if (aux.isEmpty())
             throw new NoSuchElementException("project.entities.serie");
-        return serieDao.findById(id).get();
+        return aux.get();
     }
 
     @Override
     public Block<Serie> getSeriesByExerciseAndRoutine(long exercise, long routine)  {
+        Optional<Exercise> exerciseOptional= exerciseDao.findById(exercise);
+        Optional<Routine> routOptional= routineDao.findById(routine);
 
-        if (exerciseDao.findById( exercise).isEmpty() || routineDao.findById(routine).isEmpty())
-            throw new NoSuchElementException("project.entities.serie");
+        if (exerciseOptional.isEmpty() || routOptional.isEmpty()) throw new NoSuchElementException("project.entities.serie");
         else{
-            Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
+            Slice<Serie> slice = serieDao.findByExercise(exerciseOptional.get());
             List<Serie> filtered = slice.getContent().stream()
                     .filter(serie -> serie.getRoutine() != null
                             && serie.getRoutine().getId() == routine
@@ -176,9 +188,13 @@ public class ExerciseServiceImpl implements ExerciseService {
 
         Optional<Exercise> foundExercise = exerciseDao.findById(exerciseId);
 
-        Users validator = userDao.findById(userId).get();
+        Optional<Users> validator = userDao.findById(userId);
+        if(validator.isEmpty()){
+            throw new InstanceNotFoundException("project.entities.user", userId);
+        }
+        Users validatorUser = validator.get();
 
-        if(!(validator.getRole().toString().equals("ADMIN"))){ 
+        if(!validatorUser.getRole().toString().equals(ADMIN_STRING)){ 
             throw new PermissionException("project.entities.exercise", exerciseId);
         }
 
@@ -200,9 +216,13 @@ public class ExerciseServiceImpl implements ExerciseService {
 
         Optional<Exercise> foundExercise = exerciseDao.findById(exerciseId);
 
-        Users validator = userDao.findById(userId).get();
+        Optional<Users> validator = userDao.findById(userId);
 
-        if(!(validator.getRole().toString().equals("ADMIN"))){ 
+        if(validator.isEmpty()){
+            throw new InstanceNotFoundException("project.entities.user", userId);
+        }
+
+        if(!Objects.equals(validator.get().getRole().toString(), ADMIN_STRING)){ 
             throw new PermissionException("project.entities.exercise", exerciseId);
         }
 
@@ -219,12 +239,14 @@ public class ExerciseServiceImpl implements ExerciseService {
     public void blockExercise(Long userId, Long exerciseId) throws InstanceNotFoundException {
 
         Optional<Exercise> foundExercise = exerciseDao.findById(exerciseId);
-        Users blocker = userDao.findById(userId).get();
+        Optional<Users> blocker = userDao.findById(userId);
         if (foundExercise.isEmpty())
             throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        if(blocker.isEmpty()) throw new InstanceNotFoundException("project.entities.user", userId);
+        
 
         foundExercise.get().setValidated(false);
-        foundExercise.get().setValidator(blocker); // para saber quien lo ha bloqueado
+        foundExercise.get().setValidator(blocker.get()); // para saber quien lo ha bloqueado
         exerciseDao.save(foundExercise.get());
     }
 

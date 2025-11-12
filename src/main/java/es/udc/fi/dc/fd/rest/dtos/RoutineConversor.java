@@ -1,7 +1,6 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
@@ -12,7 +11,7 @@ public class RoutineConversor {
 
     // Método original
     public static RoutineDto toRoutineDto(Routine routine) {
-        RoutineDto routineDto = new RoutineDto(
+        return new RoutineDto(
             routine.getId(), 
             routine.getName(),
             ExerciseConversor.toExerciseDtos(routine.getExercises()), 
@@ -21,7 +20,6 @@ public class RoutineConversor {
             routine.getDuration(),
             routine.getModificationDate(), 
             routine.getIsPublic());
-        return routineDto;
     }
 
     // Nuevo método para incluir info de "isFollowing" para un usuario concreto
@@ -48,14 +46,14 @@ public class RoutineConversor {
     }
 
     public static List<RoutineDto> toRoutineDtos(List<Routine> routines) {
-        return routines.stream().map(r -> toRoutineDto(r)).collect(Collectors.toList());
+        return routines.stream().map(r -> toRoutineDto(r)).toList();
     }
 
     // Lista de RoutineDto con isFollowing
     public static List<RoutineDto> toRoutineDtos(List<Routine> routines, Long currentUserId, RoutineFollowDao routineFollowDao) {
         return routines.stream()
                 .map(r -> toRoutineDto(r, currentUserId, routineFollowDao))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static TrainingDetailsDto toTrainingDetailsDto(Training training, List<ExerciseRoutineDto> exercises, Routine routine) {
@@ -84,7 +82,7 @@ public class RoutineConversor {
     public static CalendarStatsDto toCalendarStatsDto(List<Training> trainings) {
         List<CalendarTrainingDto> trainingDtos = trainings.stream()
                 .map(RoutineConversor::toCalendarStatDto)
-                .collect(Collectors.toList());
+                .toList();
         return new CalendarStatsDto(trainingDtos);
     }
 }

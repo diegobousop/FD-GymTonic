@@ -24,8 +24,9 @@ public interface UserService {
 	 * @param user the user
 	 * @param roleType the role
 	 * @throws DuplicateInstanceException the duplicate instance exception
+	 * @throws InstanceNotFoundException 
 	 */
-	void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException;
+	void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException, InstanceNotFoundException;
 	
 	/**
 	 * Login.

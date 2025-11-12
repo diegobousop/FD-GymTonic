@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,15 +61,15 @@ public class SearchServiceImpl implements SearchService {
                 })
                 .limit(limitPerType)
                 .map(r -> new SearchSuggestionDto((Long) r[0], "user", (String) r[1]))
-                .collect(Collectors.toList()));
+				.toList());
 
         suggestions.addAll(searchDao.findRoutineSuggestions(text, limitPerType).stream()
                 .map(r -> new SearchSuggestionDto((Long) r[0], "routine", (String) r[1]))
-                .collect(Collectors.toList()));
+				.toList());
 
         suggestions.addAll(searchDao.findExerciseSuggestions(text, limitPerType).stream()
                 .map(r -> new SearchSuggestionDto((Long) r[0], "exercise", (String) r[1]))
-                .collect(Collectors.toList()));
+				.toList());
 
         return suggestions;
     }
@@ -118,7 +117,7 @@ public class SearchServiceImpl implements SearchService {
                         u.getAvatar() != null ? u.getAvatar().getAvatarBase64() : null,
                         u.getRole()
                 ))
-                .collect(Collectors.toList());
+                .toList();
         resultMap.put("users", users);
 
         // Rutinas
@@ -131,7 +130,7 @@ public class SearchServiceImpl implements SearchService {
                                     e.getExerciseName(),
                                     e.getNumeroSeries()
                             ))
-                            .collect(Collectors.toList());
+                            .toList();
 
                     return SearchFullDto.fromRoutine(
                             r.getId(),
@@ -141,7 +140,7 @@ public class SearchServiceImpl implements SearchService {
                             exercises
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
         resultMap.put("routines", routines);
 
         // Ejercicios
@@ -152,7 +151,7 @@ public class SearchServiceImpl implements SearchService {
                         e.getExerciseName(),
                         e.getGrupoMuscular().toString()
                 ))
-                .collect(Collectors.toList());
+                .toList();
         resultMap.put("exercises", exercises);
 
         return resultMap;

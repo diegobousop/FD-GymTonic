@@ -1,14 +1,9 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
-
 import java.util.List;
-
-
-import org.h2.engine.User;
 
 import org.springframework.format.annotation.NumberFormat;
 
-import es.udc.fi.dc.fd.model.entities.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

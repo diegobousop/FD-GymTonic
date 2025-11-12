@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -26,6 +25,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -93,7 +93,6 @@ public class UserController {
 	 */
 	@ExceptionHandler(IncorrectLoginException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ResponseBody
 	public ErrorsDto handleIncorrectLoginException(IncorrectLoginException exception, Locale locale) {
 
 		String errorMessage = messageSource.getMessage(INCORRECT_LOGIN_EXCEPTION_CODE, null,
@@ -105,7 +104,6 @@ public class UserController {
 
 	@ExceptionHandler(LoginUserBlockedException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ResponseBody
 	public ErrorsDto handleLoginUserBlockedException(LoginUserBlockedException exception, Locale locale){
 
 		String errorMessage = messageSource.getMessage(LOGIN_BLOCK_EXCEPTION, null,
@@ -124,7 +122,6 @@ public class UserController {
 	 */
 	@ExceptionHandler(IncorrectPasswordException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ResponseBody
 	public ErrorsDto handleIncorrectPasswordException(IncorrectPasswordException exception, Locale locale) {
 
 		String errorMessage = messageSource.getMessage(INCORRECT_PASS_EXCEPTION_CODE, null,
@@ -143,7 +140,6 @@ public class UserController {
 	 */
 	@ExceptionHandler(AlreadyBlockException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ResponseBody
 	public ErrorsDto handleAlreadyStartedException(AlreadyBlockException exception, Locale locale){
 		String errorMessage = messageSource.getMessage(ALREADY_BLOCKED_EXCEPTION, null,
 				ALREADY_BLOCKED_EXCEPTION, locale);
@@ -161,12 +157,25 @@ public class UserController {
 	 */
 	@ExceptionHandler(SelfBlockException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ResponseBody
 	public ErrorsDto handleSelfBlockException(SelfBlockException exception, Locale locale){
 		String errorMessage = messageSource.getMessage(SELF_BLOCKED_EXCEPTION, null,
 		SELF_BLOCKED_EXCEPTION, locale);
 
 		return new ErrorsDto(errorMessage);
+	}
+
+	private Gender parseGender(String genderStr) {
+		if (genderStr == null) {
+			return null; // or throw an exception
+		}
+		switch (genderStr.toUpperCase()) {
+			case "MALE":
+				return Gender.MALE;
+			case "FEMALE":
+				return Gender.FEMALE;
+			default:
+				return Gender.OTHER;
+		}
 	}
 
 	/**
@@ -175,16 +184,16 @@ public class UserController {
 	 * @param userDto the user dto
 	 * @return the response entity
 	 * @throws DuplicateInstanceException the duplicate instance exception
+	 * @throws InstanceNotFoundException 
 	 */
 	@PostMapping("/signUp")
 	public ResponseEntity<AuthenticatedUserDto> signUp(
 			@Validated({ UserDto.AllValidations.class }) @RequestBody UserRegisterParamsDto userDto)
-			throws DuplicateInstanceException {
+			throws DuplicateInstanceException, InstanceNotFoundException {
 
 		Users user = toUser(userDto);
 		Users.RoleType role = userDto.getRole() != null && userDto.getRole().equals("TRAINER") ? Users.RoleType.TRAINER : Users.RoleType.USER;
-		Users.Gender gender = userDto.getGender() != null && userDto.getGender().equals("MALE") ? Users.Gender.MALE :
-			userDto.getGender() != null && userDto.getGender().equals("FEMALE") ? Users.Gender.FEMALE : Users.Gender.OTHER;
+		Users.Gender gender = parseGender(userDto.getGender());
 		user.setGender(gender);
 		if (userDto.getBirthDate() != null && !userDto.getBirthDate().isEmpty()) {
 			user.setBirthDate(toLocalDate(userDto.getBirthDate()));
@@ -289,7 +298,7 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
+	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
 		return toUserDto(userService.getUserById(userId));
 	}
 
@@ -343,7 +352,7 @@ public class UserController {
 									.orElse(Collections.emptyList())
 									.stream()
 									.map(Users::getId)
-									.collect(Collectors.toList());
+									.toList();
 	}
 	
 	@GetMapping("/following/count")

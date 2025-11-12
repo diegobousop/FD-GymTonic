@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.AssertTrue;
 
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -195,7 +194,7 @@ public class UserServiceTest {
 	}
 
 	@Test 
-	public void testBanByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanByUser() throws InstanceNotFoundException, DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -209,7 +208,7 @@ public class UserServiceTest {
 	}
 
 	@Test 
-	public void testBanNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanNullUser() throws InstanceNotFoundException, DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -257,9 +256,9 @@ public class UserServiceTest {
 
 		assertTrue(userService.followUser(user1.getId(), user2.getId()));
 
-		assertEquals(user2.getFollowers().size(), 1);
+		assertEquals(1, user2.getFollowers().size());
 		assertEquals(user2.getFollowers().get(0), user1);
-		assertEquals(user1.getFollowing().size(), 1);
+		assertEquals(1, user1.getFollowing().size());
 		assertEquals(user1.getFollowing().get(0), user2);
 
 	}
@@ -272,15 +271,15 @@ public class UserServiceTest {
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
 		assertTrue(userService.followUser(user1.getId(), user2.getId()));
-		assertEquals(user2.getFollowers().size(), 1);
+		assertEquals(1, user2.getFollowers().size());
 		assertEquals(user2.getFollowers().get(0), user1);
-		assertEquals(user1.getFollowing().size(), 1);
+		assertEquals(1, user1.getFollowing().size());
 		assertEquals(user1.getFollowing().get(0), user2);
 
 		assertTrue(userService.unfollowUser(user1.getId(), user2.getId()));
 
-		assertEquals(user2.getFollowers().size(), 0);
-		assertEquals(user1.getFollowing().size(), 0);
+		assertEquals(0, user2.getFollowers().size());
+		assertEquals(0, user1.getFollowing().size());
 	}
 
 	@Test
@@ -355,8 +354,8 @@ public class UserServiceTest {
 		userService.signUp(user2, Users.RoleType.TRAINER);
 		if(userService.followUser(user1.getId(), user2.getId())){
 			userService.blockUser(user1.getId(), user2.getId());
-			assertEquals(user2.getFollowers().size(), 0);
-			assertEquals(user1.getFollowing().size(), 0);
+			assertEquals(0, user2.getFollowers().size());
+			assertEquals(0, user1.getFollowing().size());
 		}else{
 			assertTrue(false);
 		}
@@ -386,7 +385,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testGetFollowersCountNoUser() throws DuplicateInstanceException {
+	public void testGetFollowersCountNoUser() throws DuplicateInstanceException, InstanceNotFoundException {
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 

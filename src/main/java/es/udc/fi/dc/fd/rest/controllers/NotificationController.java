@@ -43,7 +43,7 @@ public class NotificationController {
 
         Block<Notification> notifications = notificationService.getAllNotifications(userId, PageRequest.of(page, size));
 
-        return new BlockDto<NotificationDto>(NotificationConversor.toNotificationDtos(notifications.getItems()), notifications.getExistMoreItems());
+        return new BlockDto<>(NotificationConversor.toNotificationDtos(notifications.getItems()), notifications.getExistMoreItems());
     }
 
     /**

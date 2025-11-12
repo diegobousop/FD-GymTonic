@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -73,15 +71,13 @@ public class RoutineController {
     @Autowired
     private MessageSource messageSource;
 
-    private final static String INVALID_ROUTINE_NAME_EXCEPTION_CODE = "project.exceptions.InvalidRoutineNameException";
-    private final static String INVALID_ROUTINE_DURATION_EXCEPTION_CODE = "project.exceptions.InvalidRoutineDurationException";
-    private final static String ROUTINE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineLimitReachedException";
-    private final static String ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineExercisesLimitReachedException";
-
+    private static final String INVALID_ROUTINE_NAME_EXCEPTION_CODE = "project.exceptions.InvalidRoutineNameException";
+    private static final String INVALID_ROUTINE_DURATION_EXCEPTION_CODE = "project.exceptions.InvalidRoutineDurationException";
+    private static final String ROUTINE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineLimitReachedException";
+    private static final String ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE = "project.exceptions.RoutineExercisesLimitReachedException";
 
     @ExceptionHandler(InvalidRoutineNameException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ErrorsDto handleInvalidRoutineNameException(InvalidRoutineNameException exception, Locale locale){
         String errorMessage = messageSource.getMessage(INVALID_ROUTINE_NAME_EXCEPTION_CODE,
         new Object[] {exception.getName()}, INVALID_ROUTINE_NAME_EXCEPTION_CODE, locale);
@@ -91,7 +87,6 @@ public class RoutineController {
 
     @ExceptionHandler(InvalidRoutineDurationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ErrorsDto handleInvalidRoutineDurationException(InvalidRoutineDurationException exception, Locale locale){
         String errorMessage = messageSource.getMessage(INVALID_ROUTINE_DURATION_EXCEPTION_CODE,
         new Object[] {exception.getDuration()}, INVALID_ROUTINE_DURATION_EXCEPTION_CODE, locale);
@@ -101,7 +96,6 @@ public class RoutineController {
 
     @ExceptionHandler(RoutineLimitReachedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ErrorsDto handleRoutineLimitReachedException(RoutineLimitReachedException exception, Locale locale){
         String errorMessage = messageSource.getMessage(ROUTINE_LIMIT_REACHED_EXCEPTION_CODE,
         new Object[] {exception.getRoutineLimit()}, ROUTINE_LIMIT_REACHED_EXCEPTION_CODE, locale);
@@ -111,7 +105,6 @@ public class RoutineController {
 
     @ExceptionHandler(RoutineExerciseLimitReachedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ErrorsDto handleRoutineExerciseLimitReachedException(RoutineExerciseLimitReachedException exception, Locale locale){
         String errorMessage = messageSource.getMessage(ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE,
         new Object[] {exception.getRoutineExerciseLimit()}, ROUTINE_EXERCISE_LIMIT_REACHED_EXCEPTION_CODE, locale);
@@ -162,9 +155,7 @@ public class RoutineController {
             exerciseRoutineDtos.add(exerciseRoutineDtoItem);
         }
 
-        RoutineDetailsDto routineDetails = RoutineDetailsConversor.toRoutineDetailsDto(routine, exerciseRoutineDtos);
-
-		return routineDetails;
+        return RoutineDetailsConversor.toRoutineDetailsDto(routine, exerciseRoutineDtos);
 	}
 
 
@@ -213,7 +204,7 @@ public class RoutineController {
 
     @PostMapping("/createTraining")
     public void createTraining(@RequestAttribute Long userId, @RequestBody TrainingParamsDto params)
-            throws InstanceNotFoundException, PermissionException {
+            throws InstanceNotFoundException {
 
         List<Serie> series = new ArrayList<>();
         for (ExerciseRoutineParamsDto exerciseParamsDto : params.getExercises()) {
@@ -228,7 +219,7 @@ public class RoutineController {
         @PostMapping("/{routineId}/follow")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void followRoutine(@RequestAttribute Long userId, @PathVariable Long routineId)
-            throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+            throws InstanceNotFoundException, PermissionException {
 
         routineService.followRoutine(userId, routineId);
     }

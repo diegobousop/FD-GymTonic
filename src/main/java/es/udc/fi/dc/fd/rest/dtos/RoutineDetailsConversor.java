@@ -6,7 +6,7 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 
 public class RoutineDetailsConversor {
     public static RoutineDetailsDto toRoutineDetailsDto(Routine routine, List<ExerciseRoutineDto> exerciseRoutineDtos) {
-        RoutineDetailsDto routineDetailsDto = new RoutineDetailsDto(
+        return new RoutineDetailsDto(
             routine.getId(),
             routine.getName(),
             exerciseRoutineDtos,
@@ -16,6 +16,5 @@ public class RoutineDetailsConversor {
             routine.getModificationDate(),
             routine.getIsPublic()
             );
-        return routineDetailsDto;
     }
 }
