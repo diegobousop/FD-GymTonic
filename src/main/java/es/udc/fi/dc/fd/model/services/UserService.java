@@ -4,6 +4,7 @@ import java.util.List;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -54,10 +55,14 @@ public interface UserService {
 	 * @param email the email
 	 * @param avatarName the avatar name
 	 * @param cardNumber the card number
+	 * @param height the height
+	 * @param weight the weight
+	 * @param gender the gender
+	 * @param birthDate the birth date
 	 * @return the user
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
-	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber) throws InstanceNotFoundException;
+	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber, int height, float weight, String gender, String birthDate) throws InstanceNotFoundException;
 	
 	/**
 	 * Change password.
@@ -86,9 +91,13 @@ public interface UserService {
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
 	 */
-	void blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
+	void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
 
 	Block<Users> getAllUser (int page, int size);
+
+	BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException;
+
+	
 
 	/**
 	 * Follow a user
@@ -96,8 +105,9 @@ public interface UserService {
 	 * @param idFollowed id of the user to follow
 	 * @return true if the user was followed, false if already following
 	 * @throws InstanceNotFoundException the instance not found exception
+	 * @throws PermissionException the permission exception (if trying to follow an admin without being admin)
 	 */
-	boolean followUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException;
+	boolean followUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException, PermissionException;
 
 	/**
 	 * Unfollow a user
@@ -123,5 +133,35 @@ public interface UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
+
+	/**
+	 * Get blocked useres
+	 * @param id the id
+	 * @return list of blocked
+	 * @throws InstanceNotFoundException 
+	 */
+	List<Users> getBlocked(Long id) throws InstanceNotFoundException;
+
+	/**
+	 * Get followers count of a user
+	 * @param id the userId
+	 * @return count of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	int getFollowersCount(Long id) throws InstanceNotFoundException;
+
+	/**
+	 * Get following count of a user
+	 * @param id the userId
+	 * @return count of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	int getFollowingCount(Long id) throws InstanceNotFoundException;
+
+	/*
+	 * Get the diferents genders for users
+	 * @return list of genders
+	 */
+	List<String> getGenders();
 
 }

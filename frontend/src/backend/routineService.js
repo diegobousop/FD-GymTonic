@@ -105,9 +105,36 @@ export const getFollowersByRoutine = (routineId, { page, size }, onSuccess, onEr
 export const isFollowingRoutine = (routineId, onSuccess, onErrors) => {
   appFetch(
     `/routines/${routineId}/is-following`,
+  );
+};
+
+
+export const viewUserTrainings = (page, size, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/findTrainings?page=${page}&size=${size}`,
     fetchConfig("GET"),
     onSuccess,
     onErrors
   );
 };
+
+export const viewDayTrainings = (page, size, day, month, year, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/findDayTrainings?day=${day}&month=${month}&year=${year}&page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+
+export const getTrainingCalendarStats = (year, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/getTrainingCalendarStats?year=${year}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
 

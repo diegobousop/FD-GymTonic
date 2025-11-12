@@ -1,17 +1,17 @@
-
+DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS User_Follow;
+
 DROP TABLE IF EXISTS Serie;
+DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Training;
-DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Routine;
-DROP TABLE IF EXISTS User_Follow;
-DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Exercise;
+DROP TABLE IF EXISTS Blockuser;
+
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Avatar;
-DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Images;
 DROP TABLE IF EXISTS Icons;
 
@@ -21,12 +21,6 @@ CREATE TABLE Avatar (
     avatarBase64 MEDIUMTEXT NOT NULL
 );
 
-CREATE TABLE Blockuser (
-    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    idBlocker BIGINT NOT NULL,
-    idBlocked BIGINT NOT NULL,
-    dateBlock TIMESTAMP
-);
 
 CREATE TABLE Users (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -38,9 +32,21 @@ CREATE TABLE Users (
     avatar BIGINT,
     role TINYINT NOT NULL, /*0 User, 1 Trainer. 2 Admin*/
     premium BOOLEAN DEFAULT FALSE,
-    blocked BOOLEAN NOT NULL DEFAULT FALSE,
+    banned BOOLEAN NOT NULL DEFAULT FALSE,
     bankCard VARCHAR(16),
+    weight FLOAT NOT NULL, -- Weight in kilograms
+    height BIGINT NOT NULL, -- Height in centimeters
+    gender TINYINT NOT NULL, /* 0: Male, 1: Female, 2: Other */
+    birthdate DATE NOT NULL,
     FOREIGN KEY (avatar) REFERENCES Avatar(id)
+);
+CREATE TABLE Blockuser (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idBlocker BIGINT NOT NULL,
+    idBlocked BIGINT NOT NULL,
+    dateBlock TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idBlocker) REFERENCES Users(id),
+    FOREIGN KEY (idBlocked) REFERENCES Users(id)
 );
 
 CREATE TABLE Exercise (
@@ -95,9 +101,8 @@ CREATE TABLE Training (
     creationDate TIMESTAMP NOT NULL,
     isPublic BOOLEAN DEFAULT TRUE,
     userId BIGINT NOT NULL,
-    routineId BIGINT NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(id),
-    FOREIGN KEY (routineId) REFERENCES Routine(id)
+    duration BIGINT NOT NULL,
+    FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
 CREATE TABLE Serie (
@@ -106,7 +111,7 @@ CREATE TABLE Serie (
     peso INT NOT NULL,
     numeroSerie INT NOT NULL,
     exerciseId BIGINT NOT NULL,
-    routineId BIGINT NOT NULL,
+    routineId BIGINT,
     trainingId BIGINT,
     FOREIGN KEY (exerciseId) REFERENCES Exercise(id),
     FOREIGN KEY (routineId) REFERENCES  Routine(id),

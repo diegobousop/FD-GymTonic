@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.model.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
@@ -13,8 +14,16 @@ public class Icon {
     private String name;
     private String iconBase64;
 
+    public Icon() {
+    }
+
+    public Icon(String name, String iconBase64) {
+        this.name = name;
+        this.iconBase64 = iconBase64;
+    }
+
     @Id 
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long getId() {
         return id;
     }

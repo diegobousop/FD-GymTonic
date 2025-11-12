@@ -21,7 +21,7 @@ const VisibilityInput = ({
   }, [initialValue])
 
   const handleChange = (e) => {
-    const v = parseInt(e.target.value, 10)
+    const v = e.target.value === "true";
     if (onChange) {
       e.target.value = v
       onChange(e)
@@ -47,8 +47,8 @@ const VisibilityInput = ({
             (errors ? 'border border-[#ff0000] focus:border-[#ff0000]' : 'border-transparent focus:border focus:border-[#ff0000]')
           }
         >
-          <option value={0} className="bg-[#262626] text-[#f4f4f4] py-3">Público</option>
-          <option value={1} className="bg-[#262626] text-[#f4f4f4] py-3">Privado</option>
+          <option value={true} className="bg-[#262626] text-[#f4f4f4] py-3">Público</option>
+          <option value={false} className="bg-[#262626] text-[#f4f4f4] py-3">Privado</option>
         </select>
 
         <SVG_ICONS.DownIcon 

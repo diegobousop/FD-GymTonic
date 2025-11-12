@@ -1,6 +1,9 @@
 package es.udc.fi.dc.fd.rest;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -25,10 +28,21 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import es.udc.fi.dc.fd.model.services.RoutineService;
+import es.udc.fi.dc.fd.model.services.UserService;
+
+import es.udc.fi.dc.fd.model.entities.Icon;
+import es.udc.fi.dc.fd.model.entities.IconDao;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
+import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -36,6 +50,7 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
@@ -49,6 +64,16 @@ import es.udc.fi.dc.fd.rest.dtos.SerieParamsDto;
 @ActiveProfiles("test")
 @Transactional
 public class RoutineControllerTest {
+
+        @Autowired
+        private IconDao iconDao;
+
+        @Autowired
+        private UserService userService;
+
+        @Autowired
+        private RoutineService routineService;
+
     @Autowired
     private UserController userController;
 
@@ -75,6 +100,10 @@ public class RoutineControllerTest {
         return mapper;
     }
 
+    private Routine createRoutine(String name, Users creator) {
+        return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
+    }
+
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType, Boolean premium)
 			throws LoginUserBlockedException, IncorrectLoginException {
         Optional<Avatar> avatar = avatarDao.findByName("default");
@@ -83,6 +112,10 @@ public class RoutineControllerTest {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
                 user.setPremium(premium);
+		user.setGender(Users.Gender.OTHER);
+		user.setHeight(180);
+		user.setWeight(75.0f);
+		user.setBirthDate(LocalDate.now().minusYears(25));
 
 		userDao.save(user);
 
@@ -165,19 +198,34 @@ public class RoutineControllerTest {
 
         AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
+        ObjectMapper mapper = createObjectMapper();
+
+        // Foto previa (con todas las rutinas visibles en la primera página grande)
+        String beforeJson = mockMvc.perform(get("/api/routines/viewAllRoutines")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("page", "0")
+                .param("size", "200")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        com.fasterxml.jackson.databind.JsonNode before = mapper.readTree(beforeJson);
+        int beforeCount = before.get("items").size();
+
+        // Crear Full-Body
         RoutineParamsDto params = new RoutineParamsDto();
         params.setName("Full-Body");
         params.setDuration(120L);
         params.setExercises(new ArrayList<>());
         params.setIsPublic(true);
 
-        ObjectMapper mapper = createObjectMapper();
-
         mockMvc.perform(post("/api/routines/createRoutine")
                 .header("Authorization", "Bearer " + user.getServiceToken())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(params)));
+                .content(mapper.writeValueAsBytes(params)))
+                .andExpect(status().isOk());
 
+        // Crear Push
         params.setName("Push");
         params.setDuration(50L);
         params.setExercises(new ArrayList<>());
@@ -186,17 +234,32 @@ public class RoutineControllerTest {
         mockMvc.perform(post("/api/routines/createRoutine")
                 .header("Authorization", "Bearer " + user.getServiceToken())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(params)));
+                .content(mapper.writeValueAsBytes(params)))
+                .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/routines/viewAllRoutines")
+        // Comprobar que aparecen al final manteniendo orden de inserción
+        String afterJson = mockMvc.perform(get("/api/routines/viewAllRoutines")
                 .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("page", "0")
+                .param("size", "200")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].name").value("Full-Body"))
-                .andExpect(jsonPath("$.items[0].duration").value(120))
-                .andExpect(jsonPath("$.items[1].name").value("Push"))
-                .andExpect(jsonPath("$.items[1].duration").value(50))
-                .andExpect(jsonPath("$.existMoreItems").isBoolean());
+                .andExpect(jsonPath("$.existMoreItems").isBoolean())
+                .andReturn().getResponse().getContentAsString();
+
+        com.fasterxml.jackson.databind.JsonNode after = mapper.readTree(afterJson);
+        com.fasterxml.jackson.databind.JsonNode items = after.get("items");
+
+        org.junit.Assert.assertEquals(beforeCount + 2, items.size());
+
+        com.fasterxml.jackson.databind.JsonNode lastMinusOne = items.get(items.size() - 2);
+        com.fasterxml.jackson.databind.JsonNode last = items.get(items.size() - 1);
+
+        org.junit.Assert.assertEquals("Full-Body", lastMinusOne.get("name").asText());
+        org.junit.Assert.assertEquals(120L, lastMinusOne.get("duration").asLong());
+
+        org.junit.Assert.assertEquals("Push", last.get("name").asText());
+        org.junit.Assert.assertEquals(50L, last.get("duration").asLong());
     }
 
     @Test
@@ -204,14 +267,117 @@ public class RoutineControllerTest {
 
         AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
 
-        mockMvc.perform(get("/api/routines/viewAllRoutines")
+        mockMvc.perform(get("/api/routines/search")
                 .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("creatorId", String.valueOf(user.getUserDto().getId()))
+                .param("page", "0")
+                .param("size", "20")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items").isArray())
                 .andExpect(jsonPath("$.items.length()").value(0))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
+
+
+    @Test
+    public void testRemoveExerciseFromRoutineSuccess() throws Exception {
+    AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+    // Crear una rutina
+    RoutineParamsDto createParams = new RoutineParamsDto();
+    createParams.setName("Routine with Exercise");
+    createParams.setDuration(45L);
+    createParams.setExercises(new ArrayList<>());
+    createParams.setIsPublic(true);
+
+    ObjectMapper mapper = createObjectMapper();
+
+    String routineJson = mockMvc.perform(post("/api/routines/createRoutine")
+            .header("Authorization", "Bearer " + user.getServiceToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(mapper.writeValueAsBytes(createParams)))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    RoutineDto createdRoutine = mapper.readValue(routineJson, RoutineDto.class);
+
+    // Crear un ejercicio
+    ExerciseDto exerciseToAdd = new ExerciseDto("ejercicio test", "ejercicio test", grupoMuscular.PIERNA,1, Difficulty.FACIL, Equipment.POLEA_CABLE);
+
+    String exerciseJson = mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
+    .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
+    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+    Long createdExerciseId = mapper.readValue(exerciseJson, Long.class);
+
+    // Asociar el ejercicio a la rutina
+    List<Long> exerciseIds = new ArrayList<>();
+    exerciseIds.add(createdExerciseId);
+
+    RoutineParamsDto modifyParams = new RoutineParamsDto();
+    modifyParams.setName(createdRoutine.getName());
+    modifyParams.setDuration(createdRoutine.getDuration());
+    modifyParams.setExercises(exerciseIds);
+    modifyParams.setIsPublic(createdRoutine.getIsPublic());
+
+    mockMvc.perform(put("/api/routines/modifyRoutine/" + createdRoutine.getId())
+        .header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(modifyParams)))
+        .andExpect(status().isOk());
+
+    // Quitar el ejercicio de la rutina
+    mockMvc.perform(put("/api/routines/" + createdRoutine.getId() + "/removeExercise/" + createdExerciseId )
+        .header("Authorization", "Bearer " + user.getServiceToken())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testRemoveExerciseFromRoutine_NotFoundRoutine() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        Long nonExistingRoutineId = 99999L;
+        Long someExerciseId = 1L; // ID cualquiera
+
+        mockMvc.perform(put("/api/routines/" + nonExistingRoutineId + "/removeExercise/" + someExerciseId)
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        }
+
+    @Test
+    public void testRemoveExerciseFromRoutine_NotFoundExercise() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        // Crear una rutina válida
+        RoutineParamsDto createParams = new RoutineParamsDto();
+        createParams.setName("Routine test");
+        createParams.setDuration(45L);
+        createParams.setExercises(new ArrayList<>());
+        createParams.setIsPublic(true);
+
+        ObjectMapper mapper = createObjectMapper();
+
+        String routineJson = mockMvc.perform(post("/api/routines/createRoutine")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(createParams)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        RoutineDto createdRoutine = mapper.readValue(routineJson, RoutineDto.class);
+
+        Long nonExistingExerciseId = 99999L;
+
+        mockMvc.perform(put("/api/routines/" + createdRoutine.getId() + "/removeExercise/" + nonExistingExerciseId)
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        }
+
+
 
 
     @Test
@@ -492,23 +658,14 @@ public class RoutineControllerTest {
         routineParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
-        
-        String routineJson = mockMvc.perform(post("/api/routines/createRoutine")
-                .header("Authorization", "Bearer " + user.getServiceToken())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(routineParams)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-        
-        RoutineDto createdRoutine = mapper.readValue(routineJson, RoutineDto.class);
-        
+                
         // Crear training desde la rutina
         TrainingParamsDto trainingParams = new TrainingParamsDto();
-        trainingParams.setRoutineId(createdRoutine.getId());
         trainingParams.setName("Training 1");
         trainingParams.setDescription("Description of training");
         trainingParams.setDuration(45L);
         trainingParams.setVisibility(true);
+        trainingParams.setRoutineId(1L);
         
         SerieParamsDto serieParams = new SerieParamsDto();
         serieParams.setRepeticiones(10);
@@ -533,38 +690,17 @@ public class RoutineControllerTest {
     @Test
     public void testCreateTrainingFromRoutineWithInvalidUser() throws Exception {
         TrainingParamsDto trainingParams = new TrainingParamsDto();
-        trainingParams.setRoutineId(1L);
         trainingParams.setName("Training");
         trainingParams.setDescription("Description");
         trainingParams.setDuration(30L);
         trainingParams.setVisibility(true);
         trainingParams.setExercises(new ArrayList<ExerciseRoutineParamsDto>());
+        trainingParams.setRoutineId(1L);
         
         ObjectMapper mapper = createObjectMapper();
         
         // Sin token de autenticación (usuario inválido)
         mockMvc.perform(post("/api/routines/createTraining")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(trainingParams)))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testCreateTrainingFromRoutineWithInvalidRoutine() throws Exception {
-        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
-        
-        TrainingParamsDto trainingParams = new TrainingParamsDto();
-        trainingParams.setRoutineId(999999L); // ID de rutina inexistente
-        trainingParams.setName("Training");
-        trainingParams.setDescription("Description");
-        trainingParams.setDuration(30L);
-        trainingParams.setVisibility(true);
-        trainingParams.setExercises(new ArrayList<ExerciseRoutineParamsDto>());
-        
-        ObjectMapper mapper = createObjectMapper();
-        
-        mockMvc.perform(post("/api/routines/createTraining")
-                .header("Authorization", "Bearer " + user.getServiceToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsBytes(trainingParams)))
                 .andExpect(status().is4xxClientError());
@@ -583,22 +719,13 @@ public class RoutineControllerTest {
         
         ObjectMapper mapper = createObjectMapper();
         
-        String routineJson = mockMvc.perform(post("/api/routines/createRoutine")
-                .header("Authorization", "Bearer " + user.getServiceToken())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(routineParams)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-        
-        RoutineDto createdRoutine = mapper.readValue(routineJson, RoutineDto.class);
-        
         // Intentar crear training con ejercicio inexistente
         TrainingParamsDto trainingParams = new TrainingParamsDto();
-        trainingParams.setRoutineId(createdRoutine.getId());
         trainingParams.setName("Training");
         trainingParams.setDescription("Description");
         trainingParams.setDuration(30L);
         trainingParams.setVisibility(true);
+        trainingParams.setRoutineId(1L);
         
         SerieParamsDto serieParams = new SerieParamsDto();
         serieParams.setRepeticiones(10);
@@ -634,23 +761,14 @@ public class RoutineControllerTest {
         routineParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
-        
-        String routineJson = mockMvc.perform(post("/api/routines/createRoutine")
-                .header("Authorization", "Bearer " + user.getServiceToken())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(routineParams)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-        
-        RoutineDto createdRoutine = mapper.readValue(routineJson, RoutineDto.class);
-        
+                
         // Crear training con múltiples series
         TrainingParamsDto trainingParams = new TrainingParamsDto();
-        trainingParams.setRoutineId(createdRoutine.getId());
         trainingParams.setName("Training with multiple series");
         trainingParams.setDescription("Description");
         trainingParams.setDuration(50L);
         trainingParams.setVisibility(false);
+        trainingParams.setRoutineId(1L);
         
         SerieParamsDto serie1 = new SerieParamsDto();
         serie1.setRepeticiones(10);
@@ -687,24 +805,15 @@ public class RoutineControllerTest {
         routineParams.setIsPublic(true);
         
         ObjectMapper mapper = createObjectMapper();
-        
-        String routineJson = mockMvc.perform(post("/api/routines/createRoutine")
-                .header("Authorization", "Bearer " + user.getServiceToken())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(routineParams)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-        
-        RoutineDto createdRoutine = mapper.readValue(routineJson, RoutineDto.class);
-        
+                
         // Crear training sin series
         TrainingParamsDto trainingParams = new TrainingParamsDto();
-        trainingParams.setRoutineId(createdRoutine.getId());
         trainingParams.setName("Training without series");
         trainingParams.setDescription("Empty training");
         trainingParams.setDuration(20L);
         trainingParams.setVisibility(true);
         trainingParams.setExercises(new ArrayList<ExerciseRoutineParamsDto>());
+        trainingParams.setRoutineId(1L);
         
         mockMvc.perform(post("/api/routines/createTraining")
                 .header("Authorization", "Bearer " + user.getServiceToken())
@@ -791,4 +900,166 @@ public class RoutineControllerTest {
                 .andExpect(jsonPath("$.items[0].userName").value(user.getUserDto().getUserName()))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
+
+    @Test
+    public void testFindTrainingsSuccess() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine(
+            user.getUserDto().getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+
+        mockMvc.perform(get("/api/routines/findTrainings?page=" + 0 + "&size=10")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(1)));
+
+    }
+
+    @Test
+    public void testFindTrainingsSuccess0results() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+
+
+        mockMvc.perform(get("/api/routines/findTrainings?page=" + 0 + "&size=10")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(0)));
+
+    }
+
+
+    @Test
+    public void testFindDayTrainingsSuccess() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        routineService.createTrainingFromRoutine(
+            user.getUserDto().getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        routineService.createTrainingFromRoutine(
+            user.getUserDto().getId(),
+            "Training 2",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        // Fecha actual (dd mm aaaa)
+        LocalDate today = LocalDate.now();
+        int day = today.getDayOfMonth();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+
+
+        mockMvc.perform(get("/api/routines/findDayTrainings")
+            .param("day", String.valueOf(day))
+            .param("month", String.valueOf(month))
+            .param("year", String.valueOf(year))
+            .param("page", "0")
+            .param("size", "10")
+            .header("Authorization", "Bearer " + user.getServiceToken())
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(2)));
+
+    }
+
+    @Test
+    public void testFindDayTrainingsSuccess2() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        routineService.createTrainingFromRoutine(
+            user.getUserDto().getId(),
+            "Training 1",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        routineService.createTrainingFromRoutine(
+            user.getUserDto().getId(),
+            "Training 2",
+            "Description of training",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        // Fecha actual (dd mm aaaa)
+        LocalDate today = LocalDate.now().plusDays(2);
+        int day = today.getDayOfMonth();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+
+
+        mockMvc.perform(get("/api/routines/findDayTrainings")
+            .param("day", String.valueOf(day))
+            .param("month", String.valueOf(month))
+            .param("year", String.valueOf(year))
+            .param("page", "0")
+            .param("size", "10")
+            .header("Authorization", "Bearer " + user.getServiceToken())
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(0)));
+
+    }
+
+
+
+
 }

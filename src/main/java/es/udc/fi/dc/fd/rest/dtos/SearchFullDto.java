@@ -2,6 +2,8 @@ package es.udc.fi.dc.fd.rest.dtos;
 
 import java.util.List;
 
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
+
 /**
  * DTO unificado para devolver resultados completos de búsqueda:
  * puede representar un usuario, una rutina o un ejercicio.
@@ -12,6 +14,7 @@ public class SearchFullDto {
     private String type;              // "user", "routine" o "exercise"
     private String name;              // nombre de usuario, rutina o ejercicio
     private String avatarBase64;      // solo para usuario
+    private RoleType rol;             // solo para usuario
 
     // ---- Campos adicionales para rutina ----
     private String creatorUsername;   // nombre del creador
@@ -29,9 +32,10 @@ public class SearchFullDto {
         this.name = name;
     }
 
-    public static SearchFullDto fromUser(Long id, String username, String avatarBase64) {
+    public static SearchFullDto fromUser(Long id, String username, String avatarBase64, RoleType rol) {
         SearchFullDto dto = new SearchFullDto(id, "user", username);
         dto.setAvatarBase64(avatarBase64);
+        dto.setRol(rol);
         return dto;
     }
 
@@ -75,4 +79,8 @@ public class SearchFullDto {
 
     public String getGrupoMuscular() { return grupoMuscular; }
     public void setGrupoMuscular(String grupoMuscular) { this.grupoMuscular = grupoMuscular; }
+
+    public RoleType getRol(){return rol;}
+    public void setRol(RoleType rol){this.rol = rol;}
+
 }

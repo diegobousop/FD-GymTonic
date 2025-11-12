@@ -28,7 +28,7 @@ const CreateTraining = () => {
     const [name, setName] = useState("");
     const [exerciseDescripcion, setExerciseDescription] = useState("");
     const [duration, setDuration] = useState("");
-    const [visibility, setVisibility] = useState(0);
+    const [visibility, setVisibility] = useState(true);
     
     //errores del form
     const [nameErrors, setNameErrors] = useState(null);
@@ -221,7 +221,7 @@ const CreateTraining = () => {
               <VisibilityInput
                   name="visibility"
                   label="Visibilidad"
-                  initialValue={0}
+                  initialValue={1}
                   value={visibility}
                   onChange={(e) => setVisibility(e.target.value)}
               />
@@ -232,7 +232,12 @@ const CreateTraining = () => {
          </div>
 
 
-        <RoutineSeriesPanel routine={selectedRoutineDetails} isLoading={loading} />
+        <RoutineSeriesPanel
+            routine={selectedRoutineDetails}
+            isLoading={loading}
+            onRoutineChange={setSelectedRoutineDetails}
+        />
+
 
     </div>
   )

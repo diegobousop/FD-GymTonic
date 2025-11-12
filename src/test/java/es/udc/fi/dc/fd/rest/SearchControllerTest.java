@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -47,6 +48,10 @@ public class SearchControllerTest {
     private Users createUser(String username, Users.RoleType role) {
         Users u = new Users(username, "12345", "First", "Last", username + "@mail.com", null);
         u.setRole(role);
+        u.setGender(Users.Gender.OTHER);
+        u.setHeight(180);
+        u.setWeight(75.0f);
+        u.setBirthDate(LocalDate.now().minusYears(25));
         usersDao.save(u);
         return u;
     }
@@ -165,5 +170,78 @@ public class SearchControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exercises.length()").value(2));
+    }
+
+    @Test
+    public void testSuggestionsFiltersAdminsForNonAdmin() throws Exception {
+        Users admin = createUser("adminUser", Users.RoleType.ADMIN);
+        Users regularUser = createUser("regularUser", Users.RoleType.USER);
+        
+        // Búsqueda sin userId (no autenticado) - no debe mostrar admins
+        mockMvc.perform(get("/api/search/suggestions")
+                        .param("text", "admin")
+                        .param("limit", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.type=='user' && @.id==" + admin.getId() + ")]").doesNotExist());
+        
+        // Búsqueda con userId de usuario regular - no debe mostrar admins
+        mockMvc.perform(get("/api/search/suggestions")
+                        .param("text", "admin")
+                        .param("limit", "5")
+                        .requestAttr("userId", regularUser.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.type=='user' && @.id==" + admin.getId() + ")]").doesNotExist());
+    }
+
+    @Test
+    public void testSuggestionsShowsAdminsForAdmin() throws Exception {
+        Users admin1 = createUser("admin1", Users.RoleType.ADMIN);
+        Users admin2 = createUser("admin2", Users.RoleType.ADMIN);
+        
+        // Búsqueda con userId de admin - debe mostrar otros admins
+        mockMvc.perform(get("/api/search/suggestions")
+                        .param("text", "admin")
+                        .param("limit", "5")
+                        .requestAttr("userId", admin1.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.type=='user' && @.id==" + admin2.getId() + ")]").exists());
+    }
+
+    @Test
+    public void testFullResultsFiltersAdminsForNonAdmin() throws Exception {
+        Users admin = createUser("adminUser", Users.RoleType.ADMIN);
+        Users regularUser = createUser("regularUser", Users.RoleType.USER);
+        
+        // Búsqueda sin userId (no autenticado) - no debe mostrar admins
+        mockMvc.perform(get("/api/search/full")
+                        .param("text", "user")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.users[?(@.id==" + admin.getId() + ")]").doesNotExist());
+        
+        // Búsqueda con userId de usuario regular - no debe mostrar admins
+        mockMvc.perform(get("/api/search/full")
+                        .param("text", "user")
+                        .requestAttr("userId", regularUser.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.users[?(@.id==" + admin.getId() + ")]").doesNotExist());
+    }
+
+    @Test
+    public void testFullResultsShowsAdminsForAdmin() throws Exception {
+        Users admin1 = createUser("admin1", Users.RoleType.ADMIN);
+        Users admin2 = createUser("admin2", Users.RoleType.ADMIN);
+        
+        // Búsqueda con userId de admin - debe mostrar otros admins
+        mockMvc.perform(get("/api/search/full")
+                        .param("text", "admin")
+                        .requestAttr("userId", admin1.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.users[?(@.id==" + admin2.getId() + ")]").exists());
     }
 }

@@ -164,7 +164,8 @@ public class ExerciseServiceImpl implements ExerciseService {
             Slice<Serie> slice = serieDao.findByExercise(exerciseDao.findById( exercise).get());
             List<Serie> filtered = slice.getContent().stream()
                     .filter(serie -> serie.getRoutine() != null
-                            && serie.getRoutine().getId() == routine)
+                            && serie.getRoutine().getId() == routine
+                            && serie.getTraining() == null)
                     .toList();
             return new Block<>(filtered, slice.hasNext());
         }
@@ -225,6 +226,11 @@ public class ExerciseServiceImpl implements ExerciseService {
         foundExercise.get().setValidated(false);
         foundExercise.get().setValidator(blocker); // para saber quien lo ha bloqueado
         exerciseDao.save(foundExercise.get());
+    }
+
+    @Override
+    public List<Serie> findExerciseSeriesInTraining(Long trainingId, Long exerciseId) {
+        return serieDao.findByExerciseIdAndTrainingId(exerciseId, trainingId);
     }
 
 }

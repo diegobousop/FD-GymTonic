@@ -1,7 +1,14 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+
+import java.util.List;
+
+
+import org.h2.engine.User;
+
 import org.springframework.format.annotation.NumberFormat;
 
+import es.udc.fi.dc.fd.model.entities.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -45,12 +52,31 @@ public class UserDto {
 	/** The avatar. */
 	private AvatarDto avatar;
 
-	private Boolean blocked;
+	private Boolean banned;
 
 	private Boolean premium;
 
 	/** The card number. */
 	private String cardNumber;
+
+
+	/** List of blocked users */
+	private List<Long> idBlocked;
+
+	/** The height. */
+	private int height;
+
+	/** The weight. */
+	private float weight;
+
+	/** The gender. */
+	private String gender;
+
+	/** The birth date. */
+	private String birthDate;
+
+	private float imc;
+
 
 
 	/**
@@ -68,10 +94,16 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 * @param avatar the avatar
-	 * @param blocked the blocked
+	 * @param banned the banned
 	 * @param cardNumber the card number
+	 * @param premium the premium
+	 * @param height the height
+	 * @param weight the weight
+	 * @param gender the gender
+	 * @param birthDate the birth date
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked, String cardNumber, Boolean premium) {
+
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -80,10 +112,31 @@ public class UserDto {
 		this.email = email.trim();
 		this.role = role;
 		this.avatar = avatar;
-		this.blocked = blocked;
+		this.banned = banned;
 		this.cardNumber = cardNumber;
 		this.premium = premium;
+		this.idBlocked = idBlockedList;
 	} 
+
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList,
+	int height, float weight, String gender, String birthDate) {
+
+		this.id = id;
+		this.userName = userName != null ? userName.trim() : null;
+		this.firstName = firstName.trim();
+		this.lastName = lastName.trim();
+		this.email = email.trim();
+		this.role = role;
+		this.avatar = avatar;
+		this.banned = banned;
+		this.cardNumber = cardNumber;
+		this.premium = premium;
+		this.height = height;
+		this.weight = weight;
+		this.gender = gender;
+		this.birthDate = birthDate;
+		this.imc = weight / ((height / 100f) * (height / 100f));
+	} 	
 
 
 	/**
@@ -96,9 +149,9 @@ public class UserDto {
 	 * @param email the email
 	 * @param role the role
 	 * @param avatar the avatar
-	 * @param blocked the blocked
+	 * @param banned the banned
 	 */
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean blocked) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -107,8 +160,9 @@ public class UserDto {
 		this.email = email.trim();
 		this.role = role;
 		this.avatar = avatar;
-		this.blocked = blocked;
+		this.banned = banned;
 	} 
+
 		
 	/**
 	 * Gets the id.
@@ -269,21 +323,21 @@ public class UserDto {
 	}
 
 	/**
-	 * Gets the blocked.
+	 * Gets the banned.
 	 *
-	 * @return the blocked
+	 * @return the banned
 	 */
-	public Boolean getBlocked(){
-		return blocked;
+	public Boolean getBanned(){
+		return banned;
 	}
 
 	/**
 	 * Sets the blocked.
 	 *
-	 * @param blocked the new blocked
+	 * @param banned the new banned
 	 */
-	public void setBlocked(Boolean blocked){
-		this.blocked = blocked;
+	public void setBanned(Boolean banned){
+		this.banned = banned;
 	}
 
 	/**
@@ -322,5 +376,97 @@ public class UserDto {
 	public void setCardNumber(String cardNumber) {
 		this.cardNumber = cardNumber;
 	}
-}
 
+
+	public List<Long> getIdBlocked(){return idBlocked;}
+	public void setIdBlocked(List<Long> idBlocked){this.idBlocked = idBlocked; }
+
+
+	/**
+	 * Gets the height.
+	 *
+	 * @return the height
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * Sets the height.
+	 *
+	 * @param height the new height
+	 */
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	/**
+	 * Gets the weight.
+	 *
+	 * @return the weight
+	 */
+	public float getWeight() {
+		return weight;
+	}
+
+	/**
+	 * Sets the weight.
+	 *
+	 * @param weight the new weight
+	 */
+	public void setWeight(float weight) {
+		this.weight = weight;
+	}
+
+	/**
+	 * Gets the gender.
+	 *
+	 * @return the gender
+	 */
+	public String getGender() {
+		return gender;
+	} 
+
+	/**
+	 * Sets the gender.
+	 * @param gender the new gender
+	 */	
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	/**
+	 * Gets the birth date.
+	 *
+	 * @return the birth date
+	 */
+	public String getBirthDate() {
+		return birthDate;
+	}
+
+	/**
+	 * Sets the birth date.
+	 *
+	 * @param birthDate the new birth date
+	 */
+	public void setBirthDate(String birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	/**
+	 * Gets the imc.
+	 *
+	 * @return the imc
+	 */
+	public float getImc() {
+		return imc;
+	}
+
+	/**
+	 * Sets the imc.
+	 *
+	 * @param imc the new imc
+	 */	public void setImc(float imc) {
+		this.imc = imc;
+	}
+}

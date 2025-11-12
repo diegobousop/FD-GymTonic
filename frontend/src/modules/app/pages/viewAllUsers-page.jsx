@@ -15,8 +15,8 @@ const ViewAllUsers = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [permissionError, setPermissionError] = useState("");
-  const [blockedUsers, setBlockedUsers] = useState([]);
-  const [userBlockedErr, setUserBlockedErr] = useState("");
+  const [bannedUsers, setBannedUsers] = useState([]);
+  const [userBannedErr, setUserBannedErr] = useState("");
 
     
   const size = 4;
@@ -38,22 +38,22 @@ const ViewAllUsers = () => {
     )
 	};
 
-  const handleBlockUser = (userId) => {
-    backend.userService.blockUser(
+  const handleBannedUser = (userId) => {
+    backend.userService.banUser(
       userId,
       () => {
         setUsers(prevUsers =>
           prevUsers.map(u =>
-            u.id === userId ? { ...u, blocked: true } : u
+            u.id === userId ? { ...u, banned: true } : u
           )
         );
-        setUserBlockedErr(null);
+        setUserBannedErr(null);
       },
       (err) => {
         let message = "Error al bloquear usuario";
         if (typeof err === "string") message = err;
         else if (err?.globalError) message = err.globalError.replace(/"/g, "");
-        setUserBlockedErr(message);
+        setUserBannedErr(message);
       }
     );
   };
@@ -67,7 +67,7 @@ const ViewAllUsers = () => {
       <h2 className="text-white">Usuarios</h2>
 
       {successMessage && <div className="bg-green-500 text-white p-3 rounded mb-4">{successMessage}</div>}
-      {userBlockedErr && <div className="bg-red-500 text-white p-3 rounded mb-4">⚠️ {userBlockedErr}</div>}
+      {userBannedErr && <div className="bg-red-500 text-white p-3 rounded mb-4">⚠️ {userBannedErr}</div>}
 
       <div className="grid gap-6" style={{ gridTemplateColumns: "1fr" }}>
       {users.map(userItem => (
@@ -94,15 +94,15 @@ const ViewAllUsers = () => {
           {/* Columna 3: botón */}
           {user && userItem.id !== user.id && (
             <button
-              onClick={() => handleBlockUser(userItem.id)}
-              disabled={userItem.blocked}
+              onClick={() => handleBannedUser(userItem.id)}
+              disabled={userItem.banned}
               className={`px-3 py-1 rounded text-sm transition ${
-                userItem.blocked
+                userItem.banned
                   ? "bg-gray-600 text-white cursor-not-allowed"
                   : "bg-red-800 text-white hover:bg-red-900"
               }`}
             >
-              {userItem.blocked ? "Bloqueado" : "Bloquear"}
+              {userItem.banned ? "Banneado" : "Bannear"}
             </button>
     )}
         </div>
