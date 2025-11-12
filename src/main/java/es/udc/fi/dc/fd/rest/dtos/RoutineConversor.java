@@ -1,26 +1,32 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
 import es.udc.fi.dc.fd.model.entities.Training;
 
 
 public class RoutineConversor {
 
-    // Método original
+    // Método adaptado al nuevo modelo con RoutineExercise
     public static RoutineDto toRoutineDto(Routine routine) {
         RoutineDto routineDto = new RoutineDto(
             routine.getId(), 
             routine.getName(),
-            ExerciseConversor.toExerciseDtos(routine.getExercises()), 
+            // Convertimos cada RoutineExercise a ExerciseDto
+            ExerciseConversor.toExerciseDtosFromRoutineExercises(routine.getRoutineExercises()),
             routine.getCreator().getUserName(), 
-            routine.getCreator().getAvatar().getAvatarBase64(),
+            routine.getCreator().getAvatar() != null ? routine.getCreator().getAvatar().getAvatarBase64() : null,
             routine.getDuration(),
             routine.getModificationDate(), 
-            routine.getIsPublic());
+            routine.getIsPublic()
+        );
+
         return routineDto;
     }
 
@@ -29,7 +35,7 @@ public class RoutineConversor {
         RoutineDto routineDto = new RoutineDto(
             routine.getId(),
             routine.getName(),
-            ExerciseConversor.toExerciseDtos(routine.getExercises()),
+            ExerciseConversor.toExerciseDtosFromRoutineExercises(routine.getRoutineExercises()),
             routine.getCreator().getUserName(),
             routine.getCreator().getAvatar() != null ? routine.getCreator().getAvatar().getAvatarBase64() : null,
             routine.getDuration(),

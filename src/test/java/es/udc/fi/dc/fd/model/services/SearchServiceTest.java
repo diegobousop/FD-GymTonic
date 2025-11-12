@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
+import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
@@ -24,10 +27,16 @@ import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineDao;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExerciseDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
+import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
 import es.udc.fi.dc.fd.rest.dtos.SearchFullDto;
 import es.udc.fi.dc.fd.rest.dtos.SearchSuggestionDto;
 
@@ -41,13 +50,13 @@ public class SearchServiceTest {
     private SearchService searchService;
 
     @Autowired
+    private RoutineService routineService;
+
+    @Autowired
     private UserDao usersDao;
 
     @Autowired
     private ExerciseDao exerciseDao;
-
-    @Autowired
-    private RoutineDao routineDao;
 
     @Autowired
     private AvatarDao avatarDao;
@@ -58,16 +67,17 @@ public class SearchServiceTest {
 
     private static final String PASSWORD = "12345";
     @Before
-    public void setUp() {
+    public void setUp() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         benchUser = createUser("benchUser", Users.RoleType.USER);
         exerciseBench = createExercise("Bench Press", grupoMuscular.PECHO);
-        routineBench = createRoutine("Bench Routine", benchUser, List.of(exerciseBench));
+        routineBench = createRoutine("Bench Routine", benchUser, exerciseBench);
     }
 
 	private Users createUser(String userName, RoleType role) {
 		Optional<Avatar> avatar = avatarDao.findByName("default");
 		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
         user.setRole(role);
+        user.setPremium(true);
         user.setGender(Gender.OTHER);
         user.setHeight(190);
         user.setWeight(80);
@@ -76,17 +86,22 @@ public class SearchServiceTest {
 		return user;
 	}
 
-
     private Exercise createExercise(String name, grupoMuscular gm) {
         Exercise e = new Exercise(name, "Desc " + name, gm, 1);
         exerciseDao.save(e);
         return e;
     }
 
-    private Routine createRoutine(String name, Users creator, List<Exercise> exercises) {
-        Routine r = new Routine(name, exercises, creator, 60L, LocalDateTime.now().withNano(0), true);
-        routineDao.save(r);
-        return r;
+    private Routine createRoutine(String name, Users creator, Exercise exercise) throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        return routineService.createRoutine(
+            creator.getId(),
+            name,
+            new ArrayList<Long>() {{
+                add(exercise.getId());
+            }},
+            90L,
+            true
+        );
     }
 
     @Test

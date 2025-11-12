@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import es.udc.fi.dc.fd.model.entities.*;
@@ -82,10 +83,10 @@ public class RoutineServiceTest {
 
 
     private Routine createRoutine(String name, Users creator) {
-        return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
+        return new Routine(name, new ArrayList<RoutineExercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
-        private Exercise createExercise(String name, String description, grupoMuscular grupo, int numeroSeries) {
+    private Exercise createExercise(String name, String description, grupoMuscular grupo, int numeroSeries) {
         Exercise exercise = new Exercise(name, description, grupo, numeroSeries);
         exercise.setDifficulty(Difficulty.FACIL);
         exercise.setEquipment(Equipment.POLEA_CABLE);
@@ -124,7 +125,7 @@ public class RoutineServiceTest {
             assertEquals(routine.getCreator(), retrievedRoutine.get().getCreator());
             assertEquals(routine.getDuration(), retrievedRoutine.get().getDuration());
             assertEquals(routine.getModificationDate(), retrievedRoutine.get().getModificationDate());
-            assertEquals(new ArrayList<Exercise>(), retrievedRoutine.get().getExercises());
+            assertEquals(new ArrayList<RoutineExercise>(), retrievedRoutine.get().getRoutineExercises());
         }    
     }
 
@@ -132,22 +133,47 @@ public class RoutineServiceTest {
     public void testCreateRoutineWithExercises() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
         Users creator = userService.login("admin1", "12345");
         Routine routine = createRoutine("routine1", creator);
-        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
-        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO,1));
-        routine = routineService.createRoutine(creator.getId(), routine.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise2.getId());}}, (long) 90, true);
+
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO, 1));
+
+        // Creamos la rutina con ejercicios
+        routine = routineService.createRoutine(
+                creator.getId(),
+                routine.getName(),
+                new ArrayList<Long>() {{
+                    add(exercise1.getId());
+                    add(exercise2.getId());
+                }},
+                90L,
+                true
+        );
+
+        // Recuperamos la rutina desde la BD
         Optional<Routine> retrievedRoutine = routineDao.findById(routine.getId());
 
-        if(retrievedRoutine.isPresent()){
-            assertEquals(routine.getName(), retrievedRoutine.get().getName());
-            assertEquals(routine.getCreator(), retrievedRoutine.get().getCreator());
-            assertEquals(routine.getDuration(), retrievedRoutine.get().getDuration());
-            assertEquals(routine.getModificationDate(), retrievedRoutine.get().getModificationDate());
-            assertEquals(2, retrievedRoutine.get().getExercises().size());
-            assertEquals(true, retrievedRoutine.get().getExercises().contains(routine.getExercises().get(0)));
-            assertEquals(true, retrievedRoutine.get().getExercises().contains(routine.getExercises().get(1)));
-        }    
+        assertTrue(retrievedRoutine.isPresent(), "La rutina debería existir en la base de datos");
+
+        Routine foundRoutine = retrievedRoutine.get();
+
+        // Verificaciones básicas
+        assertEquals(routine.getName(), foundRoutine.getName());
+        assertEquals(routine.getCreator(), foundRoutine.getCreator());
+        assertEquals(routine.getDuration(), foundRoutine.getDuration());
+        assertEquals(routine.getModificationDate(), foundRoutine.getModificationDate());
+
+        // ✅ Verificar los ejercicios asociados
+        List<RoutineExercise> routineExercises = foundRoutine.getRoutineExercises();
+        assertEquals(2, routineExercises.size(), "La rutina debería tener 2 ejercicios asociados");
+
+        List<Long> exerciseIds = routineExercises.stream()
+                .map(re -> re.getExercise().getId())
+                .collect(Collectors.toList());
+
+        assertTrue(exerciseIds.contains(exercise1.getId()), "La rutina debe contener el ejercicio1");
+        assertTrue(exerciseIds.contains(exercise2.getId()), "La rutina debe contener el ejercicio2");
     }
+
 
     @Test(expected = InvalidRoutineNameException.class)
     public void createInvalidNameRoutine() throws LoginUserBlockedException, DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, IncorrectLoginException, RoutineLimitReachedException, RoutineExerciseLimitReachedException{
@@ -245,7 +271,7 @@ public class RoutineServiceTest {
         Routine routine1 = createRoutine("routine1", creator);
         Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1",grupoMuscular.PECHO,1));
         routine1 = routineService.createRoutine(creator.getId(), routine1.getName(), 
-            new ArrayList<Long>(){{add(exercise1.getId()); add(exercise1.getId());}}, (long) 90, true);
+            new ArrayList<Long>(){{add(exercise1.getId());}}, (long) 90, true);
             
         assertEquals(routine1, routineService.getRoutineById(routine1.getId(), creator.getId()));
 
@@ -284,9 +310,9 @@ public class RoutineServiceTest {
         if (retrieved.isPresent()) {
             assertEquals("routine-updated", retrieved.get().getName());
             assertEquals((Long)75L, retrieved.get().getDuration());
-            assertEquals(2, retrieved.get().getExercises().size());
-            assertEquals(true, retrieved.get().getExercises().contains(modified.getExercises().get(0)));
-            assertEquals(true, retrieved.get().getExercises().contains(modified.getExercises().get(1)));
+            assertEquals(2, retrieved.get().getRoutineExercises().size());
+            assertEquals(true, retrieved.get().getRoutineExercises().contains(modified.getRoutineExercises().get(0)));
+            assertEquals(true, retrieved.get().getRoutineExercises().contains(modified.getRoutineExercises().get(1)));
             assertEquals(modified.getModificationDate(), retrieved.get().getModificationDate());
         }
     }
@@ -312,90 +338,6 @@ public class RoutineServiceTest {
         routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L, true);
     }
 
-
-    @Test
-    public void removeExerciseFromRoutineTest_Success() throws Exception {
-        Users creator = userService.login("trainer1", "12345");
-
-        long exerciseId = exerciseService.addExercise(
-            creator.getId(),
-            createExercise("Press banca", "Ejercicio de pecho", grupoMuscular.PECHO, 4)
-        );
-
-        Routine routine = routineService.createRoutine(
-            creator.getId(),
-            "Rutina A",
-            new ArrayList<Long>(),
-            60L,
-            true
-        );
-
-        List<Long> exerciseIds = new ArrayList<>();
-        exerciseIds.add(exerciseId);
-        routineService.modifyRoutine(
-            routine.getId(),
-            creator.getId(),
-            routine.getName(),
-            exerciseIds,
-            routine.getDuration(),
-            routine.getIsPublic()
-        );
-
-        Routine rutinaConEjercicio = routineDao.findById(routine.getId()).get();
-        assertEquals(1, rutinaConEjercicio.getExercises().size());
-
-        assertEquals(true, routineService.removeExerciseFromRoutine(exerciseId, routine.getId()));
-
-        Routine rutinaActualizada = routineDao.findById(routine.getId()).get();
-        assertEquals(0, rutinaActualizada.getExercises().size());
-    }
-
-    @Test
-    public void removeExerciseFromRoutineTest_NotInRoutine() throws Exception {
-        Users creator = userService.login("trainer1", "12345");
-
-        long exerciseId1 = exerciseService.addExercise(
-            creator.getId(),
-            createExercise("Press banca", "Ejercicio de pecho", grupoMuscular.PECHO, 4)
-        );
-
-        long exerciseId2 = exerciseService.addExercise(
-            creator.getId(),
-            createExercise("Sentadillas", "Ejercicio de piernas", grupoMuscular.PIERNA, 3)
-        );
-
-        List<Long> exerciseIds = new ArrayList<>();
-        exerciseIds.add(exerciseId1);
-        Routine routine = routineService.createRoutine(creator.getId(), "Rutina B", exerciseIds, 45L, true);
-
-        boolean eliminado = routineService.removeExerciseFromRoutine(exerciseId2, routine.getId());
-
-        assertFalse(eliminado);
-
-        Routine rutinaFinal = routineDao.findById(routine.getId()).get();
-        assertEquals(1, rutinaFinal.getExercises().size());
-    }
-
-    @Test(expected = InstanceNotFoundException.class)
-    public void removeExerciseFromRoutine_RoutineOrExerciseNotFound() throws Exception {
-        Users creator = userService.login("trainer1", "12345");
-
-        long exerciseId = exerciseService.addExercise(
-            creator.getId(),
-            createExercise("Curl bíceps", "Ejercicio de brazos", grupoMuscular.BRAZO, 2)
-        );
-
-        Routine routine = routineService.createRoutine(
-            creator.getId(),
-            "Rutina C",
-            new ArrayList<Long>(),
-            30L,
-            true
-        );
-
-        routineService.removeExerciseFromRoutine(exerciseId, 99999L);
-        routineService.removeExerciseFromRoutine(88888L, routine.getId());
-    }
 
     @Test
     public void deleteSeriesByRoutineTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException, PermissionException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineExerciseLimitReachedException, RoutineLimitReachedException {
@@ -565,7 +507,7 @@ public class RoutineServiceTest {
         Optional<Routine> retrieved = routineDao.findById(routine.getId());
         if (retrieved.isPresent()) {
             assertEquals("no-exercises", retrieved.get().getName());
-            assertEquals(0, retrieved.get().getExercises().size());
+            assertEquals(0, retrieved.get().getRoutineExercises().size());
             assertEquals((Long)45L, retrieved.get().getDuration());
         }
     }

@@ -121,10 +121,11 @@ public class SearchServiceImpl implements SearchService {
         List<SearchFullDto> routines = searchDao.findRoutinesDetailed(safeText, limit).stream()
                 .filter(r -> noTrainer || r.getCreator().getUserName().toLowerCase().contains(safeTrainer))
                 .map(r -> {
-                    List<SearchExerciseForRoutineDto> exercises = r.getExercises().stream()
+                    // Mapeo de ejercicios a SearchExerciseForRoutineDto
+                    List<SearchExerciseForRoutineDto> exercises = r.getRoutineExercises().stream()
                             .map(e -> new SearchExerciseForRoutineDto(
-                                    e.getExerciseName(),
-                                    e.getNumeroSeries()
+                                    e.getExercise().getExerciseName(),
+                                    e.getExercise().getNumeroSeries()
                             ))
                             .collect(Collectors.toList());
 

@@ -1,8 +1,11 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 
 
@@ -66,7 +69,7 @@ public class ExerciseConversor {
         return exercises.stream().map(ExerciseConversor::toExerciseSummaryDto).toList();
     }
 
-    public static final ExerciseRoutineDto toExerciseRoutineDto(Exercise exercise, List<Serie> series){
+    public static final ExerciseRoutineDto toExerciseRoutineDto(Exercise exercise, List<Serie> series, RoutineExercise routineExercise){
         return new ExerciseRoutineDto(
             exercise.getId(),
             exercise.getExerciseName(), 
@@ -76,9 +79,31 @@ public class ExerciseConversor {
             exercise.getDifficulty(),
             exercise.getEquipment(),
             SerieConversor.toSerieSummaryDtos(series),
-            exercise.getIcon().getIconBase64()
+            exercise.getIcon().getIconBase64(),
+            routineExercise != null ? routineExercise.getRestTime() : 0, 
+            routineExercise != null ? routineExercise.getOrderInRoutine() : 0
             );
     }
 
-    
+    public static List<ExerciseDto> toExerciseDtosFromRoutineExercises(List<RoutineExercise> routineExercises) {
+        if (routineExercises == null) return new ArrayList<>();
+
+        return routineExercises.stream()
+                .map(re -> {
+                    Exercise exercise = re.getExercise();
+                    ExerciseDto dto = new ExerciseDto(
+                        exercise.getId(),
+                        exercise.getExerciseName(),
+                        exercise.getExerciseDescription(),
+                        exercise.getGrupoMuscular(),
+                        exercise.getNumeroSeries(),
+                        exercise.getDifficulty(),
+                        exercise.getEquipment()
+                    );
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }
