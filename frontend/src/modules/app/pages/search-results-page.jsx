@@ -11,18 +11,25 @@ import { Link } from "react-router-dom";
 const SearchResultsPage = () => {
   const { user } = useContext(UserContext);
   const [searchParams] = useSearchParams();
-  const [results, setResults] = useState({ users: [], routines: [], exercises: [] });
+  const [results, setResults] = useState({
+    users: [],
+    routines: [],
+    exercises: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [itemTypeFilter, setItemTypeFilter] = useState("TODO");
   const { showToast } = useToast();
 
-
   const query = searchParams.get("text") || "";
   const trainerName = searchParams.get("trainerName") || "";
   const muscleGroup = searchParams.get("muscleGroup") || "";
+  const difficulty = searchParams.get("difficulty") || "";
   const size = 5;
 
+  // --------------------
+  // Fetch de resultados
+  // --------------------
   const fetchResults = useCallback(() => {
     if (!query.trim()) {
       setResults({ users: [], routines: [], exercises: [] });
@@ -33,8 +40,16 @@ const SearchResultsPage = () => {
     setError(null);
 
     searchResults(
-      { text: query, trainerName, muscleGroup, page: 0, size },
+      {
+        text: query,
+        trainerName,
+        muscleGroup,
+        difficulty,
+        page: 0,
+        size,
+      },
       (data) => {
+        // Procesar rutinas
         const routinesWithSeries = data.routines.map((routine) => ({
           id: routine.id,
           name: routine.name,
@@ -45,10 +60,15 @@ const SearchResultsPage = () => {
               name: e.name,
               numeroSeries: e.numeroSeries ?? 0,
             })) || [],
-          dificultad: routine.dificultad || "INTERMEDIO",
+          difficulty: routine.difficulty || "INTERMEDIO",
         }));
 
-        setResults({ ...data, routines: routinesWithSeries });
+        setResults({
+          users: data.users,
+          routines: routinesWithSeries,
+          exercises: data.exercises,
+        });
+
         setLoading(false);
       },
       () => {
@@ -56,7 +76,7 @@ const SearchResultsPage = () => {
         setLoading(false);
       }
     );
-  }, [query, trainerName, muscleGroup]);
+  }, [query, trainerName, muscleGroup, difficulty]);
 
   useEffect(() => {
     fetchResults();
@@ -75,7 +95,7 @@ const SearchResultsPage = () => {
 
   // Seguir usuario
   const handleFollowUser = (userId) => {
-    const targetUser = results.users.find(u => u.id === userId);
+    const targetUser = results.users.find((u) => u.id === userId);
     const userName = targetUser?.name || "este usuario";
 
     backend.userService.followUser(
@@ -99,16 +119,16 @@ const SearchResultsPage = () => {
           showToast(`Ya sigues a ${userName}`, 'error');
         }
       },
-      (error) => {
-        console.error(error);
-        showToast("Error al seguir al usuario.", 'error');
+      (err) => {
+        console.error(err);
+        showToast("Error al seguir al usuario.", "error");
       }
     );
   };
 
   // Dejar de seguir usuario
   const handleUnfollowUser = (userId) => {
-    const targetUser = results.users.find(u => u.id === userId);
+    const targetUser = results.users.find((u) => u.id === userId);
     const userName = targetUser?.name || "este usuario";
 
     backend.userService.unfollowUser(
@@ -132,9 +152,9 @@ const SearchResultsPage = () => {
           showToast(`No seguías a ${userName}`, 'error');
         }
       },
-      (error) => {
-        console.error(error);
-        showToast("Error al dejar de seguir al usuario.", 'error');
+      (err) => {
+        console.error(err);
+        showToast("Error al dejar de seguir al usuario.", "error");
       }
     );
   };
@@ -169,12 +189,16 @@ const SearchResultsPage = () => {
     );
   };
 
+  // --------------------
+  // Render
+  // --------------------
   return (
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">
       <p className="mb-4 text-gray-300">
         Mostrando resultados para: <b>{query || "..."}</b>
       </p>
 
+      {/* Filtros tipo */}
       <div className="mb-6 flex gap-2">
         {["TODO", "RUTINAS", "EJERCICIOS", "USUARIOS"].map((type) => (
           <button
@@ -184,17 +208,23 @@ const SearchResultsPage = () => {
             } hover:bg-gray-600`}
             onClick={() => filterByType(type)}
           >
-            {type === "TODO" ? "Todo" : type.charAt(0) + type.slice(1).toLowerCase()}
+            {type === "TODO"
+              ? "Todo"
+              : type.charAt(0) + type.slice(1).toLowerCase()}
           </button>
         ))}
       </div>
 
+      {/* Loading / Error */}
       {loading ? (
         <p>Cargando resultados...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="flex flex-col gap-6">
+          {/* ------------------------- */}
+          {/* USUARIOS */}
+          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "USUARIOS") &&
             results.users?.length > 0 && (
               <div>
@@ -220,6 +250,7 @@ const SearchResultsPage = () => {
                           {userItem.name}
                         </Link>
                       </div>
+
                       {userItem.id !== user.id && (
                         <div className="flex gap-2">
                           {!userItem.isBanned && (
@@ -259,6 +290,9 @@ const SearchResultsPage = () => {
               </div>
             )}
 
+          {/* ------------------------- */}
+          {/* RUTINAS */}
+          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "RUTINAS") &&
             results.routines?.length > 0 && (
               <div>
@@ -271,6 +305,9 @@ const SearchResultsPage = () => {
               </div>
             )}
 
+          {/* ------------------------- */}
+          {/* EJERCICIOS */}
+          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "EJERCICIOS") &&
             results.exercises?.length > 0 && (
               <div>
