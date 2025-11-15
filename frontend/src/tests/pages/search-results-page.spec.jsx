@@ -127,17 +127,13 @@ describe("SearchResultsPage", () => {
   it("Permite seguir a un usuario", async () => {
     searchResults.mockImplementation((params, onSuccess) => {
       onSuccess({
-        users: [{ id: 2, name: "Alice",rol:"USER" }],
+        users: [{ id: 2, name: "Alice", rol: "USER" }],
         routines: [{ id: 1, name: "Full Body", exercises: [{ name: "Press banca" }, { name: "Sentadilla" }] }],
         exercises: [{ id: 1, name: "Bicep Curl" }],
       });
     });
 
-    followUser.mockImplementation((userId, onSuccess) => {
-      onSuccess(true);
-    });
-
-    unfollowUser.mockImplementation((userId, onSuccess) => {
+    sendFollowRequest.mockImplementation((userId, onSuccess) => {
       onSuccess(true);
     });
 
@@ -151,22 +147,24 @@ describe("SearchResultsPage", () => {
         </MemoryRouter>
     );
 
+    // Espera render inicial
     await waitFor(() => {
       expect(screen.getByText("Alice")).toBeInTheDocument();
-      expect(screen.getByText(/Full Body/i)).toBeInTheDocument();
-      expect(screen.getByText(/Bicep Curl/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Seguir/i })).toBeInTheDocument();
+    });
 
-      // Simula seguir al usuario
-      screen.getByRole("button", { name: /Seguir/i }).click();
+    // Click en Seguir
+    screen.getByRole("button", { name: /Seguir/i }).click();
 
+    expect(sendFollowRequest).toHaveBeenCalledWith(
+        2,
+        expect.any(Function),
+        expect.any(Function)
+    );
 
-
-      //expect(screen.getByText(/Solicitud enviada a Alice/i)).toBeInTheDocument();
-      //Muestra botón
-      //expect(screen.getByText(/Solicitud enviada/i)).toBeInTheDocument();
-
-
+    // Espera estado actualizado
+    await waitFor(() => {
+      expect(screen.getByText("Solicitud enviada")).toBeInTheDocument();
+      expect(screen.getByText("Solicitud enviada a Alice")).toBeInTheDocument();
     });
   });
 
