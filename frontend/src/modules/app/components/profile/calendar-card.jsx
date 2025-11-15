@@ -3,7 +3,7 @@ import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import backend from "../../../../backend";
 
-import { SVG_ICONS } from '../../../../config/constants'; 
+import { svgIcons } from '../../../../config/constants'; 
 import UserStats from './user-stats';
 
 const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated }) => {
@@ -91,7 +91,7 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
       <p className="text-white text-center mt-5">Última semana</p>
       <div className="flex flex-row gap-3 justify-center">
         {thisWeekCount >= 4 ? (
-          <SVG_ICONS.FireIcon className="w-12 h-auto text-[#ff0000] "/>
+          <svgIcons.FireIcon className="w-12 h-auto text-[#ff0000] "/>
         ) : null}
         <h1 className="text-[55px] text-center">{thisWeekCount}</h1>
       </div>

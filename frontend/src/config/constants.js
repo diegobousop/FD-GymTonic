@@ -14,7 +14,37 @@ export const GENERAL_ICONS = {
     PROFILE_ICON: "https://ik.imagekit.io/940wz34p7/profile-icon.svg?updatedAt=1758700129594",
 }
 
-export const SVG_ICONS = {
+export const DEFAULT_ACTIVE_PAGE = 'intro';
+
+export const EXACT_ROUTE_TO_PAGE = new Map([
+  ['/', 'intro'],
+  ['/start', 'intro'],
+  ['/intro', 'intro'],
+]);
+
+export const PREFIX_ROUTE_TO_PAGE = [
+  ['/login', 'login'],
+  ['/register', 'register'],
+  ['/home', 'home'],
+  ['/admin/addExercise', 'createExercise'],
+  ['/profile', 'profile'],
+  ['/routines/create-routine', 'createRoutine'],
+  ['/test', 'test'],
+  ['/profileUpdate', 'profileUpdate'],
+  ['/change-password', 'change-password'],
+  ['/my-routines', 'my-routines'],            // compat
+  ['/routines/my-routines', 'my-routines'],   // ruta real
+  ['/admin/validateExercises', 'validateExercises'],
+  ['/admin/seeUsers', 'viewAllUsers'],
+  ['/search/full', 'search'],
+  ['/admin/blockExercises', 'blockExercises'],
+  ['/trainings/create-training', 'createTraining'],
+  ['/routines/my-followers', 'myFollowers'],
+  ['/profile/followers', 'profile'],
+  ['/profile/following', 'profile'],
+];
+
+export const svgIcons = {
   HomeIcon: (props) => (
     <svg {...props}  viewBox="0 0 30 30"  xmlns="http://www.w3.org/2000/svg">
     <path fillRule="evenodd" clipRule="evenodd" d="M27.7918 12.754L14.5002 0.791504L1.2085 12.754V27.7917H27.7918V12.754Z" fill="currentColor"/>

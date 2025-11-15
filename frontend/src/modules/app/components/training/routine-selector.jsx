@@ -5,7 +5,7 @@ import backend from "../../../../backend";
 import MiniPager from '../common/mini-pager';
 import Spinner from '../common/spinner';
 
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 
 
 const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) => {
@@ -77,7 +77,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
                   className="h-[48px] w-[55px] bg-[#262626] text-white mb-2"
                   onClick={() => onSearch(query)}
                 >
-                  {SVG_ICONS.SearchIcon({ className: 'w-[30px] text-white' })}
+                  {svgIcons.SearchIcon({ className: 'w-[30px] text-white' })}
                 </button>
                 <input
                   type="text"
@@ -96,7 +96,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
                   setQuery('');
                 }
                 }>
-                  <SVG_ICONS.CancelIcon className="absolute right-5 top-4 w-[20px] text-white"/>
+                  <svgIcons.CancelIcon className="absolute right-5 top-4 w-[20px] text-white"/>
                 </button>
                 }
                 
@@ -109,7 +109,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
                       onDeselect();
                       setSelectedRoutine(null);
                     }}>
-                      <SVG_ICONS.CancelIcon className={`w-[25px] h-auto text-white`} />
+                      <svgIcons.CancelIcon className={`w-[25px] h-auto text-white`} />
                     </button>
                   </div>
 

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import PropTypes from 'prop-types'
+
 
 const MultiChecklist = ({ options, selected, onChange, label, page=0, 
   setPage, existMoreItems=false, errors, errorMessage='', required=false }) => {
@@ -74,6 +76,22 @@ const MultiChecklist = ({ options, selected, onChange, label, page=0,
       )}
     </div>
   );
+};
+
+MultiChecklist.propTypes = {
+  options: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string.isRequired,
+  })).isRequired,
+  selected: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+  onChange: PropTypes.func.isRequired,
+  label: PropTypes.string.isRequired,
+  page: PropTypes.number,
+  setPage: PropTypes.func,
+  existMoreItems: PropTypes.bool,
+  errors: PropTypes.bool,
+  errorMessage: PropTypes.string,
+  required: PropTypes.bool,
 };
 
 export default MultiChecklist;

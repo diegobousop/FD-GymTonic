@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import React from "react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import ViewAllRoutinespage from "../../modules/app/pages/view-all-routines-page";
+import HomePage from "../../modules/app/pages/home-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
 
 jest.mock("../../backend/routineService", () => ({
@@ -26,7 +26,7 @@ describe("ViewRoutines", () => {
     render(
       <MemoryRouter>
         <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-          <ViewAllRoutinespage />
+          <HomePage />
         </UserContext.Provider>
       </MemoryRouter>
     );
@@ -57,7 +57,7 @@ describe("ViewRoutines", () => {
     render(
       <MemoryRouter>
         <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-          <ViewAllRoutinespage />
+          <HomePage />
         </UserContext.Provider>
       </MemoryRouter>
     );
@@ -101,7 +101,7 @@ describe("ViewRoutines", () => {
     render(
       <MemoryRouter>
         <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-          <ViewAllRoutinespage />
+          <HomePage />
         </UserContext.Provider>
       </MemoryRouter>
     );
@@ -135,7 +135,7 @@ describe("ViewRoutines", () => {
         render(
         <MemoryRouter>
             <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-            <ViewAllRoutinespage />
+            <HomePage />
             </UserContext.Provider>
         </MemoryRouter>
         );
@@ -164,7 +164,7 @@ describe("ViewRoutines", () => {
         render(
         <MemoryRouter initialEntries={["/routines"]}>
             <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-            <ViewAllRoutinespage />
+            <HomePage />
             </UserContext.Provider>
         </MemoryRouter>
         );

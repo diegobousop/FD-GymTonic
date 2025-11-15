@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 
 
 const VisibilityInput = ({
@@ -51,7 +51,7 @@ const VisibilityInput = ({
           <option value={false} className="bg-[#262626] text-[#f4f4f4] py-3">Privado</option>
         </select>
 
-        <SVG_ICONS.DownIcon 
+        <svgIcons.DownIcon 
           className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 pointer-events-none text-white"
         />
       </div>

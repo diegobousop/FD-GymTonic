@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react'
 
-
 import { Route, Routes, useLocation } from "react-router-dom";
 
 import NavBar from '../components/common/navbar'
 import SideMenu from '../components/common/side-menu'
 
-import Home from "./Home";
-import Test from "./Test";
 import IntroPage from "../pages/intro-page";
 import LoginPage from "../pages/login-page";
 import RegisterPage from "../pages/register-page";
@@ -24,11 +21,11 @@ import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
 import ViewAllUsers from '../pages/viewAllUsers-page';
 import SearchResultsPage from "../pages/search-results-page";
-import BlockExercises from '../pages/block-exercises-page';
 import CreateTraining from '../pages/create-training-page';
 import UserFollowersPage from '../pages/user-followers-page';
 import UserFollowingPage from '../pages/user-following-page';
 import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
+import { EXACT_ROUTE_TO_PAGE, PREFIX_ROUTE_TO_PAGE, DEFAULT_ACTIVE_PAGE } from '../../../config/constants';
 
 const Body = () => {
 
@@ -36,30 +33,20 @@ const Body = () => {
   const location = useLocation()
 
   useEffect(() => {
-    const path = location.pathname
-    if (path === '/' || path === '/start' || path === '/intro') {setActivePage('intro');return}
-    if (path.startsWith('/login')) { setActivePage('login'); return }
-    if (path.startsWith('/register')) { setActivePage('register'); return }
-    if (path.startsWith('/home')) { setActivePage('home'); return }
-    if (path.startsWith('/admin/addExercise')) {setActivePage('createExercise'); return}
-    if (path.startsWith('/profile')) { setActivePage('profile'); return }
-    if (path.startsWith('/routines/create-routine')) { setActivePage('createRoutine'); return }
-    if (path.startsWith('/test')) { setActivePage('test'); return }
-    if (path.startsWith("/profileUpdate")) { setActivePage('profileUpdate'); return }
-    if (path.startsWith("/change-password")) { setActivePage('change-password'); return }
-    if (path.startsWith("/my-routines")) { setActivePage('my-routines'); return }
-    if (path.startsWith("/admin/validateExercises")) { setActivePage('validateExercises'); return }
-    if (path.startsWith("/admin/seeUsers")) { setActivePage('viewAllUsers'); return }
-    if (path.startsWith("/search/full")) { setActivePage('search'); return }
-    if (path.startsWith("/admin/blockExercises")) { setActivePage('blockExercises'); return }
-    if (path.startsWith("/trainings/create-training")) { setActivePage('createTraining'); return }
-    if (path.startsWith("/routines/my-followers")) { setActivePage('myFollowers'); return }
-    if (path.startsWith("/profile/followers")) { setActivePage('profile'); return }
-    if (path.startsWith("/profile/following")) { setActivePage('profile'); return }
+    const path = location.pathname;
 
+    if (EXACT_ROUTE_TO_PAGE.has(path)) {
+      setActivePage(EXACT_ROUTE_TO_PAGE.get(path));
+      return;
+    }
+
+    const match = PREFIX_ROUTE_TO_PAGE.find(([prefix]) => path.startsWith(prefix));
+    setActivePage(match ? match[1] : DEFAULT_ACTIVE_PAGE);
   }, [location.pathname])
 
-  const showNavAndMenu = activePage !== 'intro' && activePage !== 'login' && activePage !== 'register';
+  // Mostrar Nav/Side por ruta real (no por activePage)
+  const currentPath = location.pathname;
+  const showNavAndMenu = !['/', '/start', '/login', '/register'].includes(currentPath);
 
   return (
     <div>
@@ -81,7 +68,6 @@ const Body = () => {
             <Route path="/profile/:id" element={
               <ProtectedPath path={<ProfilePage />} />
             } />
-            <Route path="/test" element={<ProtectedPath path={<Test />} />} />
             <Route path="/routines/create-routine" element={
               <ProtectedPath role={["TRAINER", "ADMIN"]} path={<CreateRoutine />} />
             } />

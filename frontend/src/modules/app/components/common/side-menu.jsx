@@ -1,11 +1,11 @@
 import React, { useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 import MenuItem from './menu-item'
 import { UserContext } from "./user-provider"
 
-const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = SVG_ICONS
+const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = svgIcons
 
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()

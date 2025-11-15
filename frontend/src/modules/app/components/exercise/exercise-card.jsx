@@ -1,5 +1,5 @@
 import React from 'react'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 
 
 const ExerciseCard = ({exercise, onValidate, onDecline}) => {
@@ -22,13 +22,13 @@ const ExerciseCard = ({exercise, onValidate, onDecline}) => {
         <div className="w-[20%] flex justify-center gap-5">
             {onValidate && (
               <button onClick={onValidate} aria-label="Validate Exercise" className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
-                  <SVG_ICONS.AcceptIcon  className="w-[30px] h-auto text-white"/>
+                  <svgIcons.AcceptIcon  className="w-[30px] h-auto text-white"/>
               </button>
             )}
 
             {onDecline && (
               <button onClick={onDecline} aria-label="Block Exercise" className="bg-[#262626] p-3 hover:bg-[#3a3a3a]">
-                  <SVG_ICONS.CancelIcon  className="w-[30px] h-auto text-white"/>
+                  <svgIcons.CancelIcon  className="w-[30px] h-auto text-white"/>
               </button>
             )}
         </div>

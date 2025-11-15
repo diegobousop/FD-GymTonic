@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 
 
 const Toast = ({ message, type, onClose }) => {
@@ -25,17 +25,17 @@ const Toast = ({ message, type, onClose }) => {
 
   const toastConfig = {
     success: {
-      icon: SVG_ICONS.AcceptIcon,
+      icon: svgIcons.AcceptIcon,
       borderColor: '#ff0000',
     },
     declined: {
-      icon: SVG_ICONS.CancelIcon,
+      icon: svgIcons.CancelIcon,
     },
     error: {
-      icon: SVG_ICONS.CancelIcon,
+      icon: svgIcons.CancelIcon,
     },
     canceled: {
-      icon: SVG_ICONS.CancelIcon,
+      icon: svgIcons.CancelIcon,
     }
   }
 
@@ -47,7 +47,7 @@ const Toast = ({ message, type, onClose }) => {
       <Icon className={`w-6 h-6 ${config.iconColor}`} />
       <p>{message}</p>
       <button onClick={handleClose} className="ml-2">
-        <SVG_ICONS.CancelIcon className="w-4 h-4" />
+        <svgIcons.CancelIcon className="w-4 h-4" />
       </button>
     </div>
   )
