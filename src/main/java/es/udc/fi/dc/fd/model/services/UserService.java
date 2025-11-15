@@ -5,6 +5,7 @@ import java.util.List;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
+import es.udc.fi.dc.fd.model.entities.FollowRequest;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -163,5 +164,13 @@ public interface UserService {
 	 * @return list of genders
 	 */
 	List<String> getGenders();
+
+	FollowRequest sendFollowRequest(Long senderId, Long receiverId) throws InstanceNotFoundException, PermissionException;
+
+	public boolean acceptFollowRequest(Long requestId) throws InstanceNotFoundException,PermissionException;
+
+	public void rejectFollowRequest(Long requestId) throws InstanceNotFoundException;
+
+	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException;
 
 }

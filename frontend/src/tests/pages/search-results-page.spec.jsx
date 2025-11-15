@@ -6,7 +6,7 @@ import SearchResultsPage from "../../modules/app/pages/search-results-page.jsx";
 import { UserContext } from "../../modules/app/components/common/user-provider"; // importa tu UserContext
 import "@testing-library/jest-dom";
 import { ToastProvider } from "../../modules/app/components/common/toast-provider.jsx";
-import { followUser, getBlockedUsers, unfollowUser } from "../../backend/userService.js";
+import {followUser, getBlockedUsers, sendFollowRequest, unfollowUser} from "../../backend/userService.js";
 
 jest.mock("../../backend/searchService.js", () => ({
   searchResults: jest.fn(),
@@ -16,7 +16,8 @@ jest.mock("../../backend/searchService.js", () => ({
 jest.mock("../../backend/userService.js", () => ({
   followUser: jest.fn(),
   unfollowUser: jest.fn(),
-  getBlockedUsers: jest.fn()
+  getBlockedUsers: jest.fn(),
+  sendFollowRequest: jest.fn()
 }));
 
 describe("SearchResultsPage", () => {
@@ -79,10 +80,10 @@ describe("SearchResultsPage", () => {
   });
 
 
-  it("Permite seguir a un usuario", async () => {
+  it("Permite seguir a un entrenador", async () => {
     searchResults.mockImplementation((params, onSuccess) => {
       onSuccess({
-        users: [{ id: 2, name: "Alice" }],
+        users: [{ id: 2, name: "Alice",rol:"TRAINER" }],
         routines: [{ id: 1, name: "Full Body", exercises: [{ name: "Press banca" }, { name: "Sentadilla" }] }],
         exercises: [{ id: 1, name: "Bicep Curl" }],
       });
@@ -123,6 +124,52 @@ describe("SearchResultsPage", () => {
 
     });
   });
+  it("Permite seguir a un usuario", async () => {
+    searchResults.mockImplementation((params, onSuccess) => {
+      onSuccess({
+        users: [{ id: 2, name: "Alice",rol:"USER" }],
+        routines: [{ id: 1, name: "Full Body", exercises: [{ name: "Press banca" }, { name: "Sentadilla" }] }],
+        exercises: [{ id: 1, name: "Bicep Curl" }],
+      });
+    });
+
+    followUser.mockImplementation((userId, onSuccess) => {
+      onSuccess(true);
+    });
+
+    unfollowUser.mockImplementation((userId, onSuccess) => {
+      onSuccess(true);
+    });
+
+    renderWithUserContext(
+        <MemoryRouter initialEntries={["/search?text=test"]}>
+          <ToastProvider>
+            <Routes>
+              <Route path="/search" element={<SearchResultsPage />} />
+            </Routes>
+          </ToastProvider>
+        </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Alice")).toBeInTheDocument();
+      expect(screen.getByText(/Full Body/i)).toBeInTheDocument();
+      expect(screen.getByText(/Bicep Curl/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Seguir/i })).toBeInTheDocument();
+
+      // Simula seguir al usuario
+      screen.getByRole("button", { name: /Seguir/i }).click();
+      expect(sendFollowRequest());
+
+
+      //expect(screen.getByText(/Solicitud enviada a Alice/i)).toBeInTheDocument();
+      //Muestra botón
+      //expect(screen.getByText(/Solicitud enviada/i)).toBeInTheDocument();
+
+
+    });
+  });
+
 
 });
 

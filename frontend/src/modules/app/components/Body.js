@@ -29,6 +29,7 @@ import CreateTraining from '../pages/create-training-page';
 import UserFollowersPage from '../pages/user-followers-page';
 import UserFollowingPage from '../pages/user-following-page';
 import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
+import ViewFollowRequestsPage from "../pages/view-follow-requests-page";
 
 const Body = () => {
 
@@ -56,6 +57,7 @@ const Body = () => {
     if (path.startsWith("/routines/my-followers")) { setActivePage('myFollowers'); return }
     if (path.startsWith("/profile/followers")) { setActivePage('profile'); return }
     if (path.startsWith("/profile/following")) { setActivePage('profile'); return }
+    if (path.startsWith("/profile/follow-request")) { setActivePage('ViewFollowRequestsPage'); return }
 
   }, [location.pathname])
 
@@ -108,6 +110,7 @@ const Body = () => {
             <Route path="/routines/my-followers" element={<ProtectedPath role={["TRAINER"]} path={<MyRoutineFollowersPage />} />} />
             <Route path="/profile/followers" element={<ProtectedPath path={<UserFollowersPage />} />} />
             <Route path="/profile/following" element={<ProtectedPath path={<UserFollowingPage />} />} />
+            <Route path="/profile/follow-request" element={<ProtectedPath path={<ViewFollowRequestsPage />} />} />
           </Routes>
         </div>
       </div>
