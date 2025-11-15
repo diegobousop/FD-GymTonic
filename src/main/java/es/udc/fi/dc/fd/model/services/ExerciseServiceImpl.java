@@ -22,6 +22,9 @@ import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 public class ExerciseServiceImpl implements ExerciseService {
 
     @Autowired
+    private RoutineExerciseDao routineExerciseDao;
+
+    @Autowired
     private ExerciseDao exerciseDao;
 
     @Autowired
@@ -80,6 +83,19 @@ public class ExerciseServiceImpl implements ExerciseService {
 
         exerciseDao.save(exercise);
         return exercise.getId();
+    }
+
+    @Override
+    public Exercise getExerciseById(Long exerciseId) throws InstanceNotFoundException {
+        
+        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
+        if (optionalExercise.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        }
+        
+        Exercise exercise = optionalExercise.get();
+
+        return exercise;
     }
 
 
@@ -169,6 +185,17 @@ public class ExerciseServiceImpl implements ExerciseService {
                     .toList();
             return new Block<>(filtered, slice.hasNext());
         }
+    }
+
+    @Override
+    public RoutineExercise getRoutineExercise(Long routineId, Long exerciseId){
+        return routineExerciseDao.findByRoutineIdAndExerciseId(routineId, exerciseId);
+    }
+
+    @Override
+    public RoutineExercise editRestTime(RoutineExercise routineExercise, int restTime){
+        routineExercise.setRestTime(restTime);
+        return routineExerciseDao.save(routineExercise);
     }
 
     @Override

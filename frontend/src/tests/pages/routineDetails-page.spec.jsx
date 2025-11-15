@@ -6,7 +6,7 @@ import RoutineDetailsPage from "../../modules/app/pages/routine-details-page";
 import * as routineService from "../../backend/routineService";
 
 jest.mock("../../backend/routineService", () => ({
-  findRoutineById: jest.fn(),
+  findRoutineDetails: jest.fn(),
 }));
 
 describe("RoutineDetailsPage", () => {
@@ -15,7 +15,7 @@ describe("RoutineDetailsPage", () => {
   });
 
   it("muestra los detalles de una rutina correctamente", async () => {
-    routineService.findRoutineById.mockImplementation((id, onSuccess) => {
+    routineService.findRoutineDetails.mockImplementation((id, onSuccess) => {
       onSuccess({
         id: 10,
         name: "Rutina Torso",
@@ -47,7 +47,7 @@ describe("RoutineDetailsPage", () => {
   });
 
   it("muestra un mensaje de error si la carga de la rutina falla", async () => {
-    routineService.findRoutineById.mockImplementation((id, onSuccess, onError) => {
+    routineService.findRoutineDetails.mockImplementation((id, onSuccess, onError) => {
       onError("Error al cargar la rutina");
     });
 
@@ -64,7 +64,7 @@ describe("RoutineDetailsPage", () => {
 
   it("muestra el indicador de carga mientras se obtienen los datos", async () => {
     let triggerSuccess;
-    routineService.findRoutineById.mockImplementation((id, onSuccess) => {
+    routineService.findRoutineDetails.mockImplementation((id, onSuccess) => {
       triggerSuccess = () =>
         onSuccess({
           id: 5,

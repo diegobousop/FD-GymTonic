@@ -76,26 +76,23 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Map<String, List<SearchFullDto>> findFullResults(String text, String trainerName, String muscleGroup, int limit) {
-        return findFullResults(text, trainerName, muscleGroup, limit, null);
-    }
-
-    @Override
-    public Map<String, List<SearchFullDto>> findFullResults(String text, String trainerName, String muscleGroup, int limit, Long searcherUserId) {
+    public Map<String, List<SearchFullDto>> findFullResults(String text, String trainerName, String muscleGroup, int limit, String difficulty, Long searcherUserId) {
         if (text == null || text.isBlank()) {
             return Map.of(
-                "users", List.of(),
-                "routines", List.of(),
-                "exercises", List.of()
+                    "users", List.of(),
+                    "routines", List.of(),
+                    "exercises", List.of()
             );
         }
 
         String safeText = text.toLowerCase();
         String safeTrainer = trainerName == null ? "" : trainerName.toLowerCase();
         String safeMuscle = muscleGroup == null ? "" : muscleGroup.toUpperCase();
+        String safeDifficulty = difficulty == null ? "" : difficulty.toUpperCase();
 
         boolean noTrainer = safeTrainer.isBlank();
         boolean noMuscle = safeMuscle.isBlank();
+        boolean noDifficulty = safeDifficulty.isBlank();
 
         Map<String, List<SearchFullDto>> resultMap = new HashMap<>();
 
@@ -121,15 +118,14 @@ public class SearchServiceImpl implements SearchService {
                 .collect(Collectors.toList());
         resultMap.put("users", users);
 
-        // Rutinas
         List<SearchFullDto> routines = searchDao.findRoutinesDetailed(safeText, limit).stream()
                 .filter(r -> noTrainer || r.getCreator().getUserName().toLowerCase().contains(safeTrainer))
                 .map(r -> {
                     // Mapeo de ejercicios a SearchExerciseForRoutineDto
-                    List<SearchExerciseForRoutineDto> exercises = r.getExercises().stream()
+                    List<SearchExerciseForRoutineDto> exercises = r.getRoutineExercises().stream()
                             .map(e -> new SearchExerciseForRoutineDto(
-                                    e.getExerciseName(),
-                                    e.getNumeroSeries()
+                                    e.getExercise().getExerciseName(),
+                                    e.getExercise().getNumeroSeries()
                             ))
                             .collect(Collectors.toList());
 
@@ -144,9 +140,9 @@ public class SearchServiceImpl implements SearchService {
                 .collect(Collectors.toList());
         resultMap.put("routines", routines);
 
-        // Ejercicios
         List<SearchFullDto> exercises = searchDao.findExercisesDetailed(safeText, limit).stream()
                 .filter(e -> noMuscle || e.getGrupoMuscular().name().equalsIgnoreCase(safeMuscle))
+                .filter(e -> noDifficulty || e.getDifficulty().name().equalsIgnoreCase(safeDifficulty))
                 .map(e -> SearchFullDto.fromExercise(
                         e.getId(),
                         e.getExerciseName(),

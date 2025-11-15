@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import { searchResults } from "../../../backend/searchService.js";
-import Routine from "../components/common/routine.jsx";
+import Routine from "../components/routine/routine-card.jsx";
 import { UserContext } from "../components/common/user-provider";
 import backend from "../../../backend";
 import {useToast} from "../components/common/toast-provider.jsx";
@@ -11,16 +11,20 @@ import { Link } from "react-router-dom";
 const SearchResultsPage = () => {
   const { user } = useContext(UserContext);
   const [searchParams] = useSearchParams();
-  const [results, setResults] = useState({ users: [], routines: [], exercises: [] });
+  const [results, setResults] = useState({
+    users: [],
+    routines: [],
+    exercises: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [itemTypeFilter, setItemTypeFilter] = useState("TODO");
   const { showToast } = useToast();
 
-
   const query = searchParams.get("text") || "";
   const trainerName = searchParams.get("trainerName") || "";
   const muscleGroup = searchParams.get("muscleGroup") || "";
+  const difficulty = searchParams.get("difficulty") || "";
   const size = 5;
 
   const fetchResults = useCallback(() => {
@@ -33,8 +37,16 @@ const SearchResultsPage = () => {
     setError(null);
 
     searchResults(
-      { text: query, trainerName, muscleGroup, page: 0, size },
+      {
+        text: query,
+        trainerName,
+        muscleGroup,
+        difficulty,
+        page: 0,
+        size,
+      },
       (data) => {
+        // Procesar rutinas
         const routinesWithSeries = data.routines.map((routine) => ({
           id: routine.id,
           name: routine.name,
@@ -45,10 +57,15 @@ const SearchResultsPage = () => {
               name: e.name,
               numeroSeries: e.numeroSeries ?? 0,
             })) || [],
-          dificultad: routine.dificultad || "INTERMEDIO",
+          difficulty: routine.difficulty || "INTERMEDIO",
         }));
 
-        setResults({ ...data, routines: routinesWithSeries });
+        setResults({
+          users: data.users,
+          routines: routinesWithSeries,
+          exercises: data.exercises,
+        });
+
         setLoading(false);
       },
       () => {
@@ -56,7 +73,7 @@ const SearchResultsPage = () => {
         setLoading(false);
       }
     );
-  }, [query, trainerName, muscleGroup]);
+  }, [query, trainerName, muscleGroup, difficulty]);
 
   useEffect(() => {
     fetchResults();
@@ -183,7 +200,9 @@ const SearchResultsPage = () => {
             } hover:bg-gray-600`}
             onClick={() => filterByType(type)}
           >
-            {type === "TODO" ? "Todo" : type.charAt(0) + type.slice(1).toLowerCase()}
+            {type === "TODO"
+              ? "Todo"
+              : type.charAt(0) + type.slice(1).toLowerCase()}
           </button>
         ))}
       </div>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import backend from "../../../../backend";
 
-const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
+const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate }) => {
   const [series, setSeries] = useState([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [restTimeValue, setRestTimeValue] = useState(restTime);
 
   // Cargar las series del backend
   useEffect(() => {
@@ -66,6 +67,16 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
             })
         )
       );
+
+      await new Promise((resolve, reject) => {
+        backend.exerciseService.editRestTime(
+          exerciseId,
+          routineId,
+          restTimeValue,
+          resolve,
+          (err) => reject(err)
+        );
+      });
 
       if (typeof onUpdate === "function") await onUpdate();
 
@@ -139,6 +150,20 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
           ) : (
             <p className="text-gray-400 text-xs p-2">Sin series registradas</p>
           )}
+        </div>
+
+        <div className="flex flex-row items-center self-center mt-3">
+          <p className="text-white text-m">Tiempo de descanso:</p>
+          <input
+            type="number"
+            value={restTimeValue}
+            onChange={(e) => setRestTimeValue(parseInt(e.target.value, 10) || 0)}
+            className="bg-gray-800 text-white w-16 rounded text-center ml-2"
+            aria-label="Tiempo de descanso"
+            min="0"
+            step={5}
+          />
+          <p className="text-white text-m"> segundos</p>
         </div>
 
         <div className="flex justify-between mt-4">

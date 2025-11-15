@@ -18,4 +18,3 @@ public class SearchExerciseForRoutineDto {
     public int getNumeroSeries() { return numeroSeries; }
     public void setNumeroSeries(int numeroSeries) { this.numeroSeries = numeroSeries; }
 }
-

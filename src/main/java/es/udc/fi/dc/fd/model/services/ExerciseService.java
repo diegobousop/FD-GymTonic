@@ -6,6 +6,7 @@ import java.util.List;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -14,6 +15,8 @@ import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 public interface ExerciseService {
 
     Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException;
+    
+    Exercise getExerciseById(Long exerciseId) throws InstanceNotFoundException;
 
     Block<Exercise> getValidatedExercises(int page, int size);
 
@@ -30,6 +33,10 @@ public interface ExerciseService {
     Serie getSerie(Long serieId);
 
     Block<Serie> getSeriesByExerciseAndRoutine(long exercise,long routine);
+
+    RoutineExercise getRoutineExercise(Long routineId, Long exerciseId);
+
+    RoutineExercise editRestTime(RoutineExercise routineExercise, int restTime);
 
     Exercise validateExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
 

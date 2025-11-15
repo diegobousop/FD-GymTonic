@@ -3,8 +3,12 @@ package es.udc.fi.dc.fd.model.services;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +23,9 @@ import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineDao;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExerciseDao;
+import es.udc.fi.dc.fd.model.entities.RoutineExerciseId;
 import es.udc.fi.dc.fd.model.entities.RoutineFollow;
 import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
 import es.udc.fi.dc.fd.model.entities.Serie;
@@ -67,14 +74,6 @@ public class RoutineServiceImpl implements RoutineService {
         if(name.isBlank()) throw new InvalidRoutineNameException(name);
         if(duration == null || duration<=0 ) throw new InvalidRoutineDurationException(duration);
 
-        List<Exercise> found = new ArrayList<>();
-        for (Long exerciseId : exercises) {
-            Optional<Exercise> exercise = exerciseDao.findById(exerciseId);
-            if (exercise.isEmpty()) {
-                throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
-            }
-            found.add(exercise.get());
-        }
         if (isPublic == null) {
             isPublic = true;
         }
@@ -90,22 +89,43 @@ public class RoutineServiceImpl implements RoutineService {
         // Comprobar límite de ejercicios por rutina para usuarios no premium
         if(!creator.getPremium() && creator.getRole().toString().equals("TRAINER")) {
             int exerciseLimit = 5;
-            if (found.size() > exerciseLimit) {
+            if (exercises.size() > exerciseLimit) {
                 throw new RoutineExerciseLimitReachedException();
             }
         }
 
+        // 🧱 Crear la rutina base
+        Routine routine = new Routine();
+        routine.setName(name);
+        routine.setCreator(creator);
+        routine.setDuration(duration);
+        routine.setModificationDate(LocalDateTime.now().withNano(0));
+        routine.setIsPublic(isPublic);
 
-        Routine routine = new Routine(name, found, creator, duration, LocalDateTime.now().withNano(0), isPublic);
-        
+        routineDao.save(routine);
+
+        // Notificar seguidores si es pública
         if(isPublic && creator.getFollowers()!=null) {
             notificationService.notifyFollowers(creatorId, routine);
         }
 
-        routineDao.save(routine);
+        // Crear las relaciones RoutineExercise con orden y descanso
+        int order = 1;
+        for (Long exerciseId : exercises) {
+            Exercise exercise = exerciseDao.findById(exerciseId)
+                    .orElseThrow(() -> new InstanceNotFoundException("project.entities.exercise", exerciseId));
 
-        for (Exercise exercise : found) {
-            for(int i = 1; i <= exercise.getNumeroSeries(); i++) {
+            RoutineExercise routineExercise = new RoutineExercise();
+            routineExercise.setId(new RoutineExerciseId());
+            routineExercise.setRoutine(routine);
+            routineExercise.setExercise(exercise);
+            routineExercise.setOrderInRoutine(order++);
+            routineExercise.setRestTime(120); 
+
+            routine.getRoutineExercises().add(routineExercise);
+
+            // 🏋️ Crear series asociadas al ejercicio
+            for (int i = 1; i <= exercise.getNumeroSeries(); i++) {
                 Serie serie = new Serie();
                 serie.setExercise(exercise);
                 serie.setPeso(40);
@@ -116,7 +136,7 @@ public class RoutineServiceImpl implements RoutineService {
             }
         }
 
-        return routine;
+        return routineDao.save(routine);
     }
 
     @Override
@@ -159,16 +179,13 @@ public class RoutineServiceImpl implements RoutineService {
     @Override
     public Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException, RoutineExerciseLimitReachedException {
         Users creator = permissionChecker.checkUser(creatorId);
-        
-        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
-        if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
-        }
-        
-        Routine routine = optionalRoutine.get();
-        
-        // Admin can modify any routine, others can only modify their own
-        if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
+
+        Routine routine = routineDao.findById(routineId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.routine", routineId));
+
+        // Solo el creador o un admin puede modificar
+        if (!creator.getRole().equals(Users.RoleType.ADMIN) &&
+            !routine.getCreator().getId().equals(creator.getId())) {
             throw new PermissionException("project.entities.routine", routineId);
         }
 
@@ -179,57 +196,57 @@ public class RoutineServiceImpl implements RoutineService {
                 throw new RoutineExerciseLimitReachedException();
             }
         }
-        
+
+        // Recuperamos las relaciones actuales
+        List<RoutineExercise> current = routine.getRoutineExercises();
+
+        // Eliminar las relaciones que ya no están
+        current.removeIf(re -> exercises.stream()
+            .noneMatch(id -> re.getExercise().getId().equals(id)));
+
+        // Buscar los ejercicios de la nueva lista
         List<Exercise> foundExercises = new ArrayList<>();
-        for (Long exerciseId : exercises) {
-            Optional<Exercise> exercise = exerciseDao.findById(exerciseId);
-            if (exercise.isEmpty()) {
-                throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        for (Long id : exercises) {
+            Exercise ex = exerciseDao.findById(id)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.exercise", id));
+            foundExercises.add(ex);
+        }
+
+        // Añadir los nuevos ejercicios (solo los que no existían)
+        int order = 1;
+        for (Exercise ex : foundExercises) {
+            RoutineExercise existing = current.stream()
+                .filter(re -> re.getExercise().getId().equals(ex.getId()))
+                .findFirst()
+                .orElse(null);
+
+            if (existing != null) {
+                existing.setOrderInRoutine(order++);
+            } else {
+                RoutineExercise newRE = new RoutineExercise();
+                RoutineExerciseId newId = new RoutineExerciseId();
+                newRE.setId(newId);
+                newRE.setRoutine(routine);
+                newRE.setExercise(ex);
+                newRE.setOrderInRoutine(order++);
+                newRE.setRestTime(120);
+                current.add(newRE);
             }
-            foundExercises.add(exercise.get());
         }
-        
+
+        // Notificar seguidores si es pública
+        if(isPublic && creator.getFollowers()!=null) {
+            notificationService.notifyFollowers(creatorId, routine);
+        }
+
+        // Actualizar datos de la rutina
         routine.setName(name);
-        routine.setExercises(foundExercises);
         routine.setDuration(duration);
-        if (isPublic != null && creator.getFollowers() != null) {
-            routine.setIsPublic(isPublic);
-            notificationService.notifyFollowers(routine.getCreator().getId(), routine);
-        }
         routine.setModificationDate(LocalDateTime.now().withNano(0));
-        
-        routineDao.save(routine);
-        return routine;
+        routine.setIsPublic(isPublic);
+
+        return routineDao.save(routine);
     }
-
-    @Override
-    public boolean removeExerciseFromRoutine(Long exerciseId, Long routineId) throws InstanceNotFoundException{
-
-        Optional<Routine> optionalRoutine = routineDao.findById(routineId);
-        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
-
-        if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
-        }
-
-        if (optionalExercise.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
-        }
-
-        Routine routine = optionalRoutine.get();
-        Exercise exercise = optionalExercise.get();
-
-        if (routine.getExercises() == null || !routine.getExercises().contains(exercise)) {
-            return false;
-        }
-
-        routine.getExercises().remove(exercise);
-
-        routineDao.save(routine);
-
-        return true;
-    }
-
 
     @Transactional
     @Override

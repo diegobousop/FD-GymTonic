@@ -83,6 +83,8 @@ CREATE TABLE Routine (
 CREATE TABLE Routine_Exercise (
     routine_id BIGINT NOT NULL,
     exercise_id BIGINT NOT NULL,
+    order_in_routine INT NOT NULL,
+    rest_time INT DEFAULT 120,
     PRIMARY KEY (routine_id, exercise_id),
     FOREIGN KEY (routine_id) REFERENCES Routine(id),
     FOREIGN KEY (exercise_id) REFERENCES Exercise(id)

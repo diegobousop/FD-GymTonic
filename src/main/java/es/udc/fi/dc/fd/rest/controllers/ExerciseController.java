@@ -12,23 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.services.Block;
 import es.udc.fi.dc.fd.model.services.ExerciseService;
+import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockDto;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
-
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-import es.udc.fi.dc.fd.rest.dtos.ExerciseSummaryDto;
 
 
 @RestController
@@ -52,7 +42,7 @@ public class ExerciseController {
 
     @Autowired
     private ExerciseService exerciseService;
-
+    
     @PostMapping("/addExercise")
     public Long addExercise(@RequestAttribute Long userId, @RequestBody ExerciseDto exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         return exerciseService.addExercise(userId, ExerciseConversor.toExercise(exercise));
@@ -125,5 +115,14 @@ public class ExerciseController {
         exerciseService.blockExercise(userId, exerciseId);
     }
 
-
+    @PutMapping("/restTime")
+    public ExerciseRoutineDto editRestTime(@RequestAttribute Long userId,
+                                @RequestParam long exerciseId,
+                                @RequestParam long routineId,
+                                @RequestParam int restTime) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
+        return ExerciseConversor.toExerciseRoutineDto(
+            exerciseService.getExerciseById(exerciseId), 
+            exerciseService.getSeriesByExerciseAndRoutine(exerciseId, routineId).getItems(),
+            exerciseService.editRestTime(exerciseService.getRoutineExercise(routineId, exerciseId), restTime));
+    }
 }
