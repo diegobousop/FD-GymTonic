@@ -57,7 +57,7 @@ const Body = () => {
     if (path.startsWith("/routines/my-followers")) { setActivePage('myFollowers'); return }
     if (path.startsWith("/profile/followers")) { setActivePage('profile'); return }
     if (path.startsWith("/profile/following")) { setActivePage('profile'); return }
-    if (path.startsWith("/profile/follow-request")) { setActivePage('ViewFollowRequestsPage'); return }
+    if (path.startsWith("/profile/follow-request")) { setActivePage('ViewFollowRequestsPage');}
 
   }, [location.pathname])
 

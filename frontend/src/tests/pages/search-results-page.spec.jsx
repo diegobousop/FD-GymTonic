@@ -159,7 +159,7 @@ describe("SearchResultsPage", () => {
 
       // Simula seguir al usuario
       screen.getByRole("button", { name: /Seguir/i }).click();
-      expect(sendFollowRequest());
+
 
 
       //expect(screen.getByText(/Solicitud enviada a Alice/i)).toBeInTheDocument();

@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -279,7 +278,7 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
+	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
 		return toUserDto(userService.getUserById(userId));
 	}
 
@@ -332,8 +331,7 @@ public class UserController {
 		return Optional.ofNullable(userService.getBlocked(userId))
 									.orElse(Collections.emptyList())
 									.stream()
-									.map(Users::getId)
-									.collect(Collectors.toList());
+									.map(Users::getId).toList();
 	}
 	
 	@GetMapping("/following/count")
