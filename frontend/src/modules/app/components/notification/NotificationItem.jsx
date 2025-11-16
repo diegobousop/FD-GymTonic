@@ -2,8 +2,9 @@ import PropTypes from 'prop-types';
 
 const NotificationItem = ({ notification, onClick }) => {
   return (
-    <div
-      className={`p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition ${
+    <button
+      type="button"
+      className={`w-full text-left p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition ${
         !notification.read ? 'bg-gray-900' : 'bg-[#1a1a1a]'
       }`}
       onClick={() => onClick(notification)}
@@ -17,7 +18,7 @@ const NotificationItem = ({ notification, onClick }) => {
           <p className="text-gray-500 text-xs mt-1">{notification.date}</p>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

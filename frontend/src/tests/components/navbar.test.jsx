@@ -136,11 +136,10 @@ describe("Navbar - Notificaciones", () => {
     fireEvent.click(notificationButton);
 
     // Esperar a que se muestren las notificaciones
-    const notification = await screen.findByText(/Nueva notificación 1/i);
+    const notification = await screen.findByRole("button", { name: /Nueva notificación 1/i });
 
     // Hacer clic en el contenedor de la notificación (el div con cursor-pointer)
-    const notificationContainer = notification.closest('div[class*="cursor-pointer"]');
-    fireEvent.click(notificationContainer);
+    fireEvent.click(notification);
 
     // Verificar que se llamó al servicio para marcar como leída
     await waitFor(() => {
