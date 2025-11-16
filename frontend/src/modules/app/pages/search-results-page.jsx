@@ -27,9 +27,6 @@ const SearchResultsPage = () => {
   const difficulty = searchParams.get("difficulty") || "";
   const size = 5;
 
-  // --------------------
-  // Fetch de resultados
-  // --------------------
   const fetchResults = useCallback(() => {
     if (!query.trim()) {
       setResults({ users: [], routines: [], exercises: [] });
@@ -97,33 +94,51 @@ const SearchResultsPage = () => {
   const handleFollowUser = (userId) => {
     const targetUser = results.users.find((u) => u.id === userId);
     const userName = targetUser?.name || "este usuario";
+    const targetRole = targetUser?.rol;
 
-    backend.userService.followUser(
-      userId,
-      (success) => {
-        if (success) {
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: true } : u
-            ),
-          }));
-          showToast(`Has comenzado a seguir a ${userName}`, 'success');
-        } else {
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: true } : u
-            ),
-          }));
-          showToast(`Ya sigues a ${userName}`, 'error');
-        }
-      },
-      (err) => {
-        console.error(err);
-        showToast("Error al seguir al usuario.", "error");
-      }
-    );
+    if (!targetUser) {
+      showToast("No se encontró el usuario.", "error");
+      return;
+    }
+
+    // TRAINER / ADMIN → seguir directamente
+    if (targetRole === "TRAINER" || targetRole === "ADMIN") {
+      backend.userService.followUser(
+          userId,
+          () => {
+            setResults((prev) => ({
+              ...prev,
+              users: prev.users.map((u) =>
+                  u.id === userId ? { ...u, isFollowing: true } : u
+              ),
+            }));
+            showToast(`Has comenzado a seguir a ${userName}`, "success");
+          },
+          () => showToast("Error al seguir al usuario.", "error")
+      );
+      return;
+    }
+
+
+    if (targetRole === "USER") {
+        backend.userService.sendFollowRequest(
+            userId,
+            () => {
+                setResults((prev) => ({
+                    ...prev,
+                    users: prev.users.map((u) =>
+                        u.id === userId ? { ...u, requestSent: true } : u
+                    ),
+                }));
+                showToast(`Solicitud enviada a ${userName}`, "success");
+            },
+            () => showToast("Error al enviar la solicitud.", "error")
+        );
+      return;
+    }
+
+    // ROL desconocido
+    showToast("No se puede seguir a este usuario.", "error");
   };
 
   // Dejar de seguir usuario
@@ -132,43 +147,29 @@ const SearchResultsPage = () => {
     const userName = targetUser?.name || "este usuario";
 
     backend.userService.unfollowUser(
-      userId,
-      (success) => {
-        if (success) {
+        userId,
+        () => {
           setResults((prev) => ({
             ...prev,
             users: prev.users.map((u) =>
               u.id === userId ? { ...u, isFollowing: false } : u
             ),
           }));
-          showToast(`Has dejado de seguir a ${userName}`, 'success');
-        } else {
-          setResults((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, isFollowing: false } : u
-            ),
-          }));
-          showToast(`No seguías a ${userName}`, 'error');
-        }
-      },
-      (err) => {
-        console.error(err);
-        showToast("Error al dejar de seguir al usuario.", "error");
-      }
+          showToast(`Has dejado de seguir a ${userName}`, "success");
+        },
+        () => showToast("Error al dejar de seguir al usuario.", "error")
     );
   };
 
-  // 🔒 Bloquear usuario
+  // Bloquear usuario
   const handleBlockUser = (userId) => {
-    const targetUser = results.users.find(u => u.id === userId);
+    const targetUser = results.users.find((u) => u.id === userId);
     const userName = targetUser?.name || "este usuario";
 
     backend.userService.blockUser(
-      userId,
-      (success) => {
-        if (success) {
-          setResults(prev => ({
+        userId,
+        () => {
+          setResults((prev) => ({
             ...prev,
             users: prev.users.map(u =>
               u.id === userId ? { ...u, isBlocked: true } : u
@@ -177,28 +178,19 @@ const SearchResultsPage = () => {
   
           if (!user.idBlocked) user.idBlocked = [];
           user.idBlocked.push(userId);
-          showToast(`Has bloqueado a ${userName}`, 'success');
-        } else {
-          showToast(`Ya tenías bloqueado a ${userName}`, 'error');
-        }
-      },
-      (error) => {
-        console.error(error);
-        showToast("Error al bloquear al usuario.", 'error');
-      }
+
+          showToast(`Has bloqueado a ${userName}`, "success");
+        },
+        () => showToast("Error al bloquear al usuario.", "error")
     );
   };
 
-  // --------------------
-  // Render
-  // --------------------
   return (
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">
       <p className="mb-4 text-gray-300">
         Mostrando resultados para: <b>{query || "..."}</b>
       </p>
 
-      {/* Filtros tipo */}
       <div className="mb-6 flex gap-2">
         {["TODO", "RUTINAS", "EJERCICIOS", "USUARIOS"].map((type) => (
           <button
@@ -215,84 +207,85 @@ const SearchResultsPage = () => {
         ))}
       </div>
 
-      {/* Loading / Error */}
       {loading ? (
         <p>Cargando resultados...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="flex flex-col gap-6">
-          {/* ------------------------- */}
-          {/* USUARIOS */}
-          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "USUARIOS") &&
-            results.users?.length > 0 && (
-              <div>
-                <h2 className="font-semibold mb-2">Usuarios</h2>
-                <ul className="space-y-2">
-                  {results.users.map((userItem) => (
-                    <li
-                      key={userItem.id}
-                      className="border border-gray-700 p-2 rounded-md shadow-sm flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        {userItem.avatarBase64 && (
-                          <img
-                            src={userItem.avatarBase64}
-                            alt={userItem.name}
-                            className="w-10 h-10 object-cover"
-                          />
-                        )}
-                        <Link 
-                            to={`/profile/${userItem.id}`}
-                            className="inline-block w-fit text-white hover:text-[#CA0D0A] cursor-pointer"
-                        >
-                          {userItem.name}
-                        </Link>
-                      </div>
+              results.users?.length > 0 && (
+                  <div>
+                    <h2 className="font-semibold mb-2">Usuarios</h2>
+                    <ul className="space-y-2">
+                      {results.users.map((userItem) => (
+                          <li
+                              key={userItem.id}
+                              className="border border-gray-700 p-2 rounded-md shadow-sm flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              {userItem.avatarBase64 && (
+                                  <img
+                                      src={userItem.avatarBase64}
+                                      alt={userItem.name}
+                                      className="w-10 h-10 object-cover"
+                                  />
+                              )}
+                              <Link
+                                  to={`/profile/${userItem.id}`}
+                                  className="text-white hover:text-[#CA0D0A] cursor-pointer"
+                              >
+                                {userItem.name}
+                              </Link>
+                            </div>
 
-                      {userItem.id !== user.id && (
-                        <div className="flex gap-2">
-                          {!userItem.isBanned && (
-                            <button
-                              onClick={() =>
-                                userItem.isFollowing
-                                  ? handleUnfollowUser(userItem.id)
-                                  : handleFollowUser(userItem.id)
-                              }
-                              className={`${
-                                userItem.isFollowing
-                                  ? "bg-gray-600 hover:bg-gray-700"
-                                  : "bg-green-600 hover:bg-green-700"
-                              } text-white px-3 py-1 rounded-md text-sm`}
-                            >
-                              {userItem.isFollowing ? "Dejar de seguir" : "Seguir"}
-                            </button>
-                          )}
-                          {userItem.id !== user.id && user.role !== "ADMIN"&& userItem.rol !== "ADMIN" && (
-                            <button
-                              onClick={() => handleBlockUser(userItem.id)}
-                              disabled={user.idBlocked?.includes(userItem.id)}
-                              className={`${
-                                user.idBlocked?.includes(userItem.id)
-                                  ? "bg-red-900 cursor-not-allowed"
-                                  : "bg-red-600 hover:bg-red-700"
-                              } text-white px-3 py-1 rounded-md text-sm`}
-                            >
-                              {user.idBlocked?.includes(userItem.id) ? "Bloqueado" : "Bloquear"}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                            {userItem.id !== user.id && (
+                                <div className="flex gap-2">
 
-          {/* ------------------------- */}
-          {/* RUTINAS */}
-          {/* ------------------------- */}
+                                    <button
+                                        onClick={() =>
+                                            userItem.isFollowing
+                                                ? handleUnfollowUser(userItem.id)
+                                                : !userItem.requestSent && handleFollowUser(userItem.id)
+                                        }
+                                        disabled={userItem.requestSent}
+                                        className={`${
+                                            userItem.isFollowing
+                                                ? "bg-gray-600 hover:bg-gray-700"
+                                                : userItem.requestSent
+                                                    ? "bg-yellow-700 cursor-not-allowed"
+                                                    : "bg-green-600 hover:bg-green-700"
+                                        } text-white px-3 py-1 rounded-md text-sm`}
+                                    >
+                                        {userItem.isFollowing
+                                            ? "Dejar de seguir"
+                                            : userItem.requestSent
+                                                ? "Solicitud enviada"
+                                                : "Seguir"}
+                                    </button>
+                                    {user.role !== "ADMIN" && userItem.role !== "ADMIN" && (
+                                        <button
+                                            onClick={() => handleBlockUser(userItem.id)}
+                                            disabled={user.idBlocked?.includes(userItem.id)}
+                                            className={`${
+                                                user.idBlocked?.includes(userItem.id)
+                                                    ? "bg-red-900 cursor-not-allowed"
+                                                    : "bg-red-600 hover:bg-red-700"
+                                            } text-white px-3 py-1 rounded-md text-sm`}
+                                      >
+                                        {user.idBlocked?.includes(userItem.id)
+                                            ? "Bloqueado"
+                                            : "Bloquear"}
+                                      </button>
+                                  )}
+                                </div>
+                            )}
+                          </li>
+                      ))}
+                    </ul>
+                  </div>
+              )}
+
           {(itemTypeFilter === "TODO" || itemTypeFilter === "RUTINAS") &&
             results.routines?.length > 0 && (
               <div>
@@ -305,9 +298,6 @@ const SearchResultsPage = () => {
               </div>
             )}
 
-          {/* ------------------------- */}
-          {/* EJERCICIOS */}
-          {/* ------------------------- */}
           {(itemTypeFilter === "TODO" || itemTypeFilter === "EJERCICIOS") &&
             results.exercises?.length > 0 && (
               <div>

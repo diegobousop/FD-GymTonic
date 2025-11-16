@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS User_Follow;
+DROP TABLE IF EXISTS FollowRequest;
+
 
 DROP TABLE IF EXISTS Serie;
 DROP TABLE IF EXISTS Notification;
@@ -154,5 +156,13 @@ CREATE TABLE Notification (
     FOREIGN KEY (receiverId) REFERENCES Users(id),
     FOREIGN KEY (senderId) REFERENCES Users(id),
     FOREIGN KEY (routineId) REFERENCES Routine(id)
+);
+
+CREATE TABLE FollowRequest (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    receiver_id BIGINT NOT NULL,
+    createdAt TIMESTAMP NOT NULL,
+    accepted BOOLEAN NOT NULL
 );
 

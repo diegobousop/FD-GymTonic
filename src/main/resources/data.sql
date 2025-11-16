@@ -8,7 +8,8 @@ INSERT INTO Avatar (name, avatarBase64) VALUES
 INSERT INTO Users (userName, password, firstName, lastName, email, avatar, role, bankCard, premium, weight, height, gender,birthdate) VALUES
 ('admin1', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'Admin', 'User', 'admin1@admin.com', 1, 2, '1234567890123456', true, 70.0, 178, 1,parsedatetime('17-10-2025 00:00', 'dd-MM-yyyy hh:mm')), -- password 12345
 ('trainer1', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'Trainer', 'User', 'trainer1@trainer.com', 1, 1, '1234567890123456', true, 70.0, 178, 0,parsedatetime('17-10-2025 00:00', 'dd-MM-yyyy hh:mm')),
-('user1', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'User', 'User', 'User1@user.com', 1, 0, null, false, 70.0, 178, 2, parsedatetime('17-10-2025 00:00','dd-MM-yyyy hh:mm'));
+('user1', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'User', 'User', 'User1@user.com', 1, 0, null, false, 70.0, 178, 2, parsedatetime('17-10-2025 00:00','dd-MM-yyyy hh:mm')),
+('user2', '$2a$12$5Ijjc/.vyF9P2Hmxw7QbEuHNtbCYkWD8S2wZ0SgbrErvmY3DeIMC6', 'User', 'User', 'User2@user.com', 1, 0, null, false, 70.0, 178, 2, parsedatetime('17-10-2025 00:00','dd-MM-yyyy hh:mm'));
 
 
 INSERT INTO Icons (name, iconBase64) VALUES

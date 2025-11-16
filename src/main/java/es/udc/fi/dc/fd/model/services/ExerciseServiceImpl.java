@@ -150,10 +150,10 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
-    public Boolean removeSerie(long SerieId) throws InstanceNotFoundException {
-        if(!serieDao.existsById(SerieId)) throw new InstanceNotFoundException("project.entities.serie", SerieId);
-        serieDao.deleteById(SerieId);
-        return (!serieDao.existsById(SerieId));
+    public Boolean removeSerie(long serieId) throws InstanceNotFoundException {
+        if(!serieDao.existsById(serieId)) throw new InstanceNotFoundException("project.entities.serie", serieId);
+        serieDao.deleteById(serieId);
+        return (!serieDao.existsById(serieId));
     }
 
     @Override

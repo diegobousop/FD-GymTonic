@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,14 +18,8 @@ import org.springframework.data.domain.Pageable;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.BlockUserDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
@@ -56,6 +51,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private AvatarDao avatarDao;
+
+	@Autowired
+	private FollowRequestDao followRequestDao;
 
 	/**
 	 * Sign up.
@@ -478,4 +476,58 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toList());
 	}
 
+
+	@Override
+	public FollowRequest sendFollowRequest(Long senderId, Long receiverId)
+			throws InstanceNotFoundException, PermissionException {
+
+		Users sender = permissionChecker.checkUser(senderId);
+		Users receiver = permissionChecker.checkUser(receiverId);
+
+		if (receiver.getFollowers()==null){
+			receiver.setFollowers(new ArrayList<>());
+		}
+		if (sender.equals(receiver)) {
+			throw new PermissionException("project.entities.followRequest", senderId);
+		}
+
+		// si ya hay una solicitud pendiente o ya lo sigue, no repetir
+		if (followRequestDao.existsBySenderIdAndReceiverId(senderId, receiverId)){
+			return null;
+		}
+
+		FollowRequest request = new FollowRequest(sender, receiver);
+		return followRequestDao.save(request);
+	}
+
+
+	@Override
+	public boolean acceptFollowRequest(Long requestId)
+			throws InstanceNotFoundException,PermissionException {
+
+		FollowRequest request = followRequestDao.findById(requestId)
+				.orElseThrow(() -> new InstanceNotFoundException("project.entities.followRequest", requestId));
+
+		request.setAccepted(true);
+		followRequestDao.save(request);
+
+		// ahora se ejecuta la acción real de "seguir"
+		followUser(request.getSender().getId(), request.getReceiver().getId());
+		return true;
+	}
+
+
+	@Override
+	public void rejectFollowRequest(Long requestId) throws InstanceNotFoundException {
+		if (!followRequestDao.existsById(requestId))
+			throw new InstanceNotFoundException("project.entities.followRequest", requestId);
+		followRequestDao.deleteById(requestId);
+	}
+	@Override
+	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException{
+		if(followRequestDao.findByReceiverIdAndAcceptedFalse(userId).isEmpty()) {
+			throw new InstanceNotFoundException("project.entities.followRequest", userId);
+		}
+		return followRequestDao.findByReceiverIdAndAcceptedFalse(userId);
+	}
 }

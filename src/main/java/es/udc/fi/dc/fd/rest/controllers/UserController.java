@@ -12,8 +12,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -36,17 +36,6 @@ import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.common.JwtGenerator;
 import es.udc.fi.dc.fd.rest.common.JwtInfo;
-import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockedByUserDto;
-import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
-
-
-
 
 
 /**
@@ -289,7 +278,7 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException, PermissionException {
+	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
 		return toUserDto(userService.getUserById(userId));
 	}
 
@@ -342,8 +331,7 @@ public class UserController {
 		return Optional.ofNullable(userService.getBlocked(userId))
 									.orElse(Collections.emptyList())
 									.stream()
-									.map(Users::getId)
-									.collect(Collectors.toList());
+									.map(Users::getId).toList();
 	}
 	
 	@GetMapping("/following/count")
@@ -354,6 +342,24 @@ public class UserController {
 	@GetMapping("/getGenders")
 	public List<String> getGenders() {
 		return userService.getGenders();
+	}
+
+	@PostMapping("/sendFollowRequest/{receiverId}")
+	public FollowRequestDto sendFollowRequest(@RequestAttribute Long userId, @PathVariable Long receiverId) throws PermissionException, InstanceNotFoundException {
+		return FollowRequestConversor.toFollowRequestDto(userService.sendFollowRequest(userId,receiverId));
+	}
+
+	@PostMapping("/acceptFollowRequest/{id}")
+	public boolean acceptFollowRequest(@PathVariable long id) throws PermissionException, InstanceNotFoundException {
+		return userService.acceptFollowRequest(id);
+	}
+	@DeleteMapping("/rejectFollowRequest/{id}")
+	public void rejectFollowRequest(@PathVariable long id) throws InstanceNotFoundException {
+		userService.rejectFollowRequest(id);
+	}
+	@GetMapping("/FollowRequest")
+	public List<FollowRequestDto> getFollowRequest(@RequestAttribute Long userId) throws InstanceNotFoundException {
+		return FollowRequestConversor.toFollowRequestDtos(userService.getFollowRequests(userId));
 	}
 
 
