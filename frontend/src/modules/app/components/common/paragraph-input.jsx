@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { GENERAL_ICONS } from '../../../../config/constants'
-
+import PropTypes from 'prop-types'
 
 const ParagraphInput = ({
   label = 'Nombre de Usuario',
@@ -80,5 +80,18 @@ const ParagraphInput = ({
     </div>
   )
 }
+
+ParagraphInput.propTypes = {
+  label: PropTypes.string,
+  maxLength: PropTypes.number,
+  initialValue: PropTypes.string,
+  type: PropTypes.string,
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+  name: PropTypes.string,
+  errors: PropTypes.bool,
+  errorMessage: PropTypes.string,
+  placeholder: PropTypes.string,
+};
 
 export default ParagraphInput

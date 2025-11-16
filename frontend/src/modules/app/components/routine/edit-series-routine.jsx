@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import backend from "../../../../backend";
+import PropTypes from "prop-types";
 
 const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
   const [series, setSeries] = useState([]);
@@ -161,6 +162,13 @@ const EditSeriesModal = ({ exerciseId, routineId, onClose, onUpdate }) => {
       </div>
     </div>
   );
+};
+
+EditSeriesModal.propTypes = {
+  exerciseId: PropTypes.number.isRequired,
+  routineId: PropTypes.number.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func,
 };
 
 export default EditSeriesModal;

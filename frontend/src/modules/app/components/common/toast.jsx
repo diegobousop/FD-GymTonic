@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { svgIcons } from '../../../../config/constants'
-
+import PropTypes from 'prop-types'
 
 const Toast = ({ message, type, onClose }) => {
   const [isExiting, setIsExiting] = useState(false)
@@ -52,5 +52,11 @@ const Toast = ({ message, type, onClose }) => {
     </div>
   )
 }
+
+Toast.propTypes = {
+  message: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['success', 'declined', 'error', 'canceled']).isRequired,
+  onClose: PropTypes.func.isRequired,
+};
 
 export default Toast

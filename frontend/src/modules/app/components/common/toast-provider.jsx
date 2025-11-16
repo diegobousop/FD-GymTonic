@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react'
 import Toast from './toast'
+import PropTypes from 'prop-types'
 
 const ToastContext = createContext()
 
@@ -38,4 +39,8 @@ export const ToastProvider = ({ children }) => {
       </div>
     </ToastContext.Provider>
   )
+}
+
+ToastProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 }

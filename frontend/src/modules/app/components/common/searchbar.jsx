@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import PropTypes from 'prop-types';
 
 const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -147,6 +148,14 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       )}
     </div>
   );
+};
+
+SearchBar.propTypes = {
+  query: PropTypes.string.isRequired,
+  setQuery: PropTypes.func.isRequired,
+  filters: PropTypes.object.isRequired,
+  setFilters: PropTypes.func.isRequired,
+  onSearch: PropTypes.func.isRequired,
 };
 
 export default SearchBar;

@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 const Spinner = ({size = 500}) => {
   return (
@@ -7,5 +8,9 @@ const Spinner = ({size = 500}) => {
     </div>
   )
 }
+
+Spinner.propTypes = {
+  size: PropTypes.number,
+};
 
 export default Spinner

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { GENERAL_ICONS } from '../../../../config/constants'
-
+import PropTypes from 'prop-types'
 
 const MinuteInput = ({
   label = 'Duración',
@@ -64,5 +64,18 @@ const MinuteInput = ({
     </div>
   )
 }
+
+MinuteInput.propTypes = {
+  label: PropTypes.string,
+  placeholder: PropTypes.string,
+  maxLength: PropTypes.number,
+  initialValue: PropTypes.string,
+  type: PropTypes.string,
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+  name: PropTypes.string,
+  errors: PropTypes.bool,
+  errorMessage: PropTypes.string,
+};
 
 export default MinuteInput

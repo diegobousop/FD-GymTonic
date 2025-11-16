@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import React from 'react';
+import PropTypes from 'prop-types';
 
 const Routine = ({ routine }) => (
   <div key={routine.id} className="p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
@@ -12,8 +14,8 @@ const Routine = ({ routine }) => (
 
     {/* CENTRO: Grupos musculares y dificultad */}
     <div className="flex flex-col items-center self-start">
-      <p className="text-gray-300 text-sm">Full-Body {/* {routine.GruposMusculares} */}</p>
-      <p className="text-black text-m bg-yellow-500 rounded-xl px-2 py-0.5">INTERMEDIO{/* {routine.dificultad} */}</p>
+      <p className="text-gray-300 text-sm">Full-Body</p>
+      <p className="text-black text-m bg-yellow-500 rounded-xl px-2 py-0.5">INTERMEDIO</p>
     </div>
 
     {/* DERECHA: Ejercicios */}
@@ -34,5 +36,20 @@ const Routine = ({ routine }) => (
     </Link>
   </div>
 );
+
+Routine.propTypes = {
+  routine: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string.isRequired,
+    duration: PropTypes.number.isRequired,
+    creator: PropTypes.string.isRequired,
+    exercises: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        numeroSeries: PropTypes.number.isRequired,
+      })
+    ),
+  }).isRequired,
+};
 
 export default Routine;

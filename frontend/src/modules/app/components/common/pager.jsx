@@ -1,5 +1,5 @@
 import { svgIcons } from '../../../../config/constants'
-
+import PropTypes from 'prop-types'
 
 
 const Pager = ({ back, next }) => (
@@ -27,5 +27,16 @@ const Pager = ({ back, next }) => (
     </ul>
   </nav>
 );
+
+Pager.propTypes = {
+  back: PropTypes.shape({
+    onClick: PropTypes.func.isRequired,
+    enabled: PropTypes.bool.isRequired,
+  }).isRequired,
+  next: PropTypes.shape({
+    onClick: PropTypes.func.isRequired,
+    enabled: PropTypes.bool.isRequired,
+  }).isRequired,
+};
 
 export default Pager;

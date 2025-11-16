@@ -1,6 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom';
 import { UserContext } from './user-provider';
+import PropTypes from 'prop-types';
 
 const ProtectedPath = ({ 
   path, 
@@ -48,5 +49,14 @@ const ProtectedPath = ({
 
   return path;
 }
+
+ProtectedPath.propTypes = {
+  path: PropTypes.node.isRequired,
+  role: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string)
+  ]),
+  roleMessage: PropTypes.string,
+};
 
 export default ProtectedPath

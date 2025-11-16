@@ -1,9 +1,7 @@
 import React from 'react'
-
 import WeightDisplay from '../training/weight-display';
-
 import { svgIcons } from '../../../../config/constants'
-
+import PropTypes from 'prop-types'
 
 
 const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
@@ -128,5 +126,15 @@ const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
     </div>
   )
 }
+
+ExerciseTracker.propTypes = {
+  key: PropTypes.number,
+  exercise: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    numeroSeries: PropTypes.number,
+  }),
+  onUpdateSerie: PropTypes.func
+};
 
 export default ExerciseTracker
