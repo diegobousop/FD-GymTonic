@@ -10,7 +10,7 @@ import { svgIcons } from '../../../config/constants'
 
 const BlockExercises = () => {
     const { showToast } = useToast()
-    const [isLoading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [existMoreItems, setExistMoreItems] = useState(false);
     const [page, setPage] = useState(0);
@@ -19,18 +19,18 @@ const BlockExercises = () => {
     const [exercises, setExercises] = useState([]);
     
     const viewExercises = (pageNumber) => {
-        setLoading(true);
+        setIsLoading(true);
         backend.exerciseService.getValidatedExercises(
           { page: pageNumber, size },
           (data) => {
             setExercises(data.items);
             setExistMoreItems(data.existMoreItems);
             setPage(pageNumber);
-            setLoading(false);
+            setIsLoading(false);
           },
           (err) => {
             setError(err || "Error inesperado al cargar ejercicios");
-            setLoading(false);
+            setIsLoading(false);
           }
         );
       };

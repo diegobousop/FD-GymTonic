@@ -5,7 +5,9 @@ import * as exerciseService from "./exerciseService";
 import * as imageService from "./imageService";
 import * as notificationService from "./notificationService";
 
-
 export { default as NetworkError } from "./NetworkError";
 
-export default { init, userService, routineService, exerciseService, imageService, notificationService };
+const backend = { init, userService, routineService, exerciseService, imageService, notificationService };
+
+export default backend;
+

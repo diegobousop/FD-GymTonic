@@ -62,6 +62,10 @@ const ViewAllUsers = () => {
     viewListOfUsers(0);
   }, []);
 
+  if (loading) {
+    return <div className="text-white mt-10 ml-10">Cargando usuarios...</div>;
+  }
+
   return (
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10">
       <h2 className="text-white">Usuarios</h2>

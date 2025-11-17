@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-
+import PropTypes from 'prop-types'
 import { svgIcons } from '../../../../config/constants'
-
 
 const VisibilityInput = ({
   label = 'Visibilidad',
@@ -63,5 +62,15 @@ const VisibilityInput = ({
     </div>
   )
 }
+
+VisibilityInput.propTypes = {
+  label: PropTypes.string,
+  initialValue: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
+  value: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
+  onChange: PropTypes.func,
+  name: PropTypes.string,
+  errors: PropTypes.bool,
+  errorMessage: PropTypes.string,
+};
 
 export default VisibilityInput

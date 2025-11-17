@@ -6,7 +6,7 @@ import SearchResultsPage from "../../modules/app/pages/search-results-page.jsx";
 import { UserContext } from "../../modules/app/components/common/user-provider"; // importa tu UserContext
 import "@testing-library/jest-dom";
 import { ToastProvider } from "../../modules/app/components/common/toast-provider.jsx";
-import { followUser, getBlockedUsers, unfollowUser } from "../../backend/userService.js";
+import { followUser, unfollowUser } from "../../backend/userService.js";
 
 jest.mock("../../backend/searchService.js", () => ({
   searchResults: jest.fn(),

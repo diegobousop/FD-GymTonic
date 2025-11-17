@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import backend from "../../../../backend";
-
 import { svgIcons } from '../../../../config/constants'; 
 import UserStats from './user-stats';
+import PropTypes from 'prop-types';
 
 const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated }) => {
   
@@ -231,6 +231,13 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
       <UserStats user={user} last4WeeksCount={last4WeeksCount} yearTrainingsCount={yearTrainingsCount} />
     </div>
   )
+}
+
+CalendarCard.propTypes = {
+  user:  backend.object,
+  selectedDay:  backend.number,
+  setSelectedDay: backend.func,
+  setDayFilterActivated: backend.func,
 }
 
 export default CalendarCard

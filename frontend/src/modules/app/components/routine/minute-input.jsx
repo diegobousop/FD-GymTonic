@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { GENERAL_ICONS } from '../../../../config/constants'
 import PropTypes from 'prop-types'
 
 const MinuteInput = ({
@@ -15,7 +14,7 @@ const MinuteInput = ({
   errorMessage = '',
 }) => {
   const [internalValue, setInternalValue] = useState(initialValue)
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword] = useState(false)
 
 
   const value = typeof controlledValue !== 'undefined' ? controlledValue : internalValue
