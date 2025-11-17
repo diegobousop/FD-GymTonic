@@ -1,11 +1,10 @@
 import React from 'react'
 import { useState, useEffect } from 'react';
 import backend from "../../../../backend";
-
 import MiniPager from '../common/mini-pager';
 import Spinner from '../common/spinner';
-
 import { svgIcons } from '../../../../config/constants'
+import PropTypes from 'prop-types';
 
 
 const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) => {
@@ -162,6 +161,12 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
             </div>
         </div>
     )
+}
+
+RoutineSelector.propTypes = {
+  selectedRoutine: PropTypes.object.isRequired,
+  setSelectedRoutine: PropTypes.func.isRequired,
+  onDeselect: PropTypes.func.isRequired,
 }
 
 export default RoutineSelector

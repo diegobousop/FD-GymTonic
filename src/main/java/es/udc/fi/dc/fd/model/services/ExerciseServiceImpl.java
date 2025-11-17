@@ -10,6 +10,7 @@ import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,8 +122,8 @@ public class ExerciseServiceImpl implements ExerciseService {
             Serie serie = new Serie(20,10,i+aux2,exercise, routineDao.getReferenceById(routine));
             serieDao.save(serie);
         }
-        Slice<Serie> slice= serieDao.findByExercise(exercise);
-        return new Block<>(slice.getContent(), slice.hasNext());
+        Page<Serie> exercises = serieDao.findByExercise(exercise, Pageable.unpaged());
+        return new Block<>(exercises.getContent(), exercises.hasNext());
     }
 
     @Override
@@ -173,13 +174,13 @@ public class ExerciseServiceImpl implements ExerciseService {
 
         if (exerciseOptional.isEmpty() || routOptional.isEmpty()) throw new NoSuchElementException("project.entities.serie");
         else{
-            Slice<Serie> slice = serieDao.findByExercise(exerciseOptional.get());
-            List<Serie> filtered = slice.getContent().stream()
+            Page<Serie> series = serieDao.findByExercise(exerciseOptional.get(), Pageable.unpaged());
+            List<Serie> filtered = series.getContent().stream()
                     .filter(serie -> serie.getRoutine() != null
                             && serie.getRoutine().getId() == routine
                             && serie.getTraining() == null)
                     .toList();
-            return new Block<>(filtered, slice.hasNext());
+            return new Block<>(filtered, series.hasNext());
         }
     }
 

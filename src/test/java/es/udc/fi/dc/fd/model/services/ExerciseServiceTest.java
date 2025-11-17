@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -236,7 +237,7 @@ public class ExerciseServiceTest {
         Exercise exercise1 = exerciseDao.findById(idExercise).get();
        Block<Serie> series = exerciseService.createSeries(exercise1, Optional.empty(),1L);
 
-        assertEquals(series.getItems(),serieDao.findByExercise(exercise1).getContent());
+        assertEquals(series.getItems(),serieDao.findByExercise(exercise1, Pageable.unpaged()).getContent());
     }
 
 
@@ -301,7 +302,7 @@ public class ExerciseServiceTest {
         Exercise exercise1 = exerciseDao.findById(idExercise).get();
         Serie serie = exerciseService.createSerie(exercise1.getId(), 1L);
 
-        assertEquals(serie,serieDao.findByExercise(exercise1).getContent().get(0));
+        assertEquals(serie,serieDao.findByExercise(exercise1, Pageable.unpaged()).getContent().get(0));
     }
 
     @Test
