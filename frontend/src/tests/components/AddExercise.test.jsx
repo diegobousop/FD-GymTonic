@@ -25,10 +25,10 @@ describe('AddExercise', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/admin/addExercise'
+        globalThis.location.hash = '#/admin/addExercise'
     });
 
-    test('render the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         renderComponent();
 
         expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument();

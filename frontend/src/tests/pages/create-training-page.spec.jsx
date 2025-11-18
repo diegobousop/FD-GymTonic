@@ -8,8 +8,6 @@ import { ToastProvider } from '../../modules/app/components/common/toast-provide
 
 import '@testing-library/jest-dom/extend-expect';
 
-import routineService, { viewAllRoutines } from '../../backend/routineService';
-
 jest.mock('../../backend/routineService', () => ({
     findRoutineDetails: jest.fn(),
     createTraining: jest.fn(),
@@ -33,21 +31,21 @@ describe('CreateTraining', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         localStorage.clear();
-        window.location.hash = '#/training/create';
+        globalThis.location.hash = '#/training/create';
     });
 
     afterEach(() => {
         localStorage.clear();
     });
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         renderComponent();
 
         expect(screen.getByText('Nombre')).toBeInTheDocument();
 
     });
 
-    test('validates required fields on submit', async () => {
+    test('valida campos obligatorios al enviar', async () => {
         renderComponent();
 
         const submitButton = screen.getByText('Crear');
@@ -58,7 +56,7 @@ describe('CreateTraining', () => {
         });
     });
 
-    test('validates name length', async () => {
+    test('valida longitud del nombre', async () => {
         renderComponent();
 
         const nameInput = screen.getByLabelText('Nombre');
@@ -80,7 +78,7 @@ describe('CreateTraining', () => {
         });
     });
 
-    test('validates duration is positive number', async () => {
+    test('valida que la duración sea un número positivo', async () => {
         renderComponent();
 
         const durationInput = screen.getByLabelText('Duración');
@@ -94,7 +92,7 @@ describe('CreateTraining', () => {
         });
     });
 
-    test('validates duration maximum value', async () => {
+    test('valida valor máximo de duración', async () => {
         renderComponent();
 
         const durationInput = screen.getByLabelText('Duración');
@@ -108,7 +106,7 @@ describe('CreateTraining', () => {
         });
     });
 
-    test('clears form on deselect', () => {
+    test('limpia formulario al deseleccionar', () => {
         renderComponent();
 
         const nameInput = screen.getByLabelText('Nombre');
@@ -119,5 +117,33 @@ describe('CreateTraining', () => {
 
         expect(nameInput.value).toBe('Test Name');
         expect(durationInput.value).toBe('45');
+    });
+
+    test('muestra error de validación cuando faltan campos obligatorios', async () => {
+        renderComponent();
+
+        const submitButton = screen.getByText('Crear');
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText(/obligatorio/i)).toBeInTheDocument();
+        });
+    });
+
+    test('muestra error al intentar enviar sin seleccionar rutina', async () => {
+        renderComponent();
+
+        const nameInput = screen.getByLabelText('Nombre');
+        const durationInput = screen.getByLabelText('Duración');
+        
+        fireEvent.change(nameInput, { target: { value: 'Test Training' } });
+        fireEvent.change(durationInput, { target: { value: '60' } });
+
+        const submitButton = screen.getByText('Crear');
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText(/debes seleccionar una rutina/i)).toBeInTheDocument();
+        });
     });
 });
