@@ -50,7 +50,7 @@ describe('RoutineSelector', () => {
     });
 
 
-    test('renders routines list after loading', async () => {
+    test('renderiza lista de rutinas después de cargar', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -68,7 +68,7 @@ describe('RoutineSelector', () => {
         });
     });
 
-    test('displays error message on load failure', async () => {
+    test('muestra mensaje de error al fallar la carga', async () => {
         const errorMessage = 'Error al cargar rutinas';
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess, onError) => {
             onError(errorMessage);
@@ -81,7 +81,7 @@ describe('RoutineSelector', () => {
         });
     });
 
-    test('displays message when no routines available', async () => {
+    test('muestra mensaje cuando no hay rutinas disponibles', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: [],
@@ -96,7 +96,7 @@ describe('RoutineSelector', () => {
         });
     });
 
-    test('selects a routine when clicked', async () => {
+    test('selecciona una rutina cuando se hace clic', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -116,7 +116,7 @@ describe('RoutineSelector', () => {
         expect(mockSetSelectedRoutine).toHaveBeenCalledWith(mockRoutines[0]);
     });
 
-    test('displays selected routine correctly', async () => {
+    test('muestra rutina seleccionada correctamente', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -134,7 +134,7 @@ describe('RoutineSelector', () => {
 
     
 
-    test('filters routines based on search query', async () => {
+    test('filtra rutinas basándose en consulta de búsqueda', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -157,7 +157,7 @@ describe('RoutineSelector', () => {
         });
     });
 
-    test('shows no results message when search yields no matches', async () => {
+    test('muestra mensaje de sin resultados cuando búsqueda no encuentra coincidencias', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -179,7 +179,7 @@ describe('RoutineSelector', () => {
         });
     });
 
-    test('clears suggestions when search query is empty', async () => {
+    test('limpia sugerencias cuando consulta de búsqueda está vacía', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -209,7 +209,7 @@ describe('RoutineSelector', () => {
 
 
 
-    test('selects routine from search suggestions', async () => {
+    test('selecciona rutina desde sugerencias de búsqueda', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,
@@ -236,7 +236,7 @@ describe('RoutineSelector', () => {
         expect(mockSetSelectedRoutine).toHaveBeenCalledWith(mockRoutines[1]);
     });
 
-    test('displays routine duration in minutes', async () => {
+    test('muestra duración de rutina en minutos', async () => {
         backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
             onSuccess({
                 items: mockRoutines,

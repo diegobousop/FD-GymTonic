@@ -29,13 +29,13 @@ describe('LoginPage', () => {
 
    beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/login';
+        globalThis.location.hash = '#/login';
     });
 
 
     
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         renderComponent();
 
         expect(screen.getByText('Bienvenido/a de vuelta!')).toBeInTheDocument();
@@ -113,10 +113,7 @@ describe('LoginPage', () => {
         fireEvent.click(registerLink);
 
         expect(registerLink).toBeInTheDocument();
-        expect(window.location.hash).toBe('#/register');
-
-
+        expect(globalThis.location.hash).toBe('#/register');
     });
-
 
 });

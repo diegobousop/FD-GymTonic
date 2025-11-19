@@ -78,6 +78,7 @@ const Body = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/start" element={<IntroPage />} />
+            <Route path="/intro" element={<IntroPage />} />
             <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
             <Route path="/profile" element={<ProtectedPath path={<MyProfilePage />} />} />
             <Route path="/profile/:id" element={

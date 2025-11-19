@@ -23,6 +23,12 @@ const RoutineDetailsPage = () => {
     backend.routineService.findRoutineDetails(
       id,
       (data) => {
+        if (!data) {
+          setRoutine(null);
+          setIsFollowing(false);
+          setLoading(false);
+          return;
+        }
         setRoutine(data);
         setIsFollowing(data.isFollowing || false);
         setLoading(false);

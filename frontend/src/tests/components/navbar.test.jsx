@@ -22,7 +22,7 @@ jest.mock("../../backend", () => ({
   },
 }));
 
-describe("Navbar - Notificaciones", () => {
+describe("Navbar - Notifications", () => {
   const mockUser = {
     id: 1,
     userName: "testuser",
@@ -35,14 +35,14 @@ describe("Navbar - Notificaciones", () => {
 
   const mockNotifications = {
     items: [
-      { id: 1, message: "Nueva notificación 1", read: false },
-      { id: 2, message: "Nueva notificación 2", read: false },
-      { id: 3, message: "Notificación leída", read: true },
+      { id: 1, message: "New notification 1", read: false },
+      { id: 2, message: "New notification 2", read: false },
+      { id: 3, message: "Read notification", read: true },
     ],
   };
 
   beforeEach(() => { 
-    // Configurar mocks previo a la ejecución de cada test
+    // Set up mocks before executing each test
     backend.imageService.getImageByName.mockImplementation((name, onSuccess) => {
       onSuccess({ base64: "data:image/png;base64,mocklogo" });
     });
@@ -79,13 +79,13 @@ describe("Navbar - Notificaciones", () => {
   it("muestra el icono de la campana de notificaciones cuando hay un usuario autenticado", async () => {
     renderNavbar();
 
-    // Esperar a que se renderice el botón de notificaciones
+    // Wait for the notifications button to render
     await waitFor(() => {
       const notificationButton = screen.getByLabelText("Notificaciones");
       expect(notificationButton).toBeInTheDocument();
     });
 
-    // Verificar que el icono SVG de la campana está presente
+    // Verify that the bell SVG icon is present
     const bellIcon = screen.getByLabelText("Notificaciones").querySelector("svg");
     expect(bellIcon).toBeInTheDocument();
   });
@@ -93,12 +93,12 @@ describe("Navbar - Notificaciones", () => {
   it("muestra el contador de notificaciones no leídas", async () => {
     renderNavbar();
 
-    // Esperar a que se carguen las notificaciones
+    // Wait for notifications to load
     await waitFor(() => {
       expect(backend.notificationService.getNotifications).toHaveBeenCalled();
     });
 
-    // Verificar que se muestra el contador con 2 notificaciones no leídas
+    // Verify that the counter shows 2 unread notifications
     await waitFor(() => {
       const badge = screen.getByText("2");
       expect(badge).toBeInTheDocument();
@@ -108,22 +108,22 @@ describe("Navbar - Notificaciones", () => {
   it("abre el panel de notificaciones al hacer clic en la campana", async () => {
     renderNavbar();
 
-    // Esperar a que se renderice el botón
+    // Wait for the button to render
     const notificationButton = await screen.findByLabelText("Notificaciones");
 
-    // Hacer clic en el botón de notificaciones
+    // Click on the notifications button
     fireEvent.click(notificationButton);
 
-    // Verificar que se muestra el panel (buscando el texto de una notificación)
+    // Verify that the panel is displayed (by searching for notification text)
     await waitFor(() => {
-      expect(screen.getByText(/Nueva notificación 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/New notification 1/i)).toBeInTheDocument();
     });
   });
 
   it("no muestra el icono de notificaciones cuando no hay usuario autenticado", () => {
     renderNavbar(null);
 
-    // Verificar que no se muestra el botón de notificaciones
+    // Verify that the notifications button is not displayed
     const notificationButton = screen.queryByLabelText("Notificaciones");
     expect(notificationButton).not.toBeInTheDocument();
   });
@@ -131,17 +131,17 @@ describe("Navbar - Notificaciones", () => {
   it("marca una notificación como leída al hacer clic en ella", async () => {
     renderNavbar();
 
-    // Abrir el panel de notificaciones
+    // Open the notifications panel
     const notificationButton = await screen.findByLabelText("Notificaciones");
     fireEvent.click(notificationButton);
 
-    // Esperar a que se muestren las notificaciones
-    const notification = await screen.findByRole("button", { name: /Nueva notificación 1/i });
+    // Wait for notifications to appear
+    const notification = await screen.findByRole("button", { name: /New notification 1/i });
 
-    // Hacer clic en el contenedor de la notificación (el div con cursor-pointer)
+    // Click on the notification container (the div with cursor-pointer)
     fireEvent.click(notification);
 
-    // Verificar que se llamó al servicio para marcar como leída
+    // Verify that the service was called to mark as read
     await waitFor(() => {
       expect(backend.notificationService.readNotification).toHaveBeenCalledWith(
         1,
@@ -154,21 +154,21 @@ describe("Navbar - Notificaciones", () => {
   it("cierra el panel al hacer clic fuera de él", async () => {
     renderNavbar();
 
-    // Abrir el panel
+    // Open the panel
     const notificationButton = await screen.findByLabelText("Notificaciones");
     fireEvent.click(notificationButton);
 
-    // Verificar que el panel está abierto
+    // Verify that the panel is open
     await waitFor(() => {
-      expect(screen.getByText(/Nueva notificación 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/New notification 1/i)).toBeInTheDocument();
     });
 
-    // Simular clic fuera del panel
+    // Simulate clicking outside the panel
     fireEvent.mouseDown(document.body);
 
-    // Verificar que el panel se cierra
+    // Verify that the panel closes
     await waitFor(() => {
-      expect(screen.queryByText(/Nueva notificación 1/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/New notification 1/i)).not.toBeInTheDocument();
     });
   });
 });

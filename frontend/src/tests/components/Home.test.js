@@ -1,36 +1,54 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
-import renderer from "react-test-renderer";
 import Home from "../../modules/app/components/Home";
+import { config } from "../../config/constants";
+
+jest.mock("../../modules/app/components/common/navbar", () => () => (
+  <div data-testid="navbar">Navbar</div>
+));
 
 describe("Home", () => {
-  it.skip("renders correctly", () => {
-    const tree = renderer
-      .create(
-        <MemoryRouter>
-          <Home />
-        </MemoryRouter>
-      )
-      .toJSON();
-    expect(tree).toMatchSnapshot();
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        text: () => Promise.resolve("Hola desde el backend"),
+      })
+    );
   });
 
-  it.skip("calculates the value as expected", async () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("renderiza la barra de navegación", () => {
     render(
       <MemoryRouter>
         <Home />
       </MemoryRouter>
     );
 
-    const inputText = screen.getByLabelText(/input some text/i);
-    fireEvent.change(inputText, {
-      target: { value: "Sreenzragnf qr qrfraibyirzragb" },
-    });
-    const calculateButton = screen.getByText(/calculate/i);
-    fireEvent.click(calculateButton);
+    expect(screen.getByTestId("navbar")).toBeInTheDocument();
+  });
+
+  it("obtiene mensaje de bienvenida al montar", async () => {
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>
+    );
+
     await waitFor(() => {
-      screen.getByText(/Ferramentas de desenvolvemento/);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${config.BASE_PATH}/hello`
+      );
     });
   });
 });
