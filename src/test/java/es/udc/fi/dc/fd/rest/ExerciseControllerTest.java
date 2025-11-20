@@ -35,6 +35,8 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 /**
  * The Class UserControllerTest.
  */
+
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -595,5 +597,20 @@ public class ExerciseControllerTest {
         mockMvc.perform(post("/api/exercise/addExercise").header("Authorization", "Bearer " + user.getServiceToken())
         .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(exerciseToAdd)))
         .andExpect(status().isOk());
+    }
+
+    @Test
+    public void editRestTimeTest() throws Exception {
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("admin1");
+        loginParams.setPassword("12345");
+
+        AuthenticatedUserDto user = userController.login(loginParams);
+
+        mockMvc.perform(put("/api/exercise/restTime?routineId=1&exerciseId=1&restTime=90")
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.restTime").value(90));
     }
 }

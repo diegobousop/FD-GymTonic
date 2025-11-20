@@ -1,76 +1,174 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { HashRouter as Router } from 'react-router-dom';
+import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
 import ValidateExercises from '../../modules/app/pages/validate-exercises-page';
-import { UserContext } from '../../modules/app/components/common/user-provider';
-import { ToastProvider } from '../../modules/app/components/common/toast-provider';
-import '@testing-library/jest-dom/extend-expect';
-import exerciseService from '../../backend/exerciseService';
 
+const mockShowToast = jest.fn();
 
+jest.mock('../../modules/app/components/common/toast-provider', () => {
+  const React = require('react');
+  return {
+    useToast: () => ({ showToast: mockShowToast }),
+    ToastProvider: function ToastProvider(allProps) {
+      return React.createElement('div', null, Object.values(allProps)[0]);
+    },
+  };
+});
 
-jest.mock('../../backend/routineService', () => ({
-    createRoutine: jest.fn(),
-}));
+jest.mock('../../modules/app/components/common/spinner', () => () => (
+  <div data-testid="spinner">Loading...</div>
+));
 
-jest.mock('../../backend/exerciseService', () => ({
-    getValidatedExercises: jest.fn(),
+jest.mock('../../modules/app/components/common/pager', () => {
+  const React = require('react');
+  return function MockPager(allProps) {
+    const propsArray = Object.values(allProps);
+    const backObj = propsArray[0] || {};
+    const nextObj = propsArray[1] || {};
+    return React.createElement('div', null,
+      React.createElement('button', {
+        onClick: backObj.onClick,
+        disabled: !backObj.enabled
+      }, 'Back'),
+      React.createElement('button', {
+        onClick: nextObj.onClick,
+        disabled: !nextObj.enabled
+      }, 'Next')
+    );
+  };
+});
+
+jest.mock('../../backend', () => {
+  const exerciseService = {
     getUnvalidatedExercises: jest.fn(),
-}));
+    validateExercise: jest.fn(),
+    declineExercise: jest.fn(),
+  };
 
+  return {
+    __esModule: true,
+    default: {
+      exerciseService,
+    },
+  };
+});
 
-describe('ValidateExercises', () => {
-    const setUser = jest.fn();
+const mockExerciseService = require('../../backend').default.exerciseService;
 
-    const renderComponent = () =>
-        render(
-            <UserContext.Provider value={{ setUser }}>
-                <ToastProvider>
-                    <Router>
-                        <ValidateExercises />
-                    </Router>
-                </ToastProvider>
-            </UserContext.Provider>
-        );
+const renderComponent = () =>
+  render(
+    <MemoryRouter>
+      <ValidateExercises />
+    </MemoryRouter>
+  );
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        window.location.hash = '#/routines/create-routine';
+const sampleExercises = [
+  {
+    id: 1,
+    name: 'Push Up',
+    descripcion: 'Chest exercise',
+    grupoMuscular: 'PECHO',
+    ownerAvatar: { avatarBase64: 'data:image/png;base64,mock' },
+    ownerName: 'trainer1',
+  },
+];
+
+describe('ValidateExercises page', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockShowToast.mockClear();
+  });
+
+  it('muestra spinner mientras carga', () => {
+    mockExerciseService.getUnvalidatedExercises.mockImplementation(() => {});
+
+    renderComponent();
+
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
+  });
+
+  it('renderiza estado vacío cuando no hay ejercicios', async () => {
+    mockExerciseService.getUnvalidatedExercises.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: [], existMoreItems: false });
     });
 
-    test('renders the form correctly', () => {
-        exerciseService.getUnvalidatedExercises.mockImplementation((page, onSuccess, onError) => {
-            onSuccess({
-                items: [
-                    { id: 1, name: "Push Up", descripcion: "A bodyweight exercise that primarily targets the chest, shoulders, and triceps.", grupoMuscular: "PECHO", ownerAvatar: {avatarBase64:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA",
-                         name:"default"}, ownerName: "trainer1" },
-                    { id: 2, name: "Squat", descripcion: "A lower body exercise that primarily targets the thighs, hips, and buttocks.", grupoMuscular: "PIERNA", ownerAvatar: {avatarBase64:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA",
-                         name:"default"}, ownerName: "trainer2" },
-                    { id: 3, name: "Pull Up", descripcion: "An upper body exercise that primarily targets the back and biceps.", grupoMuscular: "ESPALDA", ownerAvatar: {avatarBase64:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA",
-                         name:"default"}, ownerName: "trainer3" }
-                ],
-                existMoreItems: false
-            });
-        });
+    renderComponent();
 
-        renderComponent();
+    await waitFor(() => {
+      expect(screen.getByText('Estás al día')).toBeInTheDocument();
+    });
+  });
 
-        expect(screen.getByText('Push Up')).toBeInTheDocument();
-        expect(screen.getByText('Squat')).toBeInTheDocument();
-        expect(screen.getByText('Pull Up')).toBeInTheDocument();
+  it('renderiza ejercicios y valida exitosamente', async () => {
+    mockExerciseService.getUnvalidatedExercises.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: sampleExercises, existMoreItems: false });
+    });
+    mockExerciseService.validateExercise.mockImplementation((id, onSuccess) => onSuccess());
 
-        expect(screen.getByText('A bodyweight exercise that primarily targets the chest, shoulders, and triceps.')).toBeInTheDocument();
-        expect(screen.getByText('A lower body exercise that primarily targets the thighs, hips, and buttocks.')).toBeInTheDocument();
-        expect(screen.getByText('An upper body exercise that primarily targets the back and biceps.')).toBeInTheDocument();
+    renderComponent();
 
-        expect(screen.getByText('trainer1')).toBeInTheDocument();
-        expect(screen.getByText('trainer2')).toBeInTheDocument();
-        expect(screen.getByText('trainer3')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Push Up')).toBeInTheDocument());
 
-        expect(screen.getByText('PECHO')).toBeInTheDocument();
-        expect(screen.getByText('PIERNA')).toBeInTheDocument();
-        expect(screen.getByText('ESPALDA')).toBeInTheDocument();
-        
+    fireEvent.click(screen.getByRole('button', { name: 'Validate Exercise' }));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith('Ejercicio validado correctamente', 'success');
     });
 
+    await waitFor(() => {
+      expect(mockExerciseService.getUnvalidatedExercises).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('muestra error cuando falla la validación', async () => {
+    mockExerciseService.getUnvalidatedExercises.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: sampleExercises, existMoreItems: false });
+    });
+    mockExerciseService.validateExercise.mockImplementation((id, onSuccess, onError) =>
+      onError({ globalError: 'Validation failed' })
+    );
+
+    renderComponent();
+
+    await waitFor(() => expect(screen.getByText('Push Up')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Validate Exercise' }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Validation failed').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('rechaza ejercicio y muestra toast', async () => {
+    mockExerciseService.getUnvalidatedExercises.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: sampleExercises, existMoreItems: false });
+    });
+    mockExerciseService.declineExercise.mockImplementation((id, onSuccess) => onSuccess());
+
+    renderComponent();
+
+    await waitFor(() => expect(screen.getByText('Push Up')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Block Exercise' }));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith('Ejercicio rechazado correctamente', 'declined');
+    });
+    await waitFor(() => {
+      expect(mockExerciseService.getUnvalidatedExercises).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('muestra error cuando falla la obtención de ejercicios', async () => {
+    mockExerciseService.getUnvalidatedExercises.mockImplementation((params, onSuccess, onError) => {
+      onError('Fetch error');
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Fetch error')[0]).toBeInTheDocument();
+    });
+  });
 });

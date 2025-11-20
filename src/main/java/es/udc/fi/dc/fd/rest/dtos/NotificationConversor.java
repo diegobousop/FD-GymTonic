@@ -6,7 +6,7 @@ import es.udc.fi.dc.fd.model.entities.Notification;
 
 public class NotificationConversor {
     public static NotificationDto toNotificationDto(Notification notification) {
-        return new NotificationDto(notification.getId(),notification.getMessage(),notification.getIsRead(),notification.getDate().toString());
+        return new NotificationDto(notification.getId(), notification.getRoutine().getId(), notification.getMessage(), notification.getIsRead(), notification.getDate().toString());
     }
 
     public static List<NotificationDto> toNotificationDtos(List<Notification> notifications) {

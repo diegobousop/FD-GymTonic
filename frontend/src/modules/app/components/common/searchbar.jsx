@@ -1,27 +1,45 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
+import backend from "../../../../backend";
+import Spinner from "./spinner";
+import { svgIcons } from "../../../../config/constants";
 
 const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const containerRef = useRef(null);
+  const MAX_LENGTH = 100;
 
   useEffect(() => {
-    if (query.trim().length < 2) {
+    const trimmed = query.trim();
+    if (trimmed.length < 1) {
       setSuggestions([]);
+      setLoading(false);
       return;
     }
 
+    setLoading(true);
+
     const timeout = setTimeout(() => {
-      // Llamar a getSearchSuggestions del backend (por ahora vacío)
-      setSuggestions([]);
+      backend.searchService.getSearchSuggestions(
+        trimmed,
+        (data) => {
+          setSuggestions(Array.isArray(data) ? data : []);
+          setLoading(false);
+        },
+        () => {
+          setSuggestions([]);
+          setLoading(false);
+        }
+      );
     }, 300);
 
     return () => clearTimeout(timeout);
   }, [query]);
 
-  // Cerrar filtros al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -35,8 +53,17 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!query.trim()) return;
+
     onSearch();
     setShowSuggestions(false);
+    setShowFilters(false);
+  };
+
+  const groupedSuggestions = {
+    user: suggestions.filter((s) => s.type === "user"),
+    routine: suggestions.filter((s) => s.type === "routine"),
+    exercise: suggestions.filter((s) => s.type === "exercise"),
   };
 
   return (
@@ -44,52 +71,65 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
-          className="flex-1 bg-[#1a1a1a] text-white border border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff0000]"
+          className="flex-1 bg-[#1a1a1a] text-white border border-gray-600 px-3 py-2 text-sm 
+                     focus:outline-none focus:ring-2 focus:ring-[#ff0000]"
           placeholder="Buscar..."
           value={query}
+          maxLength={MAX_LENGTH}
           onChange={(e) => {
-            setQuery(e.target.value);
-            setShowSuggestions(true);
+            const value = e.target.value;
+            setQuery(value);
+            setShowSuggestions(value.trim().length > 0);
+            setShowFilters(false);
+
+            if (value.trim().length === 0) {
+              setSuggestions([]);
+              setLoading(false);
+            }
           }}
         />
 
-        {/* Botón de lupa */}
         <button
           type="submit"
-          className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600"
+          className="border border-gray-600 bg-[#1a1a1a] text-white px-3 py-2 text-sm 
+                     rounded-md hover:border-[#ff0000] focus:ring-2 focus:ring-[#ff0000]"
         >
-          🔍
+          <svgIcons.SearchIcon className="w-5 h-5 text-white" />
         </button>
 
-        {/* Botón de filtrar */}
         <button
           type="button"
-          className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600"
-          onClick={() => setShowFilters((prev) => !prev)}
+          onClick={() => {
+            setShowFilters((prev) => !prev);
+            setShowSuggestions(false);
+          }}
+          className="border border-gray-600 bg-[#1a1a1a] text-white px-3 py-2 text-sm 
+                     rounded-md hover:border-[#ff0000] focus:ring-2 focus:ring-[#ff0000]"
         >
           Filtrar
         </button>
       </form>
 
-      {/* Panel de filtros */}
       {showFilters && (
-        <div className="absolute z-40 bg-[#1a1a1a] border border-gray-700 mt-1 w-full rounded-md shadow-lg p-3 text-white">
-          {/* Nombre del entrenador */}
+        <div className="absolute z-40 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
+                        rounded-md shadow-lg p-3 text-white">
           <label className="block mb-1 text-sm">Nombre del entrenador</label>
           <input
             type="text"
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
             value={filters.trainerName}
-            onChange={(e) => setFilters({ ...filters, trainerName: e.target.value })}
-            placeholder="Filtrar por entrenador"
+            onChange={(e) =>
+              setFilters({ ...filters, trainerName: e.target.value })
+            }
           />
 
-          {/* Grupo muscular */}
           <label className="block mb-1 text-sm">Grupo muscular</label>
           <select
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
             value={filters.muscleGroup}
-            onChange={(e) => setFilters({ ...filters, muscleGroup: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, muscleGroup: e.target.value })
+            }
           >
             <option value="">Todos</option>
             <option value="PECHO">Pecho</option>
@@ -98,29 +138,28 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             <option value="BRAZO">Brazo</option>
             <option value="HOMBRO">Hombro</option>
             <option value="ABDOMEN">Abdomen</option>
+            <option value="FULLBODY">Fullbody</option>
           </select>
 
-          {/* Dificultad */}
           <label className="block mb-1 text-sm">Dificultad</label>
           <select
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
-            value={filters.dificultad || ""}
-            onChange={(e) => setFilters({ ...filters, dificultad: e.target.value })}
+            value={filters.difficulty || ""}
+            onChange={(e) =>
+              setFilters({ ...filters, difficulty: e.target.value })
+            }
           >
             <option value="">Todas</option>
-            <option value="MUY_FACIL">Muy fácil</option>
             <option value="FACIL">Fácil</option>
             <option value="INTERMEDIO">Intermedio</option>
             <option value="DIFICIL">Difícil</option>
-            <option value="EXTREMO">Extremo</option>
           </select>
 
-          {/* Botón limpiar */}
           <button
             type="button"
             className="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700"
             onClick={() =>
-              setFilters({ trainerName: "", muscleGroup: "", dificultad: "" })
+              setFilters({ trainerName: "", muscleGroup: "", difficulty: "" })
             }
           >
             Limpiar filtros
@@ -128,23 +167,82 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
         </div>
       )}
 
-      {/* Sugerencias */}
-      {showSuggestions && suggestions.length > 0 && (
-        <ul className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full rounded-md shadow-lg text-white max-h-64 overflow-y-auto">
-          {suggestions.map((s, idx) => (
-            <li
-              key={s.id || idx}
-              onClick={() => {
-                setQuery(s.name || s);
-                onSearch();
-                setShowSuggestions(false);
-              }}
-              className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
-            >
-              {s.name || s}
-            </li>
-          ))}
-        </ul>
+      {loading && (
+        <div className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
+                        shadow-lg text-gray-400 px-3 py-2 text-sm">
+          <Spinner />
+        </div>
+      )}
+
+      {showSuggestions && !loading && suggestions.length > 0 && (
+        <div className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
+                        shadow-lg text-white max-h-[32rem] overflow-y-auto p-2">
+          {groupedSuggestions.user.length > 0 && (
+            <div className="mb-2">
+              <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
+                Usuarios
+              </div>
+              {groupedSuggestions.user.map((u, idx) => (
+                <button
+                  key={`user-${u.id}-${idx}`}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+                  onClick={() => {
+                    setQuery(u.name);
+                    onSearch();
+                    setShowSuggestions(false);
+                    setShowFilters(false);
+                  }}
+                >
+                  {u.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {groupedSuggestions.routine.length > 0 && (
+            <div className="mb-2">
+              <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
+                Rutinas
+              </div>
+              {groupedSuggestions.routine.map((r, idx) => (
+                <button
+                  key={`routine-${r.id}-${idx}`}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+                  onClick={() => {
+                    setQuery(r.name);
+                    onSearch();
+                    setShowSuggestions(false);
+                    setShowFilters(false);
+                  }}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {groupedSuggestions.exercise.length > 0 && (
+            <div>
+              <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
+                Ejercicios
+              </div>
+              {groupedSuggestions.exercise.map((e, idx) => (
+                <button
+                  key={`exercise-${e.id}-${idx}`}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+                  onClick={() => {
+                    setQuery(e.name);
+                    onSearch();
+                    setShowSuggestions(false);
+                    setShowFilters(false);
+                  }}
+                >
+                  {e.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

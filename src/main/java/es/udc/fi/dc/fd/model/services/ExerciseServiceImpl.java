@@ -1,6 +1,5 @@
 package es.udc.fi.dc.fd.model.services;
 
-import java.lang.StackWalker.Option;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -22,6 +21,9 @@ import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 @Service
 @Transactional
 public class ExerciseServiceImpl implements ExerciseService {
+
+    @Autowired
+    private RoutineExerciseDao routineExerciseDao;
 
     @Autowired
     private ExerciseDao exerciseDao;
@@ -86,6 +88,17 @@ public class ExerciseServiceImpl implements ExerciseService {
 
         exerciseDao.save(exercise);
         return exercise.getId();
+    }
+
+    @Override
+    public Exercise getExerciseById(Long exerciseId) throws InstanceNotFoundException {
+        
+        Optional<Exercise> optionalExercise = exerciseDao.findById(exerciseId);
+        if (optionalExercise.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.exercise", exerciseId);
+        }
+        
+        return optionalExercise.get();
     }
 
 
@@ -182,6 +195,17 @@ public class ExerciseServiceImpl implements ExerciseService {
                     .toList();
             return new Block<>(filtered, series.hasNext());
         }
+    }
+
+    @Override
+    public RoutineExercise getRoutineExercise(Long routineId, Long exerciseId){
+        return routineExerciseDao.findByRoutineIdAndExerciseId(routineId, exerciseId);
+    }
+
+    @Override
+    public RoutineExercise editRestTime(RoutineExercise routineExercise, int restTime){
+        routineExercise.setRestTime(restTime);
+        return routineExerciseDao.save(routineExercise);
     }
 
     @Override

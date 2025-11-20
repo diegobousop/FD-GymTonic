@@ -1,6 +1,8 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +32,8 @@ import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.SerieDao;
 import es.udc.fi.dc.fd.model.entities.Users;
@@ -39,7 +43,7 @@ import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
-
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles("test")
@@ -51,6 +55,9 @@ public class ExerciseServiceTest {
 
     @Autowired
     private ExerciseService exerciseService;
+
+    @Autowired
+    private RoutineService routineService;
 
     @Autowired
     private ExerciseDao exerciseDao;
@@ -68,6 +75,10 @@ public class ExerciseServiceTest {
         exercise.setDifficulty(Difficulty.FACIL);
         exercise.setEquipment(Equipment.POLEA_CABLE);
         return exercise;
+    }
+
+    private Routine createRoutine(String name, Users creator) {
+        return new Routine(name, new ArrayList<RoutineExercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
 	private Users createUser(String userName, RoleType role, Gender gender) {
@@ -561,4 +572,54 @@ public class ExerciseServiceTest {
         });
     }
 
+    @Test
+    public void getRoutineExerciseTest() throws Exception{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = createRoutine("routine1", creator);
+
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO, 1));
+
+        // Creamos la rutina con ejercicios
+        routine = routineService.createRoutine(creator.getId(),routine.getName(),new ArrayList<Long>() {{add(exercise1.getId());add(exercise2.getId());}},90L,true);
+        
+        RoutineExercise re = exerciseService.getRoutineExercise(routine.getId(), exercise1.getId());
+
+        assertEquals(120, re.getRestTime());
+        assertEquals(exercise1, re.getExercise());
+    }
+
+    @Test
+    public void getExerciseTest() throws Exception{
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+
+        assertEquals(exercise1, exerciseService.getExerciseById(exercise1.getId()));
+    }
+
+    @Test(expected = InstanceNotFoundException.class)
+    public void getExerciseNonExistentTest() throws InstanceNotFoundException {
+        // Llamamos con un ID que NO existe
+        exerciseService.getExerciseById(999L);
+    }
+
+
+    @Test
+    public void editRestTimeTest() throws Exception{
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = createRoutine("routine1", creator);
+
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        Exercise exercise2 = exerciseDao.save(new Exercise("exercise2", "description2", grupoMuscular.PECHO, 1));
+
+        // Creamos la rutina con ejercicios
+        routine = routineService.createRoutine(creator.getId(),routine.getName(),new ArrayList<Long>() {{add(exercise1.getId());add(exercise2.getId());}},90L,true);
+        
+        RoutineExercise re = exerciseService.getRoutineExercise(routine.getId(), exercise1.getId());
+
+        assertEquals(120, re.getRestTime());
+        
+        exerciseService.editRestTime(re, 90);
+
+        assertEquals(90, re.getRestTime());
+    }
 }

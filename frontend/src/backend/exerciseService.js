@@ -96,4 +96,13 @@ export const deleteSerie = (serieId, onSuccess, onErrors) =>
     appFetch(`/exercise/Series/${serieId}`,
         fetchConfig("DELETE"),
         onSuccess,
-        onErrors)
+        onErrors
+    );
+
+export const editRestTime = (exerciseId, routineId, restTime, onSuccess, onErrors) =>
+    appFetch(
+        `/exercise/restTime?routineId=${routineId}&exerciseId=${exerciseId}&restTime=${restTime}`,
+        fetchConfig("PUT"),
+        onSuccess,
+        onErrors
+    );

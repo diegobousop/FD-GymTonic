@@ -33,5 +33,4 @@ public class SearchSuggestionDto {
     public void setName(String name) {
         this.name = name;
     }
-
 }

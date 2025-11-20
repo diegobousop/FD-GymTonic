@@ -20,11 +20,13 @@ import CreateExercise from '../pages/create-exercise-page';
 import MyRoutines from '../pages/my-routines-page';
 import ValidateExercises from '../pages/validate-exercises-page';
 import ViewAllUsers from '../pages/viewAllUsers-page';
+import BlockExercises from '../pages/block-exercises-page';
 import SearchResultsPage from "../pages/search-results-page";
 import CreateTraining from '../pages/create-training-page';
 import UserFollowersPage from '../pages/user-followers-page';
 import UserFollowingPage from '../pages/user-following-page';
 import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
+import ViewFollowRequestsPage from "../pages/view-follow-requests-page";
 import { EXACT_ROUTE_TO_PAGE, PREFIX_ROUTE_TO_PAGE, DEFAULT_ACTIVE_PAGE } from '../../../config/constants';
 
 const Body = () => {
@@ -63,6 +65,7 @@ const Body = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/start" element={<IntroPage />} />
+            <Route path="/intro" element={<IntroPage />} />
             <Route path="/home" element={<ProtectedPath path={<HomePage />} />} />
             <Route path="/profile" element={<ProtectedPath path={<MyProfilePage />} />} />
             <Route path="/profile/:id" element={
@@ -80,8 +83,8 @@ const Body = () => {
             <Route path="/admin/seeUsers" element={
               <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
             } />
-            <Route path="/admin/seeUsers" element={
-              <ProtectedPath role={["ADMIN"]} path={<ViewAllUsers />} />
+            <Route path="/admin/blockExercises" element={
+              <ProtectedPath role={["ADMIN"]} path={<BlockExercises />} />
             } />
             <Route path="/routines/:id" element={
               <ProtectedPath path={<RoutineDetails />} />
@@ -94,6 +97,7 @@ const Body = () => {
             <Route path="/routines/my-followers" element={<ProtectedPath role={["TRAINER"]} path={<MyRoutineFollowersPage />} />} />
             <Route path="/profile/followers" element={<ProtectedPath path={<UserFollowersPage />} />} />
             <Route path="/profile/following" element={<ProtectedPath path={<UserFollowingPage />} />} />
+            <Route path="/profile/follow-request" element={<ProtectedPath path={<ViewFollowRequestsPage />} />} />
           </Routes>
         </div>
       </div>

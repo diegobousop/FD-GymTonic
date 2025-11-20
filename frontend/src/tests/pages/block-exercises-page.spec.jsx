@@ -38,10 +38,10 @@ describe('ValidateExercises', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/routines/create-routine';
+        globalThis.location.hash = '#/routines/create-routine';
     });
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: [
@@ -76,7 +76,7 @@ describe('ValidateExercises', () => {
         
     });
 
-        test('block an exercise', () => {
+        test('bloquea un ejercicio', () => {
         exerciseService.blockExercise.mockImplementation((id, onSuccess, onError) => {
             onSuccess();
         });

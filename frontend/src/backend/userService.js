@@ -176,4 +176,32 @@ export const getGenders = (onSuccess, onErrors) =>
     onSuccess,
     onErrors
   );
+export const sendFollowRequest = (receiverId, onSuccess, onErrors) =>
+    appFetch(
+        `/users/sendFollowRequest/${receiverId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+export const acceptFollowRequest = (requestId, onSuccess, onErrors) =>
+    appFetch(
+        `/users/acceptFollowRequest/${requestId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+export const rejectFollowRequest = (requestId, onSuccess, onErrors) =>
+    appFetch(
+        `/users/rejectFollowRequest/${requestId}`,
+        fetchConfig("DELETE"),
+        onSuccess,
+        onErrors
+    );
+export const getFollowRequests = (onSuccess, onErrors) =>
+    appFetch(
+        `/users/FollowRequest`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
 

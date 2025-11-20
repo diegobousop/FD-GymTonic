@@ -18,14 +18,19 @@ const RoutineDetailsPage = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
+  const loadRoutineDetails = () => {
     setLoading(true);
-
-    backend.routineService.findRoutineById(
+    backend.routineService.findRoutineDetails(
       id,
       (data) => {
+        if (!data) {
+          setRoutine(null);
+          setIsFollowing(false);
+          setLoading(false);
+          return;
+        }
         setRoutine(data);
-        setIsFollowing(data.isFollowing || false); // Ajusta según el backend
+        setIsFollowing(data.isFollowing || false);
         setLoading(false);
       },
       (err) => {
@@ -33,6 +38,10 @@ const RoutineDetailsPage = () => {
         setLoading(false);
       }
     );
+  };
+
+  useEffect(() => {
+    loadRoutineDetails();
   }, [id]);
 
   const handleRoutineUpdated = (updatedRoutine, msg) => {
@@ -40,6 +49,7 @@ const RoutineDetailsPage = () => {
     setEditing(false);
     setMessage({ type: "success", text: msg });
     setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    loadRoutineDetails();
   };
 
   const handleError = (msg) => {
@@ -70,6 +80,10 @@ const RoutineDetailsPage = () => {
       }
     );
   };
+
+const handleExerciseUpdated = () => {
+  loadRoutineDetails(); 
+};
 
   if (loading) return <p>Cargando rutina...</p>;
   if (error) return <p>{error}</p>;
@@ -115,17 +129,21 @@ const RoutineDetailsPage = () => {
             routine={routine}
             onEdit={() => setEditing(true)}
             onDeleted={() => navigate("/routines")}
-            onVisibilityChange={setRoutine}
+            onVisibilityChange={(updated) => {
+              setRoutine(updated);
+              loadRoutineDetails()
+              }} 
             onError={handleError}
           />
 
           {routine.exercises && routine.exercises.length > 0 && (
-            <ul className="list-disc list-inside space-y-5 mt-6">
+            <ul className="list-disc list-inside space-y-3">
               {routine.exercises.map((ex) => (
                 <Exercise
                   ex={ex}
                   routineId={routine.id}
                   routineCreator={routine.creator}
+                  onExerciseUpdated={handleExerciseUpdated}
                   key={ex.id}
                 />
               ))}

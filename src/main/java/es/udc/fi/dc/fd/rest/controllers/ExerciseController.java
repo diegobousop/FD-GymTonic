@@ -3,11 +3,21 @@ package es.udc.fi.dc.fd.rest.controllers;
 import java.util.Locale;
 import java.util.Optional;
 
-import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
@@ -20,14 +30,10 @@ import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.dtos.BlockDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
-
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
+import es.udc.fi.dc.fd.rest.dtos.ExerciseRoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseSummaryDto;
+import es.udc.fi.dc.fd.rest.dtos.SerieConversor;
+import es.udc.fi.dc.fd.rest.dtos.SerieDto;
 
 
 @RestController
@@ -50,7 +56,7 @@ public class ExerciseController {
 
     @Autowired
     private ExerciseService exerciseService;
-
+    
     @PostMapping("/addExercise")
     public Long addExercise(@RequestAttribute Long userId, @RequestBody ExerciseDto exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         return exerciseService.addExercise(userId, ExerciseConversor.toExercise(exercise));
@@ -123,5 +129,14 @@ public class ExerciseController {
         exerciseService.blockExercise(userId, exerciseId);
     }
 
-
+    @PutMapping("/restTime")
+    public ExerciseRoutineDto editRestTime(@RequestAttribute Long userId,
+                                @RequestParam long exerciseId,
+                                @RequestParam long routineId,
+                                @RequestParam int restTime) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
+        return ExerciseConversor.toExerciseRoutineDto(
+            exerciseService.getExerciseById(exerciseId), 
+            exerciseService.getSeriesByExerciseAndRoutine(exerciseId, routineId).getItems(),
+            exerciseService.editRestTime(exerciseService.getRoutineExercise(routineId, exerciseId), restTime));
+    }
 }

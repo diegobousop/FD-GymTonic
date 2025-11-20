@@ -9,6 +9,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.Users;
@@ -27,8 +28,6 @@ public interface RoutineService {
     Routine getRoutineById(Long routineId, Long userId) throws InstanceNotFoundException, PermissionException;
     
     Routine modifyRoutine(Long routineId, Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws InstanceNotFoundException, PermissionException, RoutineExerciseLimitReachedException;
-
-    boolean removeExerciseFromRoutine(Long exerciseId, Long routineId) throws InstanceNotFoundException;
 
     boolean deleteSeriesByRoutine(Long routineId) throws InstanceNotFoundException;
 

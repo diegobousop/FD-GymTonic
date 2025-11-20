@@ -22,6 +22,7 @@ import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -63,7 +64,7 @@ public class NotificationServiceTest {
 
 
     private Routine createRoutine(String name, Users creator) {
-        return new Routine(name, new ArrayList<Exercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
+        return new Routine(name, new ArrayList<RoutineExercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
 

@@ -27,7 +27,7 @@ describe('RegisterPage', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/register';
+        globalThis.location.hash = '#/register';
         
         // Mock getGenders para que devuelva los géneros
         userService.getGenders.mockImplementation((onSuccess) => {
@@ -35,7 +35,7 @@ describe('RegisterPage', () => {
         });
     });
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         renderComponent();
 
         expect(screen.getByLabelText('Nombre de usuario')).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe('RegisterPage', () => {
         expect(screen.getByText('Enviar')).toBeInTheDocument();
     });
 
-    test('renders error messages for empty fields', async () => {
+    test('muestra mensajes de error para campos vacíos', async () => {
         renderComponent();
 
         fireEvent.submit(screen.getByRole('button', { name: /enviar/i }));
@@ -67,10 +67,10 @@ describe('RegisterPage', () => {
 
             const loginLink = screen.getByText('ACCESO');
 
-            fireEvent.click(loginLink);
+        fireEvent.click(loginLink);
 
-            expect(loginLink).toBeInTheDocument();
-            expect(window.location.hash).toBe('#/login');
+        expect(loginLink).toBeInTheDocument();
+        expect(globalThis.location.hash).toBe('#/login');
     });
 
     test("las contraseñas no coinciden", async () => {
@@ -105,7 +105,7 @@ describe('RegisterPage', () => {
 
     });
 
-    test("Registro correcto", async () => {
+    test("registro correcto", async () => {
         // Mock del callback de éxito en signUp
         userService.signUp.mockImplementation((user, onSuccess, onError) => {
             // Simular el callback de éxito

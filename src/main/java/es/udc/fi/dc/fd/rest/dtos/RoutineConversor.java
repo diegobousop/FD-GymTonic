@@ -9,14 +9,15 @@ import es.udc.fi.dc.fd.model.entities.Training;
 
 public class RoutineConversor {
 
-    // Método original
+    // Método adaptado al nuevo modelo con RoutineExercise
     public static RoutineDto toRoutineDto(Routine routine) {
         return new RoutineDto(
             routine.getId(), 
             routine.getName(),
-            ExerciseConversor.toExerciseDtos(routine.getExercises()), 
+            // Convertimos cada RoutineExercise a ExerciseDto
+            ExerciseConversor.toExerciseDtosFromRoutineExercises(routine.getRoutineExercises()),
             routine.getCreator().getUserName(), 
-            routine.getCreator().getAvatar().getAvatarBase64(),
+            routine.getCreator().getAvatar() != null ? routine.getCreator().getAvatar().getAvatarBase64() : null,
             routine.getDuration(),
             routine.getModificationDate(), 
             routine.getIsPublic());
@@ -27,7 +28,7 @@ public class RoutineConversor {
         RoutineDto routineDto = new RoutineDto(
             routine.getId(),
             routine.getName(),
-            ExerciseConversor.toExerciseDtos(routine.getExercises()),
+            ExerciseConversor.toExerciseDtosFromRoutineExercises(routine.getRoutineExercises()),
             routine.getCreator().getUserName(),
             routine.getCreator().getAvatar() != null ? routine.getCreator().getAvatar().getAvatarBase64() : null,
             routine.getDuration(),
