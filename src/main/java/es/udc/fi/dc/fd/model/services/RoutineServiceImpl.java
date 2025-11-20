@@ -419,6 +419,15 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
+    public Training findTrainingById (Long trainingId) throws InstanceNotFoundException {
+        Optional<Training> optionalTraining = trainingDao.findById(trainingId);
+        if (optionalTraining.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+        return optionalTraining.get();
+    }
+
+    @Override
     public List<Training> findTrainingsByYear(Long userId, int year) throws InstanceNotFoundException, PermissionException {
         permissionChecker.checkUser(userId);
 

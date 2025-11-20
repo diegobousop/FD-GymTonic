@@ -27,6 +27,7 @@ import UserFollowersPage from '../pages/user-followers-page';
 import UserFollowingPage from '../pages/user-following-page';
 import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
 import ViewFollowRequestsPage from "../pages/view-follow-requests-page";
+import TrainingDetailsPage from "../pages/training-details-page";
 import { EXACT_ROUTE_TO_PAGE, PREFIX_ROUTE_TO_PAGE, DEFAULT_ACTIVE_PAGE } from '../../../config/constants';
 
 const Body = () => {
@@ -98,6 +99,7 @@ const Body = () => {
             <Route path="/profile/followers" element={<ProtectedPath path={<UserFollowersPage />} />} />
             <Route path="/profile/following" element={<ProtectedPath path={<UserFollowingPage />} />} />
             <Route path="/profile/follow-request" element={<ProtectedPath path={<ViewFollowRequestsPage />} />} />
+            <Route path="/trainings/:id/details" element={<ProtectedPath path={<TrainingDetailsPage />} />} />
           </Routes>
         </div>
       </div>

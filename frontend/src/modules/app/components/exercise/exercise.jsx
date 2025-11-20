@@ -6,8 +6,8 @@ import PropTypes from 'prop-types'
 import BubbleButton from '../common/bubble-button'
 import { svgIcons } from '../../../../config/constants'
 
-const Exercise = ({ ex, routineId, routineCreator, onExerciseUpdated }) => {
-  const [series, setSeries] = useState([]);
+const Exercise = ({ ex, routineId, routineCreator, onExerciseUpdated, initialSeries = null }) => {
+  const [series, setSeries] = useState(initialSeries || []);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const { user } = useContext(UserContext);
@@ -28,6 +28,17 @@ const formatRestTime = (seconds) =>
 
 
 const refreshSeries = () => {
+    // Si las series ya vienen como prop, no hacer fetch
+    if (initialSeries !== null) {
+      setSeries(initialSeries);
+      return;
+    }
+    
+    // Solo hacer fetch si routineId es válido
+    if (!routineId) {
+      return;
+    }
+    
     getSerieByExercise(
       ex.id,
       routineId,
@@ -38,7 +49,7 @@ const refreshSeries = () => {
 
   useEffect(() => {
     refreshSeries();
-  }, [ex.id, routineId]);
+  }, [ex.id, routineId, initialSeries]);
 
   const handleUpdate = () => {
     refreshSeries();
@@ -146,8 +157,10 @@ const refreshSeries = () => {
 
 Exercise.propTypes = {
    ex: PropTypes.object.isRequired,
-   routineId: PropTypes.number.isRequired,
-   routineCreator: PropTypes.string.isRequired
+   routineId: PropTypes.number,
+   routineCreator: PropTypes.string,
+   onExerciseUpdated: PropTypes.func,
+   initialSeries: PropTypes.array
 }
 
 export default Exercise;

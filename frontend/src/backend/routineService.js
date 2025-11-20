@@ -102,6 +102,14 @@ export const isFollowingRoutine = (routineId, onSuccess, onErrors) => {
   );
 };
 
+export const getTrainingDetails = (trainingId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/trainings/${trainingId}/details`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+}
 
 export const viewUserTrainings = (page, size, onSuccess, onErrors) => {
   appFetch(

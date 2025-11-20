@@ -55,4 +55,6 @@ public interface RoutineService {
     List<Training> findTrainingsByYear(Long userId, int year) throws InstanceNotFoundException, PermissionException;
 
     Routine getRoutineByTraining(Long trainingId) throws InstanceNotFoundException;
+
+    Training findTrainingById(Long trainingId) throws InstanceNotFoundException;
 }
