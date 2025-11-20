@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
@@ -166,7 +165,7 @@ public class RoutineServiceTest {
 
         List<Long> exerciseIds = routineExercises.stream()
                 .map(re -> re.getExercise().getId())
-                .collect(Collectors.toList());
+                .toList();
 
         assertTrue(exerciseIds.contains(exercise1.getId()), "La rutina debe contener el ejercicio1");
         assertTrue(exerciseIds.contains(exercise2.getId()), "La rutina debe contener el ejercicio2");
@@ -344,7 +343,7 @@ public class RoutineServiceTest {
         
         long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,4));
-        Exercise exercise1 = exerciseDao.getById(exerciseId);
+        Exercise exercise1 = exerciseDao.getReferenceById(exerciseId);
         Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
 
         List<Long> exerciseIds = new ArrayList<>();

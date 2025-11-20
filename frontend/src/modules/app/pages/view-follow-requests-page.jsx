@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import backend from "../../../backend";
+import Spinner from "../components/common/spinner";
 
 const ViewFollowRequestsPage = () => {
     const [requests, setRequests] = useState([]);
@@ -64,9 +65,7 @@ const ViewFollowRequestsPage = () => {
             </h1>
 
             {loading ? (
-                <div className="flex justify-center py-10">
-                    <p className="text-gray-500 text-lg">Cargando solicitudes...</p>
-                </div>
+                <Spinner/>
             ) : requests.length === 0 ? (
                 <p className="text-center text-gray-500">
                     No tienes solicitudes pendientes.

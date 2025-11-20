@@ -61,6 +61,7 @@ public class RoutineServiceImpl implements RoutineService {
     private static final String CREATOR_STRING = "creator";
     private static final int EXERCISE_LIMIT = 5;
     private static final int ROUTINE_LIMIT = 3;
+    private static final String ROUTINE_EXCEPTION = "project.entities.routine";
     
     @Override
     public Routine createRoutine( Long creatorId, String name, List<Long> exercises, Long duration, Boolean isPublic) throws DuplicateInstanceException,
@@ -69,35 +70,18 @@ public class RoutineServiceImpl implements RoutineService {
 
 
         if (routineDao.existsByNameAndCreator(name, creator)) {
-            throw new DuplicateInstanceException("project.entities.routine", name);
+            throw new DuplicateInstanceException(ROUTINE_EXCEPTION, name);
         }
 
-
-        if(name.isBlank()) throw new InvalidRoutineNameException(name);
-        if(duration == null || duration<=0 ) throw new InvalidRoutineDurationException(duration);
+        validateInputs(name, duration);
 
 
         if (isPublic == null) {
             isPublic = true;
         }
 
+        checkNonPremiumLimits(creator, exercises);
 
-        // Comprobar límite de rutinas para usuarios no premium
-        if(!creator.getPremium() && creator.getRole().toString().equals("TRAINER")) {
-            List<Routine> routineCount = routineDao.findByCreator(creator);
-            if (routineCount.size() >= 3) {
-                throw new RoutineLimitReachedException();
-            }
-        }
-
-
-        // Comprobar límite de ejercicios por rutina para usuarios no premium
-        if(!creator.getPremium() && creator.getRole().toString().equals("TRAINER")) {
-            int exerciseLimit = 5;
-            if (exercises.size() > exerciseLimit) {
-                throw new RoutineExerciseLimitReachedException();
-            }
-        }
 
 
         // Crear la rutina base
@@ -117,36 +101,9 @@ public class RoutineServiceImpl implements RoutineService {
             notificationService.notifyFollowers(creatorId, routine);
         }
 
-
-        // Crear las relaciones RoutineExercise con orden y descanso
-        int order = 1;
-        for (Long exerciseId : exercises) {
-            Exercise exercise = exerciseDao.findById(exerciseId)
-                    .orElseThrow(() -> new InstanceNotFoundException("project.entities.exercise", exerciseId));
+        createRoutineExercisesAndSeries(exercises, routine);
 
 
-            RoutineExercise routineExercise = new RoutineExercise();
-            routineExercise.setId(new RoutineExerciseId());
-            routineExercise.setRoutine(routine);
-            routineExercise.setExercise(exercise);
-            routineExercise.setOrderInRoutine(order++);
-            routineExercise.setRestTime(120);
-
-
-            routine.getRoutineExercises().add(routineExercise);
-
-
-            // Crear series asociadas al ejercicio
-            for (int i = 1; i <= exercise.getNumeroSeries(); i++) {
-                Serie serie = new Serie();
-                serie.setExercise(exercise);
-                serie.setPeso(40);
-                serie.setRepeticiones(8);
-                serie.setNumeroSerie(i);
-                serie.setRoutine(routine);
-                serieDao.save(serie);
-            }
-        }
 
 
         return routineDao.save(routine);
@@ -176,7 +133,7 @@ public class RoutineServiceImpl implements RoutineService {
         
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
         if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
         }
         
         Routine routine = optionalRoutine.get();
@@ -184,7 +141,7 @@ public class RoutineServiceImpl implements RoutineService {
         if (Boolean.TRUE.equals(!routine.getIsPublic() && 
             !user.getRole().equals(Users.RoleType.ADMIN)) && 
             !routine.getCreator().getId().equals(userId)) {
-            throw new PermissionException("project.entities.routine", routineId);
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
         }
         
         return routine;
@@ -195,12 +152,12 @@ public class RoutineServiceImpl implements RoutineService {
         Users creator = permissionChecker.checkUser(creatorId);
 
         Routine routine = routineDao.findById(routineId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.routine", routineId));
+                .orElseThrow(() -> new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId));
 
         // Solo el creador o un admin puede modificar
         if (!creator.getRole().equals(Users.RoleType.ADMIN) &&
             !routine.getCreator().getId().equals(creator.getId())) {
-            throw new PermissionException("project.entities.routine", routineId);
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
         }
 
         //Si el creador no es premium comprobar limite de ejercicios
@@ -249,7 +206,7 @@ public class RoutineServiceImpl implements RoutineService {
         }
 
         // Notificar seguidores si es pública
-        if(isPublic && creator.getFollowers()!=null) {
+        if(Boolean.TRUE.equals(isPublic) && creator.getFollowers()!=null) {
             notificationService.notifyFollowers(creatorId, routine);
         }
 
@@ -262,7 +219,6 @@ public class RoutineServiceImpl implements RoutineService {
         return routineDao.save(routine);
     }
 
-    @Transactional
     @Override
     public boolean deleteSeriesByRoutine(Long routineId) {
         try {
@@ -280,13 +236,13 @@ public class RoutineServiceImpl implements RoutineService {
         
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
         if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
         }
         
         Routine routine = optionalRoutine.get();
         
         if (!creator.getRole().equals(Users.RoleType.ADMIN) && !routine.getCreator().getId().equals(creator.getId())) {
-            throw new PermissionException("project.entities.routine", routineId);
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
         }
         
         deleteSeriesByRoutine(routine.getId());
@@ -337,7 +293,7 @@ public class RoutineServiceImpl implements RoutineService {
         
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
         if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
         }
 
         Routine routine = optionalRoutine.get();
@@ -370,7 +326,7 @@ public class RoutineServiceImpl implements RoutineService {
 
         Optional<Routine> optionalRoutine = routineDao.findById(routineId);
         if (optionalRoutine.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", routineId);
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
         }
 
         Routine routine = optionalRoutine.get();
@@ -403,10 +359,10 @@ public class RoutineServiceImpl implements RoutineService {
 
         Users user = permissionChecker.checkUser(userId);
         Routine routine = routineDao.findById(routineId)
-            .orElseThrow(() -> new InstanceNotFoundException("project.entities.routine", routineId));
+            .orElseThrow(() -> new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId));
 
         if (Boolean.FALSE.equals(routine.getIsPublic())) {
-            throw new PermissionException("project.entities.routine", routineId);
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
         }
 
         // Evitar seguir dos veces
@@ -436,14 +392,14 @@ public class RoutineServiceImpl implements RoutineService {
 
         Users trainer = permissionChecker.checkUser(trainerId);
         Routine routine = routineDao.findById(routineId)
-                .orElseThrow(() -> new InstanceNotFoundException("project.entities.routine", routineId));
+                .orElseThrow(() -> new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId));
 
         if (!routine.getCreator().getId().equals(trainerId)) {
-            throw new PermissionException("project.entities.routine", routineId);
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
         }
 
         if (!trainer.getRole().equals(Users.RoleType.TRAINER)) {
-            throw new PermissionException("project.entities.routine", routineId);
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
         }
 
         Page<RoutineFollow> followsPage = routineFollowDao.findByRoutineId(routineId, pageable);
@@ -495,17 +451,75 @@ public class RoutineServiceImpl implements RoutineService {
         List<Serie> series = serieDao.findByTrainingId(training.getId());
 
         if (series.isEmpty()) {
-            throw new InstanceNotFoundException("project.entities.routine", "No routine associated with training id: " + trainingId);
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, "No routine associated with training id: " + trainingId);
         }
 
         Serie firstSerie = series.get(0);
         Routine routine = firstSerie.getRoutine();
 
         if (routine == null) {
-            throw new InstanceNotFoundException("project.entities.routine", "No routine associated with training id: " + trainingId);
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, "No routine associated with training id: " + trainingId);
         }
 
         return routine;
+    }
+
+    private void validateInputs(String name, Long duration) throws InvalidRoutineNameException, InvalidRoutineDurationException {
+        if(name == null || name.isBlank()) {
+            throw new InvalidRoutineNameException(name);
+        }
+        if(duration == null || duration <= 0) {
+            throw new InvalidRoutineDurationException(duration);
+        }
+
+    }
+
+    private void checkNonPremiumLimits(Users creator, List<Long> exercises) throws RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        // Comprobar límite de rutinas para usuarios no premium
+        if(Boolean.TRUE.equals(!creator.getPremium()) && creator.getRole().toString().equals(TRAINER_STRING)) {
+            List<Routine> routineCount = routineDao.findByCreator(creator);
+            if (routineCount.size() >= ROUTINE_LIMIT) {
+                throw new RoutineLimitReachedException();
+            }
+        }
+
+        // Comprobar límite de ejercicios por rutina para usuarios no premium
+        if(Boolean.TRUE.equals(!creator.getPremium()) && creator.getRole().toString().equals(TRAINER_STRING) && exercises.size() > EXERCISE_LIMIT) {
+                throw new RoutineExerciseLimitReachedException();
+            }
+        
+    }
+
+    private void createRoutineExercisesAndSeries(List<Long> exercises, Routine routine) throws InstanceNotFoundException {
+        // Crear las relaciones RoutineExercise con orden y descanso
+        int order = 1;
+        for (Long exerciseId : exercises) {
+            Exercise exercise = exerciseDao.findById(exerciseId)
+                    .orElseThrow(() -> new InstanceNotFoundException("project.entities.exercise", exerciseId));
+
+
+            RoutineExercise routineExercise = new RoutineExercise();
+            routineExercise.setId(new RoutineExerciseId());
+            routineExercise.setRoutine(routine);
+            routineExercise.setExercise(exercise);
+            routineExercise.setOrderInRoutine(order++);
+            routineExercise.setRestTime(120);
+
+
+            routine.getRoutineExercises().add(routineExercise);
+
+
+            // Crear series asociadas al ejercicio
+            for (int i = 1; i <= exercise.getNumeroSeries(); i++) {
+                Serie serie = new Serie();
+                serie.setExercise(exercise);
+                serie.setPeso(40);
+                serie.setRepeticiones(8);
+                serie.setNumeroSerie(i);
+                serie.setRoutine(routine);
+                serieDao.save(serie);
+            }
+        }
     }
 
 }

@@ -1,5 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
+import static org.junit.Assert.assertEquals;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +21,6 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineExercise;
@@ -93,9 +94,9 @@ public class NotificationServiceTest {
         Block<Notification> notificationsUser1 = notificationService.getAllNotifications(user1.getId(),  pageable);
         Block<Notification> notificationsUser2 = notificationService.getAllNotifications(user2.getId(),  pageable);
         Block<Notification> notificationsUser3 = notificationService.getAllNotifications(user3.getId(),  pageable);
-        assert(notificationsUser1.getItems().size() == 1);
-        assert(notificationsUser2.getItems().size() == 1);
-        assert(notificationsUser3.getItems().size() == 0);
+        assertEquals(1, notificationsUser1.getItems().size());
+        assertEquals(1, notificationsUser2.getItems().size());
+        assertEquals(0, notificationsUser3.getItems().size());
     }   
 
     @Test
@@ -114,15 +115,15 @@ public class NotificationServiceTest {
         PageRequest pageable = PageRequest.of(0, 10);
 
         Block<Notification> notificationsUser1 = notificationService.getAllNotifications(user1.getId(),  pageable);
-        assert(notificationsUser1.getItems().size() == 1);
+        assertEquals(1, notificationsUser1.getItems().size());
         Notification notification = notificationsUser1.getItems().get(0);
-        assert(!notification.getIsRead());
+        assertEquals(false, notification.getIsRead());
 
         notification = notificationService.markAsRead(notification.getId());
-        assert(notification.getIsRead());
+        assertEquals(true, notification.getIsRead());
 
         notification = notificationService.markAsUnread(notification.getId());
-        assert(!notification.getIsRead());
+        assertEquals(false, notification.getIsRead());
     }
 
         @Test
@@ -151,18 +152,18 @@ public class NotificationServiceTest {
         Block<Notification> notificationsUser1 = notificationService.getAllNotifications(user1.getId(),  pageable);
         Block<Notification> notificationsUser2 = notificationService.getAllNotifications(user2.getId(),  pageable);
         Block<Notification> notificationsUser3 = notificationService.getAllNotifications(user3.getId(),  pageable);
-        assert(notificationsUser1.getItems().size() == 0);
-        assert(notificationsUser2.getItems().size() == 0);
-        assert(notificationsUser3.getItems().size() == 0);
+        assertEquals(0, notificationsUser1.getItems().size());
+        assertEquals(0, notificationsUser2.getItems().size());
+        assertEquals(0, notificationsUser3.getItems().size());
 
         routineService.modifyRoutine(routine.getId(), trainer1.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
 
         notificationsUser1 = notificationService.getAllNotifications(user1.getId(),  pageable);
         notificationsUser2 = notificationService.getAllNotifications(user2.getId(),  pageable);
         notificationsUser3 = notificationService.getAllNotifications(user3.getId(),  pageable);
-        assert(notificationsUser1.getItems().size() == 1);
-        assert(notificationsUser2.getItems().size() == 1);
-        assert(notificationsUser3.getItems().size() == 0);
+        assertEquals(1, notificationsUser1.getItems().size());
+        assertEquals(1, notificationsUser2.getItems().size());
+        assertEquals(0, notificationsUser3.getItems().size());
     }  
 
 }
