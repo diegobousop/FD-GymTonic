@@ -14,7 +14,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('../../../config/constants', () => ({
-  SVG_ICONS: {
+  svgIcons: {
     HomeIcon: () => <svg data-testid="home-icon" />,
     ProfileIcon: () => <svg data-testid="profile-icon" />,
     CreateRoutineIcon: () => <svg data-testid="routine-icon" />,

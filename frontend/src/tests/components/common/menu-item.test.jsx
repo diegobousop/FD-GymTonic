@@ -7,7 +7,7 @@ import MenuItem from '../../../modules/app/components/common/menu-item';
 const MockIcon = ({ className }) => <svg data-testid="mock-icon" className={className} />;
 
 jest.mock('../../../config/constants', () => ({
-  SVG_ICONS: {
+  svgIcons: {
     HomeIcon: ({ className }) => <svg data-testid="home-icon" className={className} />,
   },
 }));

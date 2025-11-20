@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import '@testing-library/jest-dom';
 import React from "react";
-import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import ViewAllUsers from "../../modules/app/pages/viewAllUsers-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";

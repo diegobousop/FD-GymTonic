@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 
-const { HomeIcon } = SVG_ICONS
+const { HomeIcon } = svgIcons
 
 const MenuItem = ({ title, activePage, onClick, page, icon: Icon }) => {
     const [pressed, setPressed] = React.useState(false)
@@ -20,16 +20,16 @@ const MenuItem = ({ title, activePage, onClick, page, icon: Icon }) => {
             onPointerDown={() => setPressed(true)}
             onPointerUp={() => setPressed(false)}
             style={{ transform: pressed ? 'translateY(1px) scale(0.970)' : undefined }}
-            className={`flex w-full items-center justify-start py-3 px-3 mt-5 relative transform transition-all duration-150
+            className={`rounded-full flex w-full items-center justify-start py-3 px-5 mt-5 relative transform transition-all duration-150
                         active:translate-y-[1px] active:scale-[0.970]  ${activePage(page || 'see-more') ? 'bg-[#241515]' : 'bg-transparent hover:bg-[#241515]'}`}
         >
             {Icon ? (
                 <Icon
-                    className={`absolute left-4 w-[30px] h-auto ${activePage(page || 'see-more') ? 'text-[#ff0000]' : 'text-white'}`}
+                    className={`absolute left-6 w-[30px] h-auto ${activePage(page || 'see-more') ? 'text-[#ff0000]' : 'text-white'}`}
                 />
             ) : (
                 <HomeIcon
-                    className={`absolute left-4 w-[30px] h-auto ${activePage(page || 'see-more') ? 'text-[#ff0000]' : 'text-white'}`}
+                    className={`absolute left-6 w-[30px] h-auto ${activePage(page || 'see-more') ? 'text-[#ff0000]' : 'text-white'}`}
                 />
             )}
             <h1

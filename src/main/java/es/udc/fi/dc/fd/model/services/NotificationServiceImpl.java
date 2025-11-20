@@ -12,9 +12,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.NotificationDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
 @Service
@@ -24,8 +22,7 @@ public class NotificationServiceImpl implements NotificationService {
     private NotificationDao notificationDao;
 	@Autowired
 	private PermissionChecker permissionChecker;
-    @Autowired
-    private UserDao userDao;
+
 
     @Override
     public Block<Notification> getAllNotifications(Long userId, Pageable pageable) throws InstanceNotFoundException {
@@ -62,12 +59,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void notifyFollowers(Long trainerId, Routine routine) throws InstanceNotFoundException {
         //No lanza exception porque es llamada desde createRoutine, que ya la ha comprobado
-        Optional<Users> trainer = userDao.findById(trainerId);
+        Users trainer = permissionChecker.checkUser(trainerId);
 
-        String message = "Nueva rutina: '" + routine.getName() + "', añadida por " + trainer.get().getUserName();
+        String message = "Nueva rutina: '" + routine.getName() + "', añadida por " + trainer.getUserName();
 
-        for (Users follower : trainer.get().getFollowers()) {
-            Notification notification = new Notification(follower, trainer.get(), routine, message, false, java.time.LocalDateTime.now().withNano(0));
+        for (Users follower : trainer.getFollowers()) {
+            Notification notification = new Notification(follower, trainer, routine, message, false, java.time.LocalDateTime.now().withNano(0));
             notificationDao.save(notification);
         }
     

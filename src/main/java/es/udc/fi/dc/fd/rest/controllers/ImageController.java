@@ -33,7 +33,7 @@ public class ImageController {
     public BlockDto<AvatarDto> getAllAvatars(@RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "4") int size) {
         Block<Avatar> returned = imageService.getAllAvatars(page, size);
-        return new BlockDto<AvatarDto>(AvatarConversor.toAvatarDtos(returned.getItems()), returned.getExistMoreItems());
+        return new BlockDto<>(AvatarConversor.toAvatarDtos(returned.getItems()), returned.getExistMoreItems());
     }
     
     @GetMapping("/getByName/{name}")

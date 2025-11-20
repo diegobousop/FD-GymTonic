@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * The Class JwtFilter.
  */
+@SuppressWarnings("null")
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     

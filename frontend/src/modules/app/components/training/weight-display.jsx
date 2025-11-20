@@ -1,7 +1,8 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 const WeightDisplay = ({ weight }) => {
-  // Discos disponibles con sus colores (estándar IWF)
+ 
   const plates = [
     { weight: 50, color: 'bg-gray-700', borderColor: 'border-gray-800' },
     { weight: 25, color: 'bg-red-500', borderColor: 'border-red-600' },
@@ -15,7 +16,7 @@ const WeightDisplay = ({ weight }) => {
   const calculatePlates = (totalWeight) => {
     if (totalWeight <= 0) return [];
     
-    let remainingWeight = totalWeight; // Todo el peso (sin contar la barra)
+    let remainingWeight = totalWeight; // El peso completo (sin contar la barra)
     const platesToAdd = [];
 
     for (const plate of plates) {
@@ -88,5 +89,10 @@ const getColorValue = (colorClass, shade) => {
   
   return colorMap[colorClass]?.[shade] || '#9ca3af';
 };
+
+WeightDisplay.propTypes = {
+  weight: PropTypes.number.isRequired,
+}
+
 
 export default WeightDisplay

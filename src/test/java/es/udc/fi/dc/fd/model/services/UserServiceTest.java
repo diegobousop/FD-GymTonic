@@ -1,15 +1,17 @@
 package es.udc.fi.dc.fd.model.services;
 
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.time.LocalDate;
+import java.util.Optional;
 
-import es.udc.fi.dc.fd.model.entities.*;
-import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.AssertTrue;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +20,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
+import es.udc.fi.dc.fd.model.entities.FollowRequest;
+import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -26,9 +34,7 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
-
-import java.time.LocalDate;
-import java.util.Optional;
+import jakarta.transaction.Transactional;
 
 /**
  * The Class UserServiceTest.
@@ -193,7 +199,7 @@ public class UserServiceTest {
 	}
 
 	@Test 
-	public void testBanByUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanByUser() throws InstanceNotFoundException, DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -207,7 +213,7 @@ public class UserServiceTest {
 	}
 
 	@Test 
-	public void testBanNullUser() throws AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+	public void testBanNullUser() throws InstanceNotFoundException, DuplicateInstanceException{
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -255,9 +261,9 @@ public class UserServiceTest {
 
 		assertTrue(userService.followUser(user1.getId(), user2.getId()));
 
-		assertEquals(user2.getFollowers().size(), 1);
+		assertEquals(1, user2.getFollowers().size());
 		assertEquals(user2.getFollowers().get(0), user1);
-		assertEquals(user1.getFollowing().size(), 1);
+		assertEquals(1, user1.getFollowing().size());
 		assertEquals(user1.getFollowing().get(0), user2);
 
 	}
@@ -270,15 +276,15 @@ public class UserServiceTest {
 		userService.signUp(user2, Users.RoleType.TRAINER);
 
 		assertTrue(userService.followUser(user1.getId(), user2.getId()));
-		assertEquals(user2.getFollowers().size(), 1);
+		assertEquals(1, user2.getFollowers().size());
 		assertEquals(user2.getFollowers().get(0), user1);
-		assertEquals(user1.getFollowing().size(), 1);
+		assertEquals(1, user1.getFollowing().size());
 		assertEquals(user1.getFollowing().get(0), user2);
 
 		assertTrue(userService.unfollowUser(user1.getId(), user2.getId()));
 
-		assertEquals(user2.getFollowers().size(), 0);
-		assertEquals(user1.getFollowing().size(), 0);
+		assertEquals(0, user2.getFollowers().size());
+		assertEquals(0, user1.getFollowing().size());
 	}
 
 	@Test
@@ -384,7 +390,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testGetFollowersCountNoUser() throws DuplicateInstanceException {
+	public void testGetFollowersCountNoUser() throws DuplicateInstanceException, InstanceNotFoundException {
 		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -480,7 +486,7 @@ public class UserServiceTest {
 
 	}
 	@Test
-	public void testSendFollowRequestFailed() throws DuplicateInstanceException {
+	public void testSendFollowRequestFailed() throws DuplicateInstanceException, InstanceNotFoundException {
 		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(sender, Users.RoleType.USER);
@@ -514,7 +520,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testacceptFollowRequestFailed() throws DuplicateInstanceException{
+	public void testacceptFollowRequestFailed() throws DuplicateInstanceException, InstanceNotFoundException{
 		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(sender, Users.RoleType.USER);
@@ -536,7 +542,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void  rejectFollowRequestFailed() throws DuplicateInstanceException {
+	public void  rejectFollowRequestFailed() throws DuplicateInstanceException, InstanceNotFoundException {
 		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
 
 		userService.signUp(sender, Users.RoleType.USER);

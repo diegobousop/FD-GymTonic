@@ -58,19 +58,13 @@ export const searchRoutines = (creatorId, name, { page, size }, onSuccess, onErr
   );
 
 export const createTraining = (
-  routineId,
-  name,
-  description,
-  duration,
-  visibility,
-  exercises,
-  onSuccess,
-  onErrors
+  { routineId, name, description, duration, visibility, exercises },
+  { onSuccess, onErrors } = {}
 ) => {
   appFetch(
     "/routines/createTraining",
     fetchConfig("POST", { routineId, name, description, duration, visibility, exercises }),
-    (createdTraining) => onSuccess(createdTraining),
+    onSuccess,
     onErrors
   );
 };

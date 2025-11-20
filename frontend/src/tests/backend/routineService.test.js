@@ -172,20 +172,24 @@ describe('routineService', () => {
       const mockOnErrors = jest.fn();
 
       routineService.createTraining(
-        10,
-        'Morning Workout',
-        'Full body',
-        60,
-        'PUBLIC',
-        [{ id: 1, series: 3 }],
-        mockOnSuccess,
-        mockOnErrors
+        {
+          routineId: 10,
+          name: 'Morning Workout',
+          description: 'Full body',
+          duration: 60,
+          visibility: 'PUBLIC',
+          exercises: [{ id: 1, series: 3 }]
+        },
+        {
+          onSuccess: mockOnSuccess,
+          onErrors: mockOnErrors
+        }
       );
 
       expect(appFetch).toHaveBeenCalledWith(
         '/routines/createTraining',
         expect.objectContaining({ method: 'POST' }),
-        expect.any(Function),
+        mockOnSuccess,
         mockOnErrors
       );
     });
@@ -199,14 +203,18 @@ describe('routineService', () => {
       });
 
       routineService.createTraining(
-        10,
-        'Test',
-        'Desc',
-        30,
-        'PRIVATE',
-        [],
-        mockOnSuccess,
-        jest.fn()
+        {
+          routineId: 10,
+          name: 'Test',
+          description: 'Desc',
+          duration: 30,
+          visibility: 'PRIVATE',
+          exercises: []
+        },
+        {
+          onSuccess: mockOnSuccess,
+          onErrors: jest.fn()
+        }
       );
 
       expect(mockOnSuccess).toHaveBeenCalledWith(mockTraining);

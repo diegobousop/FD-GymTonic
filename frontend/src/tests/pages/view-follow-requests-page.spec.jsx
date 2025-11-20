@@ -32,9 +32,9 @@ describe("ViewFollowRequestsPage", () => {
     it("muestra mensaje de carga mientras carga solicitudes", () => {
         userService.getFollowRequests.mockImplementation(() => {});
 
-        renderPage();
+        const { container } = renderPage();
 
-        expect(screen.getByText(/Cargando solicitudes/i)).toBeInTheDocument();
+        expect(container.querySelector('.animate-spin')).toBeInTheDocument();
     });
 
 

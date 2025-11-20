@@ -7,7 +7,7 @@ import { getProfile, getFollowersCount, getFollowingCount } from "../../../backe
 import { UserContext } from '../components/common/user-provider';
 import { useNavigate, Link } from 'react-router-dom'
 
-import { SVG_ICONS } from '../../../config/constants'
+import { svgIcons } from '../../../config/constants'
 
 
 const MyProfilePage = () => {
@@ -85,19 +85,19 @@ const MyProfilePage = () => {
           }
 
           <BubbleButton 
-            icon={<SVG_ICONS.CreateRoutineIcon />}
+            icon={<svgIcons.CreateRoutineIcon />}
             ariaLabel="Editar perfil"
             onClick={() => { navigate('/profileUpdate'); }}
           />
 
           <BubbleButton 
-            icon={<SVG_ICONS.PasswordIcon />}
+            icon={<svgIcons.PasswordIcon />}
             ariaLabel="Cambiar contraseña"
             onClick={() => { navigate('/change-password'); }}
           />
 
           <BubbleButton 
-            icon={<SVG_ICONS.LogoutIcon />}
+            icon={<svgIcons.LogoutIcon />}
             ariaLabel="Cerrar sesión"
             onClick={() => { handleLogout(); }}
           />

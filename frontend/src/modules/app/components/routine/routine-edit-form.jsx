@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import backend from "../../../../backend";
 import MultiSelectList from "../common/multi-select-list";
 import TextInput from "../common/text-input";
+import PropTypes from "prop-types";
 
 const RoutineEditForm = ({ routine, onCancel, onSaved, onError }) => {
   const [editName, setEditName] = useState(routine.name);
   const [editDuration, setEditDuration] = useState(routine.duration);
   const [editExercises, setEditExercises] = useState(routine.exercises.map((ex) => ex.id));
-  const [editIsPublic, setEditIsPublic] = useState(routine.isPublic);
+  const [editIsPublic] = useState(routine.isPublic);
   const [page, setPage] = useState(0);
   const [exercises, setExercises] = useState([]);
   const [existMoreItems, setExistMoreItems] = useState(false);
@@ -86,6 +87,13 @@ const RoutineEditForm = ({ routine, onCancel, onSaved, onError }) => {
       </div>
     </div>
   );
+};
+
+RoutineEditForm.propTypes = {
+  routine: PropTypes.object.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onSaved: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default RoutineEditForm;

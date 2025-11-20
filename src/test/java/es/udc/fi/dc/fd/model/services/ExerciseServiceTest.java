@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
-
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles("test")
@@ -108,16 +109,16 @@ public class ExerciseServiceTest {
         // si el idExercise2 es el siguiente id a idExercise se han insertado correctamente
         assertEquals(idExercise, idExercise2 - 1); 
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
 
-        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
-        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
-        assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
-        assertEquals(exercise1.getNumeroSeries(), 1);
+        assertEquals("ejercicio de prueba 1",exercise1.getExerciseName());
+        assertEquals("ejercicio de prueba", exercise1.getExerciseDescription());
+        assertEquals(grupoMuscular.PECHO, exercise1.getGrupoMuscular());
+        assertEquals(1, exercise1.getNumeroSeries());
     }
 
     @Test
-    public void addExercisePermissionExceptionTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
+    public void addExercisePermissionExceptionTest() throws LoginUserBlockedException, IncorrectLoginException {
         Users creator = userService.login("user1", "12345");
         assertThrows(PermissionException.class, () -> {
             exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
@@ -129,15 +130,15 @@ public class ExerciseServiceTest {
     public void addDuplicateExerciseTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users creator = userService.login("admin1", "12345");
 
-        Long idExercise = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
         assertThrows(DuplicateInstanceException.class, () -> {
-        Long idExercise2 = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
+        exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
         });
     }
 
     @Test 
     public void getExercices() throws LoginUserBlockedException, IncorrectLoginException{
-        Users creator = userService.login("admin1", "12345");
+        userService.login("admin1", "12345");
 
         Exercise exercise1 = createExercise(
             "Push Up",
@@ -202,11 +203,11 @@ public class ExerciseServiceTest {
         Users creator = userService.login("trainer1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
 
-        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
-        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
-        assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
+        assertEquals("ejercicio de prueba 1", exercise1.getExerciseName());
+        assertEquals("ejercicio de prueba", exercise1.getExerciseDescription());
+        assertEquals(grupoMuscular.PECHO, exercise1.getGrupoMuscular());
         // al añadirlo un trainer, el ejercicio no deberia estar validado
         assertFalse(exercise1.isValidated());
     }
@@ -216,14 +217,14 @@ public class ExerciseServiceTest {
         Users creator = userService.login("admin1", "12345");
         Long idExercise = exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1", "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
 
-        assertEquals(exercise1.getExerciseName(), "ejercicio de prueba 1");
-        assertEquals(exercise1.getExerciseDescription(), "ejercicio de prueba");
-        assertEquals(exercise1.getGrupoMuscular(), grupoMuscular.PECHO);
+        assertEquals("ejercicio de prueba 1", exercise1.getExerciseName());
+        assertEquals("ejercicio de prueba", exercise1.getExerciseDescription());
+        assertEquals(grupoMuscular.PECHO, exercise1.getGrupoMuscular());
         // al añadirlo un trainer, el ejercicio no deberia estar validado
         assertTrue(exercise1.isValidated());
-        assertEquals(exercise1.getValidator().getId(), creator.getId());
+        assertEquals(creator.getId(), exercise1.getValidator().getId());
     }
 
     @Test
@@ -244,10 +245,10 @@ public class ExerciseServiceTest {
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
-       Block<Serie> Series = exerciseService.createSeries(exercise1, Optional.empty(),1L);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
+       Block<Serie> series = exerciseService.createSeries(exercise1, Optional.empty(),1L);
 
-        assertEquals(Series.getItems(),serieDao.findByExercise(exercise1).getContent());
+        assertEquals(series.getItems(),serieDao.findByExercise(exercise1, Pageable.unpaged()).getContent());
     }
 
 
@@ -257,20 +258,21 @@ public class ExerciseServiceTest {
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
 
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(),1L);
+        Block<Serie> series = exerciseService.createSeries(exercise1,Optional.empty(),1L);
 
-        exerciseService.editSerie(Series.getItems().get(0),30,100);
-        exerciseService.editSerie(Series.getItems().get(1),40,200);
-        exerciseService.editSerie(Series.getItems().get(2),50,300);
+        exerciseService.editSerie(series.getItems().get(0),30,100);
+        exerciseService.editSerie(series.getItems().get(1),40,200);
+        exerciseService.editSerie(series.getItems().get(2),50,300);
 
-        assertEquals(100,serieDao.getById(Series.getItems().get(0).getId()).getPeso());
-        assertEquals(30,serieDao.getById(Series.getItems().get(0).getId()).getRepeticiones());
-        assertEquals(200,serieDao.getById(Series.getItems().get(1).getId()).getPeso());
-        assertEquals(40,serieDao.getById(Series.getItems().get(1).getId()).getRepeticiones());
-        assertEquals(300,serieDao.getById(Series.getItems().get(2).getId()).getPeso());
-        assertEquals(50,serieDao.getById(Series.getItems().get(2).getId()).getRepeticiones());
+         Block<Serie> seriesUpdated = exerciseService.getSeriesByExerciseAndRoutine(idExercise,1L);
+        assertEquals(100,serieDao.findById(seriesUpdated.getItems().get(0).getId()).get().getPeso());
+        assertEquals(30,serieDao.findById(seriesUpdated.getItems().get(0).getId()).get().getRepeticiones());
+        assertEquals(200,serieDao.findById(seriesUpdated.getItems().get(1).getId()).get().getPeso());
+        assertEquals(40,serieDao.findById(seriesUpdated.getItems().get(1).getId()).get().getRepeticiones());
+        assertEquals(300,serieDao.findById(seriesUpdated.getItems().get(2).getId()).get().getPeso());
+        assertEquals(50,serieDao.findById(seriesUpdated.getItems().get(2).getId()).get().getRepeticiones());
     }
 
     @Test
@@ -279,14 +281,14 @@ public class ExerciseServiceTest {
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
-        Block<Serie> Series = exerciseService.createSeries(exercise1,Optional.empty(), 1L);
-        Serie serie=exerciseService.getSerie(Series.getItems().get(0).getId());
-        assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()),serie);
-        assertNotEquals(exerciseService.getSerie(Series.getItems().get(1).getId()),serie);
-        assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getRepeticiones(),serie.getRepeticiones());
-        assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getPeso(),serie.getPeso());
-        assertEquals(exerciseService.getSerie(Series.getItems().get(0).getId()).getExercise(),serie.getExercise());
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
+        Block<Serie> series = exerciseService.createSeries(exercise1,Optional.empty(), 1L);
+        Serie serie=exerciseService.getSerie(series.getItems().get(0).getId());
+        assertEquals(exerciseService.getSerie(series.getItems().get(0).getId()),serie);
+        assertNotEquals(exerciseService.getSerie(series.getItems().get(1).getId()),serie);
+        assertEquals(exerciseService.getSerie(series.getItems().get(0).getId()).getRepeticiones(),serie.getRepeticiones());
+        assertEquals(exerciseService.getSerie(series.getItems().get(0).getId()).getPeso(),serie.getPeso());
+        assertEquals(exerciseService.getSerie(series.getItems().get(0).getId()).getExercise(),serie.getExercise());
     }
 
     @Test
@@ -296,7 +298,7 @@ public class ExerciseServiceTest {
                 "ejercicio de prueba", grupoMuscular.PECHO,3));
         Block<Serie> series= exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L);
         assertEquals(true,series.getItems().isEmpty());
-        exerciseService.createSeries(exerciseDao.getById(idExercise),Optional.empty(),1L);
+        exerciseService.createSeries(exerciseDao.findById(idExercise).get(),Optional.empty(),1L);
         series= exerciseService.getSeriesByExerciseAndRoutine(idExercise,1L );
         assertEquals(series,exerciseService.getSeriesByExerciseAndRoutine(idExercise, 1L));
 
@@ -308,10 +310,10 @@ public class ExerciseServiceTest {
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         Serie serie = exerciseService.createSerie(exercise1.getId(), 1L);
 
-        assertEquals(serie,serieDao.findByExercise(exercise1).getContent().get(0));
+        assertEquals(serie,serieDao.findByExercise(exercise1, Pageable.unpaged()).getContent().get(0));
     }
 
     @Test
@@ -320,7 +322,7 @@ public class ExerciseServiceTest {
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertThrows(InstanceNotFoundException.class,()->exerciseService.createSerie(exercise1.getId(), 100L));
 
     }
@@ -340,7 +342,7 @@ public class ExerciseServiceTest {
         long idExercise= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         Serie serie = exerciseService.createSerie(exercise1.getId(), 1L);
         assertEquals(true, exerciseService.removeSerie(serie.getId()));
     }
@@ -360,7 +362,7 @@ public class ExerciseServiceTest {
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         Exercise exercise2 = exerciseService.validateExercise(admin.getId(), idExercise);
@@ -369,14 +371,14 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void validateExerciseAlreadyValidatedExceptionTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    public void validateExerciseAlreadyValidatedExceptionTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users trainer = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
 
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         exercise1.setValidated(true);
@@ -387,14 +389,14 @@ public class ExerciseServiceTest {
 
     @Test
     public void validateExercisePermissionExceptionTest() 
-    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users trainer = userService.login("trainer1", "12345");
 
 
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         assertThrows(PermissionException.class, () -> exerciseService.validateExercise(trainer.getId(), idExercise));
@@ -402,7 +404,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void validateExercisePermissionException2Test() 
-    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users trainer = userService.login("trainer1", "12345");
         Users user1 = userService.login("user1", "12345");
 
@@ -410,7 +412,7 @@ public class ExerciseServiceTest {
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         assertThrows(PermissionException.class, () -> exerciseService.validateExercise(user1.getId(), idExercise));
@@ -426,7 +428,7 @@ public class ExerciseServiceTest {
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         exerciseService.declineExercise(admin.getId(), idExercise);
@@ -437,14 +439,14 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExerciseAlreadyValidatedExceptionTest() 
-    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users trainer = userService.login("trainer1", "12345");
         Users admin = userService.login("admin1", "12345");
 
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         exercise1.setValidated(true);
@@ -455,13 +457,13 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExercisePermissionExceptionTest() 
-    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users trainer = userService.login("trainer1", "12345");
 
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         assertThrows(PermissionException.class, () -> exerciseService.declineExercise(trainer.getId(), idExercise));
@@ -469,14 +471,14 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExercisePermissionException2Test() 
-    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException {
         Users trainer = userService.login("trainer1", "12345");
         Users user1 = userService.login("user1", "12345");
 
         long idExercise = exerciseService.addExercise(trainer.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,1));
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertFalse(exercise1.isValidated());
 
         assertThrows(PermissionException.class, () -> exerciseService.declineExercise(user1.getId(), idExercise));
@@ -484,7 +486,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void declineExerciseInstanceNotFoundExceptionTest() 
-    throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException, InstanceNotFoundException, AlreadyValidatedException {
+    throws LoginUserBlockedException, IncorrectLoginException {
         Users admin = userService.login("admin1", "12345");
 
         Long nonExistentExerciseId = 99999L;
@@ -502,9 +504,9 @@ public class ExerciseServiceTest {
 
         exerciseService.blockExercise(creator.getId(), idExercise);
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
 
-        assertEquals(exercise1.getExerciseName(), "ejercicio bloqueado");
+        assertEquals("ejercicio bloqueado", exercise1.getExerciseName());
         assertFalse(exercise1.isValidated());
     }
 
@@ -524,10 +526,10 @@ public class ExerciseServiceTest {
         Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
         Long idExercise2 = exerciseService.addExercise(creator2.getId(), ex2);
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
-        Exercise exercise2 = exerciseDao.getById(idExercise2);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
+        Exercise exercise2 = exerciseDao.findById(idExercise2).get();
 
-        assertEquals(exercise1.getExerciseName(), "ejercicio no bloqueado");
+        assertEquals("ejercicio no bloqueado", exercise1.getExerciseName());
         assertTrue(exercise1.isValidated());
 
         assertFalse(exercise2.isValidated());
@@ -543,7 +545,7 @@ public class ExerciseServiceTest {
 
         Long idExercise = exerciseService.addExercise(creator.getId(), ex1);
 
-        Exercise exercise1 = exerciseDao.getById(idExercise);
+        Exercise exercise1 = exerciseDao.findById(idExercise).get();
         assertTrue(exercise1.isValidated());
 
         // Bloquear el ejercicio
@@ -558,7 +560,7 @@ public class ExerciseServiceTest {
     }
 
     @Test
-    public void addExerciseNonPremiumUserTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, PermissionException {
+    public void addExerciseNonPremiumUserTest() throws LoginUserBlockedException, IncorrectLoginException, DuplicateInstanceException, InstanceNotFoundException {
         Users usuario = createUser("testuser1", RoleType.TRAINER, Gender.FEMALE);
         usuario.setPremium(false);
         userService.signUp(usuario, RoleType.TRAINER);

@@ -1,4 +1,5 @@
 import  { useState } from 'react';
+import PropTypes from 'prop-types';
 
 const FileInput = ({
     label,
@@ -31,5 +32,13 @@ const FileInput = ({
         </div>
     )
 }
+
+FileInput.propTypes = {
+    label: PropTypes.string.isRequired,
+    onChange: PropTypes.func,
+    name: PropTypes.string,
+    errors: PropTypes.bool,
+    errorMessage: PropTypes.string,
+};
 
 export default FileInput;

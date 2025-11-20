@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import PropTypes from 'prop-types';
 import backend from "../../../../backend";
 import Spinner from "./spinner";
-import { SVG_ICONS } from "../../../../config/constants";
+import { svgIcons } from "../../../../config/constants";
 
 const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -93,7 +94,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
           className="border border-gray-600 bg-[#1a1a1a] text-white px-3 py-2 text-sm 
                      rounded-md hover:border-[#ff0000] focus:ring-2 focus:ring-[#ff0000]"
         >
-          <SVG_ICONS.SearchIcon className="w-5 h-5 text-white" />
+          <svgIcons.SearchIcon className="w-5 h-5 text-white" />
         </button>
 
         <button
@@ -182,7 +183,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
                 Usuarios
               </div>
               {groupedSuggestions.user.map((u, idx) => (
-                <div
+                <button
                   key={`user-${u.id}-${idx}`}
                   className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
                   onClick={() => {
@@ -193,7 +194,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
                   }}
                 >
                   {u.name}
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -204,7 +205,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
                 Rutinas
               </div>
               {groupedSuggestions.routine.map((r, idx) => (
-                <div
+                <button
                   key={`routine-${r.id}-${idx}`}
                   className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
                   onClick={() => {
@@ -215,7 +216,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
                   }}
                 >
                   {r.name}
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -226,7 +227,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
                 Ejercicios
               </div>
               {groupedSuggestions.exercise.map((e, idx) => (
-                <div
+                <button
                   key={`exercise-${e.id}-${idx}`}
                   className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
                   onClick={() => {
@@ -237,7 +238,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
                   }}
                 >
                   {e.name}
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -245,6 +246,14 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       )}
     </div>
   );
+};
+
+SearchBar.propTypes = {
+  query: PropTypes.string.isRequired,
+  setQuery: PropTypes.func.isRequired,
+  filters: PropTypes.object.isRequired,
+  setFilters: PropTypes.func.isRequired,
+  onSearch: PropTypes.func.isRequired,
 };
 
 export default SearchBar;

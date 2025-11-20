@@ -7,15 +7,8 @@ import * as notificationService from "./notificationService";
 import * as searchService from "./searchService";
 import NetworkError from "./NetworkError";
 
-const backend = {
-  init,
-  userService,
-  routineService,
-  exerciseService,
-  imageService,
-  notificationService,
-  searchService,
-};
+export { default as NetworkError } from "./NetworkError";
 
-export { NetworkError };
+const backend = { init, userService, routineService, exerciseService, imageService, notificationService, searchService };
+
 export default backend;

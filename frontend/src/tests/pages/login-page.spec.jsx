@@ -3,17 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { HashRouter as Router } from 'react-router-dom';
 import LoginPage from '../../modules/app/pages/login-page';
 import { UserContext } from '../../modules/app/components/common/user-provider';
-
 import '@testing-library/jest-dom/extend-expect';
-
-
-
 
 jest.mock('../../backend/userService', () => ({
     login: jest.fn(),
 }));
-
-
 
 describe('LoginPage', () => {
     const setUser = jest.fn();

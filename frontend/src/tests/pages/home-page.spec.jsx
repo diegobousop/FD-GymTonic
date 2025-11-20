@@ -1,57 +1,177 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from "@testing-library/react";
 import '@testing-library/jest-dom';
-import { MemoryRouter } from 'react-router-dom';
-import HomePage from '../../modules/app/pages/home-page';
-import { UserContext } from '../../modules/app/components/common/user-provider';
+import React from "react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
+import ViewAllRoutinespage from "../../modules/app/pages/view-all-routines-page";
+import { UserContext } from "../../modules/app/components/common/user-provider";
 
-jest.mock('../../modules/app/pages/view-all-routines-page', () => {
-  return function MockViewAllRoutines() {
-    return <div data-testid="view-all-routines">View All Routines</div>;
-  };
-});
+jest.mock("../../backend/routineService", () => ({
+  viewAllRoutines: (params, onSuccess, onError) => {
+    console.log("✅ mock searchRoutines llamado con:", { params });
+    mockImplementation(params, onSuccess, onError);
+  },
+}));
 
-describe('HomePage', () => {
-  const mockUser = {
-    id: 1,
-    userName: 'testuser',
-    role: 'USER'
-  };
+let mockImplementation;
 
-  const mockContextValue = {
-    user: mockUser,
-    setUser: jest.fn(),
-    loading: false,
-    handleLogout: jest.fn(),
-    refreshUser: jest.fn(),
-    pendingInvites: 0,
-    setPendingInvites: jest.fn()
-  };
+describe("ViewRoutines", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-  const renderHomePage = () => {
-    return render(
-      <UserContext.Provider value={mockContextValue}>
-        <MemoryRouter>
-          <HomePage />
-        </MemoryRouter>
-      </UserContext.Provider>
+  it("muestra mensaje si no hay rutinas", async () => {
+    mockImplementation = (params, onSuccess) => onSuccess({ items: [], existMoreItems: false });
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+          <ViewAllRoutinespage />
+        </UserContext.Provider>
+      </MemoryRouter>
     );
-  };
 
-  it('renderiza sin fallar', () => {
-    renderHomePage();
-    expect(screen.getByTestId('view-all-routines')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Todavía no hay rutinas disponibles/i)).toBeInTheDocument();
+    });
   });
 
-  it('renderiza componente ViewAllRoutines', () => {
-    renderHomePage();
-    expect(screen.getByText('View All Routines')).toBeInTheDocument();
+  it("muestra una rutina", async () => {
+    mockImplementation = (params, onSuccess) =>
+      onSuccess({
+        items: [
+          {
+            id: 1,
+            name: "Rutina de fuerza",
+            duration: 40,
+            exercises: [
+              { name: "Push Up", grupoMuscular: "PECHO" },
+              { name: "Squat", grupoMuscular: "PIERNA" },
+            ],
+            creator: "trainer1",
+          },
+        ],
+        existMoreItems: false,
+      });
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+          <ViewAllRoutinespage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Rutina de fuerza/i)).toBeInTheDocument();
+      expect(screen.getByText(/Push Up/i)).toBeInTheDocument();
+      expect(screen.getByText(/Squat/i)).toBeInTheDocument();
+    });
   });
 
-  it('envuelve ViewAllRoutines en un div', () => {
-    const { container } = renderHomePage();
-    const wrapper = container.querySelector('div');
-    expect(wrapper).toBeInTheDocument();
-  });
+
+    it("muestra varias rutinas", async () => {
+    mockImplementation = (params, onSuccess) =>
+      onSuccess({
+        items: [
+          {
+            id: 1,
+            name: "RUTINA 1",
+            duration: 40,
+            exercises: [
+              { name: "EJERCICIO 1", grupoMuscular: "PECHO" },
+              { name: "EJERCICIO 2", grupoMuscular: "PIERNA" },
+            ],
+            creator: "ENTRENADOR",
+          },
+          {
+            id: 2,
+            name: "RUTINA 2",
+            duration: 50,
+            exercises: [
+              { name: "EJERCICIO 3", grupoMuscular: "ESPALDA" },
+              { name: "EJERCICIO 4", grupoMuscular: "HOMBRO" },
+            ],
+            creator: "ENTRENADOR",
+          },
+        ],
+        existMoreItems: false,
+      });
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+          <ViewAllRoutinespage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/RUTINA 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/EJERCICIO 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/EJERCICIO 2/i)).toBeInTheDocument();
+      expect(screen.getByText(/RUTINA 2/i)).toBeInTheDocument();
+      expect(screen.getByText(/EJERCICIO 3/i)).toBeInTheDocument();
+      expect(screen.getByText(/EJERCICIO 4/i)).toBeInTheDocument();
+    }); 
+    });
+
+
+    it("muestra 'No hay ejercicios' cuando la rutina no tiene ejercicios", async () => {
+        mockImplementation = (params, onSuccess) =>
+        onSuccess({
+            items: [
+            {
+                id: 3,
+                name: "RUTINA VACÍA",
+                duration: 30,
+                exercises: [],
+                creator: "ENTRENADOR",
+            },
+            ],
+            existMoreItems: false,
+        });
+
+        render(
+        <MemoryRouter>
+            <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+            <ViewAllRoutinespage />
+            </UserContext.Provider>
+        </MemoryRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/RUTINA VACÍA/i)).toBeInTheDocument();
+            expect(screen.getByText(/No hay ejercicios/i)).toBeInTheDocument();
+        });
+    });
+
+    it("navega a la página de detalles al hacer click en el nombre de una rutina", async () => {
+        mockImplementation = (params, onSuccess) =>
+        onSuccess({
+            items: [
+            {
+                id: 5,
+                name: "RUTINA",
+                duration: 60,
+                exercises: [],
+                creator: "ENTRENADOR",
+            },
+            ],
+            existMoreItems: false,
+        });
+
+        render(
+        <MemoryRouter initialEntries={["/routines"]}>
+            <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+            <ViewAllRoutinespage />
+            </UserContext.Provider>
+        </MemoryRouter>
+        );
+
+        const routineLink = await screen.findByRole("link", { name: /→/i });
+        await userEvent.click(routineLink);
+
+        expect(routineLink).toHaveAttribute("href", "/routines/5");
+    });
 });
-

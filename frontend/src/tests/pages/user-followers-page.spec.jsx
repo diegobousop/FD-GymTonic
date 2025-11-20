@@ -1,6 +1,11 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import '@testing-library/jest-dom/extend-expect';
+import { HashRouter as Router } from 'react-router-dom';
+import UserFollowersPage from "../../modules/app/pages/user-followers-page";
+import { UserContext } from "../../modules/app/components/common/user-provider";
+import { getFollowers } from "../../backend/userService";
+
 
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -12,10 +17,6 @@ jest.mock("../../backend/userService", () => ({
     getFollowers: jest.fn(),
 }));
 
-import { HashRouter as Router } from 'react-router-dom';
-import UserFollowersPage from "../../modules/app/pages/user-followers-page";
-import { UserContext } from "../../modules/app/components/common/user-provider";
-import { getFollowers } from "../../backend/userService";
 
 describe("UserFollowersPage", () => {
     const mockUser = {

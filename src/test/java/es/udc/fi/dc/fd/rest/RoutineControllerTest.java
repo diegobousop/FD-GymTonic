@@ -1,7 +1,6 @@
 package es.udc.fi.dc.fd.rest;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,13 +36,9 @@ import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
-import es.udc.fi.dc.fd.model.entities.Exercise.Difficulty;
-import es.udc.fi.dc.fd.model.entities.Exercise.Equipment;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -51,7 +46,6 @@ import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineDto;
 import es.udc.fi.dc.fd.rest.dtos.RoutineParamsDto;
@@ -59,6 +53,7 @@ import es.udc.fi.dc.fd.rest.dtos.TrainingParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ExerciseRoutineParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.SerieParamsDto;
 
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -101,10 +96,6 @@ public class RoutineControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper;
-    }
-
-    private Routine createRoutine(String name, Users creator) {
-        return new Routine(name, new ArrayList<RoutineExercise>(), creator,(long) 90, LocalDateTime.now().withNano(0), true);
     }
 
     private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType, Boolean premium)
@@ -817,7 +808,7 @@ public class RoutineControllerTest {
 
         List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
         
-        Training createdTraining = routineService.createTrainingFromRoutine(
+        routineService.createTrainingFromRoutine(
             user.getUserDto().getId(),
             "Training 1",
             "Description of training",
@@ -846,7 +837,7 @@ public class RoutineControllerTest {
         Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
             new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
 
-        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
         
 
 

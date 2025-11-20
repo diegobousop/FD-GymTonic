@@ -1,11 +1,11 @@
 import React, { useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 import MenuItem from './menu-item'
 import { UserContext } from "./user-provider"
 
-const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = SVG_ICONS
+const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = svgIcons
 
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
@@ -33,7 +33,7 @@ const SideMenu = ({ activePage, setActivePage }) => {
       <MenuItem title="Ver perfil" activePage={isActive} page={'profile'} onClick={() => go('profile', '/profile')} icon={ProfileIcon} />
       <MenuItem title="Crear Entrenamiento" activePage={isActive} page={'createTraining'} onClick={() => go('createTraining', '/trainings/create-training')} icon={TrainingIcon} />
       { user && (user.role === 'USER') &&
-      <MenuItem title="Solicitudes" activePage={isActive} page={'ViewFollowRequestsPage'} onClick={() => go('ViewFollowRequestsPage', '/follow-request')} icon={ProfileIcon} />
+      <MenuItem title="Solicitudes" activePage={isActive} page={'ViewFollowRequestsPage'} onClick={() => go('ViewFollowRequestsPage', '/profile/follow-request')} icon={ProfileIcon} />
       }
       { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
         <MenuItem title="Crear rutina" activePage={isActive} page={'createRoutine'} onClick={() => go('createRoutine', '/routines/create-routine')} icon={CreateRoutineIcon} />

@@ -12,7 +12,7 @@ jest.mock('../../../backend', () => ({
 }));
 
 jest.mock('../../../config/constants', () => ({
-  SVG_ICONS: {
+  svgIcons: {
     SearchIcon: ({ className }) => <svg data-testid="search-icon" className={className} />,
   },
 }));

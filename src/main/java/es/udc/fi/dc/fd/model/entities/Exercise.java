@@ -35,20 +35,20 @@ public class Exercise {
 
     private Icon icon;
 
-    public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBRO, BRAZO, ABDOMEN, FULLBODY};
+    public enum grupoMuscular {PECHO, ESPALDA, PIERNA, HOMBRO, BRAZO, ABDOMEN, FULLBODY}
     
     public enum Difficulty {
         FACIL,       // 0
         INTERMEDIO,  // 1
         DIFICIL      // 2
-    };
+    }
     
     public enum Equipment {
         POLEA_CABLE,  // 0
         MAQUINA,      // 1
         PESO_LIBRE,   // 2
         OTROS         // 3
-    };
+    }
 
     public Exercise() {}
 
