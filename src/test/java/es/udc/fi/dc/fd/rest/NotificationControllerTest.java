@@ -38,6 +38,8 @@ import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 
+
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -105,7 +107,7 @@ public class NotificationControllerTest {
         userService.followUser(follower.getUserDto().getId(), trainer.getUserDto().getId());
 
         routineService.createRoutine(trainer.getUserDto().getId(),"Morning Routine", 
-        new ArrayList<Long>(),(long) 120, true );
+        new ArrayList<>(),(long) 120, true );
 
         this.mockMvc.perform(get("/api/notifications/getNotifications")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +127,7 @@ public class NotificationControllerTest {
         userService.followUser(follower.getUserDto().getId(), trainer.getUserDto().getId());
 
         routineService.createRoutine(trainer.getUserDto().getId(),"Morning Routine", 
-        new ArrayList<Long>(),(long) 120, true );
+        new ArrayList<>(),(long) 120, true );
 
         List<Notification> notifications = notificationService.getAllNotifications(follower.getUserDto().getId(), PageRequest.of(0,10)).getItems();
 
@@ -150,7 +152,7 @@ public class NotificationControllerTest {
         userService.followUser(follower.getUserDto().getId(), trainer.getUserDto().getId());
 
         routineService.createRoutine(trainer.getUserDto().getId(),"Morning Routine", 
-        new ArrayList<Long>(),(long) 120, true );
+        new ArrayList<>(),(long) 120, true );
 
         List<Notification> notifications = notificationService.getAllNotifications(follower.getUserDto().getId(), PageRequest.of(0,10)).getItems();
 

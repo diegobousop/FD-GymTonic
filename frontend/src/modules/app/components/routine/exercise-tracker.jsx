@@ -1,9 +1,7 @@
 import React from 'react'
-
 import WeightDisplay from '../training/weight-display';
-
-import { SVG_ICONS } from '../../../../config/constants'
-
+import { svgIcons } from '../../../../config/constants'
+import PropTypes from 'prop-types'
 
 
 const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
@@ -72,13 +70,13 @@ const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
                     onClick={() => handleRepeticionesChange(sIndex, 1)}
                     onHold
                   >
-                    <SVG_ICONS.AddIcon className="w-20"/>
+                    <svgIcons.AddIcon className="w-20"/>
                   </button>
                   <button 
                     className="w-[10%] h-[48px] text-white hover:bg-[#3a3a3a]"
                     onClick={() => handleRepeticionesChange(sIndex, -1)}
                   >
-                    <SVG_ICONS.MinusIcon className="w-20"/>
+                    <svgIcons.MinusIcon className="w-20"/>
                   </button>
 
                   <div className="w-[10%]"></div>
@@ -98,13 +96,13 @@ const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
                     className="w-[10%] h-[48px] text-white hover:bg-[#3a3a3a]"
                     onClick={() => handlePesoChange(sIndex, 1)}
                   >
-                    <SVG_ICONS.AddIcon className="w-20"/>
+                    <svgIcons.AddIcon className="w-20"/>
                   </button>
                   <button 
                     className="w-[10%] h-[48px] text-white hover:bg-[#3a3a3a]"
                     onClick={() => handlePesoChange(sIndex, -1)}
                   >
-                    <SVG_ICONS.MinusIcon className="w-20"/>
+                    <svgIcons.MinusIcon className="w-20"/>
                   </button>
 
                 </div>
@@ -128,5 +126,15 @@ const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
     </div>
   )
 }
+
+ExerciseTracker.propTypes = {
+  key: PropTypes.number,
+  exercise: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    numeroSeries: PropTypes.number,
+  }),
+  onUpdateSerie: PropTypes.func
+};
 
 export default ExerciseTracker

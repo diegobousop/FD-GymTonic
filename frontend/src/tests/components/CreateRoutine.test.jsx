@@ -38,10 +38,10 @@ describe('CreateRoutine', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/routines/create-routine';
+        globalThis.location.hash = '#/routines/create-routine';
     });
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         exerciseService.getValidatedExercises.mockImplementation(({page, size}, onSuccess, onError) => {
             onSuccess({
                 items: [
@@ -180,7 +180,7 @@ describe('CreateRoutine', () => {
         await waitFor(() =>
             expect(screen.getByText("Rutina creada Exitosamente")).toBeInTheDocument()
         );
-        expect(window.location.hash).toBe('#/routines/create-routine');
+        expect(globalThis.location.hash).toBe('#/routines/create-routine');
     });
 
     test("Rutina Creada Sin Nombre", async () => {
@@ -205,7 +205,7 @@ describe('CreateRoutine', () => {
         await waitFor(() =>
             expect(screen.getByText("El nombre es obligatorio.")).toBeInTheDocument()
         );
-        expect(window.location.hash).toBe('#/routines/create-routine');
+        expect(globalThis.location.hash).toBe('#/routines/create-routine');
     });
 
     test("Rutina Creada Sin Duración", async () => {
@@ -229,7 +229,7 @@ describe('CreateRoutine', () => {
         await waitFor(() =>
             expect(screen.getByText("La duración debe ser un número positivo.")).toBeInTheDocument()
         );
-        expect(window.location.hash).toBe('#/routines/create-routine');
+        expect(globalThis.location.hash).toBe('#/routines/create-routine');
     });
 
     test("checkbox desmarcado por defecto (rutina privada)", () => {

@@ -38,6 +38,30 @@ const NotificationPanel = forwardRef(({ onNotificationClick, onClose }, ref) => 
     loadNotifications(page);
   };
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="p-4">
+          <Spinner />
+        </div>
+      );
+    }
+    if (notifications.length === 0) {
+      return <div className="p-4 text-gray-400 text-center">No hay notificaciones</div>;
+    }
+    return (
+      <>
+        {notifications.map((notification) => (
+          <NotificationItem
+            key={notification.id}
+            notification={notification}
+            onClick={handleNotificationClick}
+          />
+        ))}
+      </>
+    );
+  };
+
   return (
     <div
       ref={ref}
@@ -48,23 +72,7 @@ const NotificationPanel = forwardRef(({ onNotificationClick, onClose }, ref) => 
       </div>
 
       <div className="max-h-[400px] overflow-y-auto">
-        {loading ? (
-          <div className="p-4">
-            <Spinner />
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="p-4 text-gray-400 text-center">No hay notificaciones</div>
-        ) : (
-          <>
-            {notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onClick={handleNotificationClick}
-              />
-            ))}
-          </>
-        )}
+        {renderContent()}
       </div>
 
       {!loading && notifications.length > 0 && (

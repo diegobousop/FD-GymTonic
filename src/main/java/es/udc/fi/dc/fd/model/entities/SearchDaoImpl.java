@@ -21,7 +21,7 @@ public class SearchDaoImpl implements SearchDao {
     public List<Object[]> findUserSuggestions(String text, int limit) {
         TypedQuery<Object[]> query = entityManager.createQuery(
                 "SELECT u.id, u.userName FROM Users u " +
-                        "WHERE LOWER(u.userName) LIKE LOWER(CONCAT('%', :text, '%'))",
+                "WHERE LOWER(u.userName) LIKE LOWER(CONCAT('%', :text, '%'))",
                 Object[].class
         );
         query.setParameter("text", text);
@@ -33,7 +33,7 @@ public class SearchDaoImpl implements SearchDao {
     public List<Object[]> findRoutineSuggestions(String text, int limit) {
         TypedQuery<Object[]> query = entityManager.createQuery(
                 "SELECT r.id, r.name FROM Routine r " +
-                        "WHERE LOWER(r.name) LIKE LOWER(CONCAT('%', :text, '%'))",
+                "WHERE LOWER(r.name) LIKE LOWER(CONCAT('%', :text, '%'))",
                 Object[].class
         );
         query.setParameter("text", text);
@@ -45,13 +45,14 @@ public class SearchDaoImpl implements SearchDao {
     public List<Object[]> findExerciseSuggestions(String text, int limit) {
         TypedQuery<Object[]> query = entityManager.createQuery(
                 "SELECT e.id, e.exerciseName FROM Exercise e " +
-                        "WHERE LOWER(e.exerciseName) LIKE LOWER(CONCAT('%', :text, '%'))",
+                "WHERE LOWER(e.exerciseName) LIKE LOWER(CONCAT('%', :text, '%'))",
                 Object[].class
         );
         query.setParameter("text", text);
         query.setMaxResults(limit);
         return query.getResultList();
     }
+
 
     // -------------------------------------------------------------
     // Búsqueda completa

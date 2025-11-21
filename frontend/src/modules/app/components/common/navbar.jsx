@@ -18,7 +18,8 @@ const PAGE_TITLES = {
   search: 'Resultados de Búsqueda',
   blockExercises: 'Bloquear Ejercicios',
   createTraining: 'Crear Entrenamiento',
-  myFollowers: 'Control de Seguidores'
+  myFollowers: 'Control de Seguidores',
+  ViewFollowRequestsPage: 'Solicitudes'
 };
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');

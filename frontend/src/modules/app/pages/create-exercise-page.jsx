@@ -1,10 +1,10 @@
-import {useState} from "react";
+import {useState, useContext} from "react";
 import backend from "../../../backend";
+
 import SendButton from "../../app/components/common/send-button";
 import TextInput from "../../app/components/common/text-input";
 import ParagraphInput from "../../app/components/common/paragraph-input";
 import MultiSelectList from "../../app/components/common/multi-select-list";
-import { useContext } from "react";
 import { UserContext } from "../../app/components/common/user-provider";
 
 
@@ -21,7 +21,6 @@ const CreateExercise = () => {
     // Estados para la gestión de errores y éxito
     const [success, setSuccess] = useState(false);
     const [backendErrors, setBackendErrors] = useState(null);
-    const [activePage, setActivePage] = useState('create-exercise')
 
     //Errores
     const [exerciseNameErrors, setExerciseNameErrors] = useState(null);

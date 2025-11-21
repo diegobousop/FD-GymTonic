@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../common/user-provider';
 import backend from '../../../../backend';
 import NotificationPanel from './NotificationPanel';
@@ -9,6 +10,7 @@ const NotificationBell = () => {
   const [showPanel, setShowPanel] = useState(false);
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -56,6 +58,8 @@ const NotificationBell = () => {
         notification.id,
         () => {
           setUnreadCount(prev => Math.max(0, prev - 1));
+          //solo navegamos a la rutina si la notificación no estaba leida
+          navigate(`/routines/${notification.routineId}`);
         },
         (error) => console.error('Error al marcar notificación:', error)
       );

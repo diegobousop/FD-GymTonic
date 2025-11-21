@@ -6,11 +6,11 @@ import ExerciseCard from '../components/exercise/exercise-card'
 import Spinner from '../components/common/spinner';
 import Pager from '../components/common/pager';
 
-import { SVG_ICONS } from '../../../config/constants'
+import { svgIcons } from '../../../config/constants'
 
 const BlockExercises = () => {
     const { showToast } = useToast()
-    const [isLoading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [existMoreItems, setExistMoreItems] = useState(false);
     const [page, setPage] = useState(0);
@@ -19,18 +19,18 @@ const BlockExercises = () => {
     const [exercises, setExercises] = useState([]);
     
     const viewExercises = (pageNumber) => {
-        setLoading(true);
+        setIsLoading(true);
         backend.exerciseService.getValidatedExercises(
           { page: pageNumber, size },
           (data) => {
             setExercises(data.items);
             setExistMoreItems(data.existMoreItems);
             setPage(pageNumber);
-            setLoading(false);
+            setIsLoading(false);
           },
           (err) => {
             setError(err || "Error inesperado al cargar ejercicios");
-            setLoading(false);
+            setIsLoading(false);
           }
         );
       };
@@ -61,7 +61,7 @@ const BlockExercises = () => {
     if (exercises.length === 0 && !error) {
         return (
             <div className="flex flex-col h-[500px] justify-center items-center">
-                <SVG_ICONS.AcceptIcon className="text-[#ff0000] w-16 h-16"/>
+                <svgIcons.AcceptIcon className="text-[#ff0000] w-16 h-16"/>
                 <p className="text-center text-white text-[24px] font-semibold mb-2">Estás al día</p>
                 <p>Cuando un Admin Bloquee un ejercicio, aparecerá aquí</p>
             </div>

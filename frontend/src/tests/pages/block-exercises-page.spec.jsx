@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent} from '@testing-library/react';
 import { HashRouter as Router } from 'react-router-dom';
 import BlockExercise from '../../modules/app/pages/block-exercises-page';
 
@@ -7,9 +7,7 @@ import { UserContext } from '../../modules/app/components/common/user-provider';
 import { ToastProvider } from '../../modules/app/components/common/toast-provider';
 
 import '@testing-library/jest-dom/extend-expect';
-
-import routineService from '../../backend/routineService';
-import exerciseService, { blockExercise } from '../../backend/exerciseService';
+import exerciseService from '../../backend/exerciseService';
 
 
 
@@ -40,10 +38,10 @@ describe('ValidateExercises', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/routines/create-routine';
+        globalThis.location.hash = '#/routines/create-routine';
     });
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         exerciseService.getValidatedExercises.mockImplementation((page, onSuccess, onError) => {
             onSuccess({
                 items: [
@@ -78,7 +76,7 @@ describe('ValidateExercises', () => {
         
     });
 
-        test('block an exercise', () => {
+        test('bloquea un ejercicio', () => {
         exerciseService.blockExercise.mockImplementation((id, onSuccess, onError) => {
             onSuccess();
         });

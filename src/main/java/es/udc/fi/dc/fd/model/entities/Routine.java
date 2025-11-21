@@ -29,7 +29,7 @@ public class Routine {
         FACIL,       // 0
         INTERMEDIO,  // 1
         DIFICIL      // 2
-    };
+    }
 
     public Routine() {
     }
@@ -38,15 +38,6 @@ public class Routine {
         this.id = id;
     }
     public Routine(String name, List<RoutineExercise> routineExercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
-        this.name = name;
-        this.routineExercises = routineExercises;
-        this.creator = creator;
-        this.duration = duration;
-        this.modificationDate = modificationDate;
-        this.isPublic = isPublic;
-    }
-
-    public Routine(Long id, String name, List<RoutineExercise> routineExercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
         this.name = name;
         this.routineExercises = routineExercises;
         this.creator = creator;

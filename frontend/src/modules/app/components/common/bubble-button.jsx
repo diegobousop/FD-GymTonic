@@ -1,8 +1,17 @@
 import React from 'react'
-import { SVG_ICONS } from '../../../../config/constants'
+import PropTypes from 'prop-types'
+import { svgIcons } from '../../../../config/constants'
 
 const BubbleButton = ({ iconKey, icon: IconProp, ariaLabel, testId, size = 60, onClick, className = '' }) => {
-  const Icon = IconProp || (iconKey ? SVG_ICONS?.[iconKey] : null)
+  const Icon = IconProp || (iconKey ? svgIcons?.[iconKey] : null)
+
+  const renderedIcon = (() => {
+    if (!Icon) return null
+    if (React.isValidElement(Icon)) return Icon
+    if (typeof Icon === 'function') return <Icon className="w-16 h-16" />
+    if (typeof Icon === 'string') return <span dangerouslySetInnerHTML={{ __html: Icon }} />
+    return null
+  })()
 
   return (
     <button
@@ -14,17 +23,19 @@ const BubbleButton = ({ iconKey, icon: IconProp, ariaLabel, testId, size = 60, o
       title={ariaLabel || iconKey || 'bubble-button'}
       data-testid={testId}
     >
-      {Icon
-        ? (React.isValidElement(Icon)
-            ? Icon
-            : typeof Icon === 'function'
-              ? <Icon className="w-16 h-16" />
-              : typeof Icon === 'string'
-                ? <span dangerouslySetInnerHTML={{ __html: Icon }} />
-                : null)
-        : null}
+      {renderedIcon}
     </button>
   )
+}
+
+BubbleButton.propTypes = {
+  iconKey: PropTypes.string,
+  icon: PropTypes.func,
+  ariaLabel: PropTypes.string,
+  testId: PropTypes.string,
+  size: PropTypes.number,
+  onClick: PropTypes.func,
+  className: PropTypes.string
 }
 
 export default BubbleButton

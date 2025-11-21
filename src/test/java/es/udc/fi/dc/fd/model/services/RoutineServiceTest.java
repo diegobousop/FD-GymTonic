@@ -1,7 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -10,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
@@ -168,7 +165,7 @@ public class RoutineServiceTest {
 
         List<Long> exerciseIds = routineExercises.stream()
                 .map(re -> re.getExercise().getId())
-                .collect(Collectors.toList());
+                .toList();
 
         assertTrue(exerciseIds.contains(exercise1.getId()), "La rutina debe contener el ejercicio1");
         assertTrue(exerciseIds.contains(exercise2.getId()), "La rutina debe contener el ejercicio2");
@@ -346,7 +343,7 @@ public class RoutineServiceTest {
         
         long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,4));
-        Exercise exercise1 = exerciseDao.getById(exerciseId);
+        Exercise exercise1 = exerciseDao.getReferenceById(exerciseId);
         Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
 
         List<Long> exerciseIds = new ArrayList<>();
@@ -593,7 +590,7 @@ public class RoutineServiceTest {
         List<Routine> beforePartial = routineService.findByFilters(creator2.getId(), creator2.getId(), "P", page).getContent();
 
         // Crear rutinas
-        routine1 = routineService.createRoutine(creator1.getId(), routine1.getName(),
+        routineService.createRoutine(creator1.getId(), routine1.getName(),
                 new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);
         routine2 = routineService.createRoutine(creator2.getId(), routine2.getName(),
                 new ArrayList<Long>(){{ add(exercise1.getId()); }}, 90L, true);

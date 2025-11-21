@@ -26,6 +26,10 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
+    private static final String ADMIN_STRING = "ADMIN";
+    private static final String TRAINER_STRING = "TRAINER";
+    private static final String USER_STRING = "USER";
+
     /**
      * Configure.
      *
@@ -48,26 +52,26 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/users/signUp")).permitAll()
                 .requestMatchers(antMatcher("/api/users/login")).permitAll()
                 .requestMatchers(antMatcher("/api/users/loginFromServiceToken")).permitAll()
-                .requestMatchers(antMatcher("/api/admin/addExercise")).hasAnyRole("ADMIN","TRAINER")
-                .requestMatchers(antMatcher("/api/routines/createRoutine")).hasAnyRole("TRAINER","ADMIN")
-                .requestMatchers(antMatcher("/api/exercise/getExercises")).hasAnyRole("TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/exercise/addExercises")).hasAnyRole("TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/exercise/validateExercise/**")).hasAnyRole("TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/exercise/blockExercise/{exerciseId}")).hasRole("ADMIN")
-                .requestMatchers(antMatcher("/api/images/getAllAvatars")).hasAnyRole("USER","TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/admin/addExercise")).hasAnyRole(ADMIN_STRING,TRAINER_STRING)
+                .requestMatchers(antMatcher("/api/routines/createRoutine")).hasAnyRole(TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/exercise/getExercises")).hasAnyRole(TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/exercise/addExercises")).hasAnyRole(TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/exercise/validateExercise/**")).hasAnyRole(TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/exercise/blockExercise/{exerciseId}")).hasRole(ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/images/getAllAvatars")).hasAnyRole(USER_STRING,TRAINER_STRING, ADMIN_STRING)
                 .requestMatchers(antMatcher("/api/images/**")).permitAll()
                 .requestMatchers(antMatcher("/h2-console/*")).permitAll()
-                .requestMatchers(antMatcher("/api/users/followers")).hasAnyRole("USER","TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/users/following")).hasAnyRole("USER","TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/users/follow/{id}")).hasAnyRole("USER","TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/users/unfollow/{id}")).hasAnyRole("USER","TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/notifications/**")).hasAnyRole("USER","TRAINER", "ADMIN")
+                .requestMatchers(antMatcher("/api/users/followers")).hasAnyRole(USER_STRING,TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/users/following")).hasAnyRole(USER_STRING,TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/users/follow/{id}")).hasAnyRole(USER_STRING,TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/users/unfollow/{id}")).hasAnyRole(USER_STRING,TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/notifications/**")).hasAnyRole(USER_STRING,TRAINER_STRING, ADMIN_STRING)
                 .requestMatchers(antMatcher("/ws/**")).permitAll()
                 .requestMatchers("/api/users/getGenders").permitAll()
-                .requestMatchers("/api/users/allUsers").hasRole("ADMIN")
-                .requestMatchers(antMatcher("/api/users/ban/*")).hasRole("ADMIN")
-                .requestMatchers(antMatcher("/api/users/block/*")).hasAnyRole("USER", "TRAINER", "ADMIN")
-                .requestMatchers(antMatcher("/api/users/getBlocked")).hasAnyRole("USER","TRAINER", "ADMIN")
+                .requestMatchers("/api/users/allUsers").hasRole(ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/users/ban/*")).hasRole(ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/users/block/*")).hasAnyRole(USER_STRING, TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/users/getBlocked")).hasAnyRole(USER_STRING, TRAINER_STRING, ADMIN_STRING)
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

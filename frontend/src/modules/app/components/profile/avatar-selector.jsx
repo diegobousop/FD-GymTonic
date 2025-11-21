@@ -7,7 +7,7 @@ const AvatarSelector = ({ selectedAvatar, setSelectedAvatar }) => {
   const [avatars, setAvatars] = useState([]);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(4);
+  const [size] = useState(4);
   const [existMoreItems, setExistMoreItems] = useState(false);
   const [loading, setLoading] = useState(true);
 

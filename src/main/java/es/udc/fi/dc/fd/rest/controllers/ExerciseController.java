@@ -3,22 +3,37 @@ package es.udc.fi.dc.fd.rest.controllers;
 import java.util.Locale;
 import java.util.Optional;
 
-import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.services.Block;
 import es.udc.fi.dc.fd.model.services.ExerciseService;
-import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
+import es.udc.fi.dc.fd.rest.dtos.BlockDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseConversor;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseRoutineDto;
+import es.udc.fi.dc.fd.rest.dtos.ExerciseSummaryDto;
+import es.udc.fi.dc.fd.rest.dtos.SerieConversor;
+import es.udc.fi.dc.fd.rest.dtos.SerieDto;
 
 
 @RestController
@@ -28,11 +43,10 @@ public class ExerciseController {
     @Autowired
     private MessageSource messageSource;
 
-    private final static String ALREADY_VALIDATED_EXCEPTION_CODE = "project.exceptions.AlreadyValidatedException";
+    private static final String ALREADY_VALIDATED_EXCEPTION_CODE = "project.exceptions.AlreadyValidatedException";
 
     @ExceptionHandler(AlreadyValidatedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public ErrorsDto handleAlreadyValidatedException(AlreadyValidatedException exception, Locale locale){
         String errorMessage = messageSource.getMessage(ALREADY_VALIDATED_EXCEPTION_CODE,
         new Object[] {exception.getExerciseId()}, ALREADY_VALIDATED_EXCEPTION_CODE, locale);
@@ -67,16 +81,16 @@ public class ExerciseController {
     }
 
     @PostMapping("/Series")
-    public BlockDto<SerieDto> CreateSeries(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
-            throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public BlockDto<SerieDto> createSeries(@RequestBody ExerciseDto exercise, @RequestParam(required = false) Integer numSeries, @RequestParam long routineId)
+            throws InstanceNotFoundException {
 
         return new BlockDto<>(SerieConversor.toSerieDtos(exerciseService.createSeries( ExerciseConversor.toExerciseId(exercise), Optional.ofNullable(numSeries),routineId ).getItems()),false);
 
     }
 
     @PostMapping("/Series/create")
-    public SerieDto CreateSerie(@RequestParam long exerciseId, @RequestParam long routineId)
-        throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+    public SerieDto createSerie(@RequestParam long exerciseId, @RequestParam long routineId)
+        throws InstanceNotFoundException {
         return SerieConversor.toSerieDto((exerciseService.createSerie(exerciseId,routineId)));
     }
 
@@ -89,7 +103,7 @@ public class ExerciseController {
     @PutMapping("/Series")
     public SerieDto modifySerie(@RequestParam long serieId,
                                 @RequestParam int repeticiones,
-                                @RequestParam int peso) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
+                                @RequestParam int peso) throws DuplicateInstanceException {
         return SerieConversor.toSerieDto(exerciseService.editSerie(exerciseService.getSerie(serieId),repeticiones,peso));
     }
     @GetMapping("/Series")

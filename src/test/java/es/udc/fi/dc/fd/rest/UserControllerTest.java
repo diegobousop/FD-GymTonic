@@ -1,17 +1,11 @@
 package es.udc.fi.dc.fd.rest;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
+import java.time.LocalDate;
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-
-import es.udc.fi.dc.fd.rest.dtos.UserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,31 +16,37 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
+import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.AvatarDto;
+import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
+import es.udc.fi.dc.fd.rest.dtos.UserDto;
+import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 
 /**
  * The Class UserControllerTest.
  */
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,7 +55,7 @@ import es.udc.fi.dc.fd.rest.dtos.AvatarDto;
 public class UserControllerTest {
 	
 	/** The Constant PASSWORD. */
-	private final static String PASSWORD = "password";
+	private static final String PASSWORD = "password";
 
 	/** The mock mvc. */
 	@Autowired
@@ -68,6 +68,9 @@ public class UserControllerTest {
 	/** The user dao. */
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private FollowRequestDao followRequestDao;
 
 	@Autowired
 	private AvatarDao avatarDao;
@@ -121,12 +124,6 @@ public class UserControllerTest {
 		user.setBirthDate(LocalDate.of(1990, 1, 1));
 
 		userDao.save(user);
-		// return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(),
-		// 		user.getEmail(), user.getRole().toString(),
-		// 		new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(),
-		// 		user.getBankCard(), user.getPremium(), user.getBlockedUsers() ,user.getHeight(), user.getWeight(),
-		// 		user.getGender().toString(),
-		// 		user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
 		return toUserDto(user);
 	}
@@ -239,7 +236,7 @@ public class UserControllerTest {
 	public void testUpdateProfile_ValidationError() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		Optional<Avatar> avatar = avatarDao.findByName("default");
+		avatarDao.findByName("default");
 
 		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
 		userDto.setFirstName(""); // Invalid first name
@@ -278,7 +275,7 @@ public class UserControllerTest {
 						.content(mapper.writeValueAsBytes(userDto)))
 				.andExpect(status().isOk());
 	
-		Users updatedUser = userDao.getById(userDto.getId());
+		Users updatedUser = userDao.findById(userDto.getId()).get();
 		assertEquals(true, updatedUser.getPremium());
 
 
@@ -288,7 +285,7 @@ public class UserControllerTest {
 	public void testGetUserbyId() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		new ObjectMapper();
+		
 		mockMvc.perform(get("/api/users/{id}", userId)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
@@ -299,7 +296,7 @@ public class UserControllerTest {
 	public void failedTestGetUserbyId() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		new ObjectMapper();
+
 		mockMvc.perform(get("/api/users/{id}", userId+1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
@@ -310,7 +307,6 @@ public class UserControllerTest {
 	public void testBanUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
-		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
@@ -322,7 +318,6 @@ public class UserControllerTest {
 	public void testBanUserAlreadyBanned() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
-		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
@@ -339,7 +334,6 @@ public class UserControllerTest {
 	public void testBanNullUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
 		Long userId = user.getUserDto().getId();
-		new ObjectMapper();
 		
 		mockMvc.perform(post("/api/users/ban/{id}", 500)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
@@ -351,8 +345,7 @@ public class UserControllerTest {
 	public void testBanByUser() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		new ObjectMapper();
-		
+
 		mockMvc.perform(post("/api/users/ban/{id}", 1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId)
@@ -385,15 +378,15 @@ public class UserControllerTest {
 		).andExpect(status().isOk());
 
 		// Comprobar que la relación de seguimiento se establece
-		Users follower = userDao.getById(userId);
-		Users followed = userDao.getById(trainer2Id);
+		Users follower = userDao.findById(userId).get();
+		Users followed = userDao.findById(trainer2Id).get();
 		assertEquals(follower.getFollowing().get(0), followed);
 	}
 
 	@Test
 	public void testGetFollowersWithNoFollowers() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
-		Long userId = user.getUserDto().getId();
+		user.getUserDto().getId();
 
 		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
 		Long trainer2Id = trainer2.getUserDto().getId();
@@ -403,7 +396,7 @@ public class UserControllerTest {
 		).andExpect(status().isOk());
 
 		// Comprobar que los followers se devuelven correctamente
-		Users trainer = userDao.getById(trainer2Id);
+		Users trainer = userDao.findById(trainer2Id).get();
 		assertNull(trainer.getFollowers());
 	}	
 
@@ -425,8 +418,8 @@ public class UserControllerTest {
 		).andExpect(status().isOk());
 
 		// Comprobar que los followers se devuelven correctamente
-		Users trainer = userDao.getById(trainer2Id);
-		assertEquals(trainer.getFollowers().get(0), userDao.getById(userId));
+		Users trainer = userDao.findById(trainer2Id).get();
+		assertEquals(trainer.getFollowers().get(0), userDao.findById(userId).get());
 	}	
 
 
@@ -436,14 +429,14 @@ public class UserControllerTest {
 		Long userId = user.getUserDto().getId();
 
 		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
-		Long trainer2Id = trainer2.getUserDto().getId();
+		trainer2.getUserDto().getId();
 
 		mockMvc.perform(get("/api/users/following")
 				.header("Authorization", "Bearer " + user.getServiceToken())
 		).andExpect(status().isOk());
 
 		//Comprobar que el following se devuelve correctamente
-		assertNull(userDao.getById(userId).getFollowing());
+		assertNull(userDao.findById(userId).get().getFollowing());
 	}
 
 	@Test
@@ -464,6 +457,118 @@ public class UserControllerTest {
 		).andExpect(status().isOk());
 
 		//Comprobar que el following se devuelve correctamente
-		assertEquals(userDao.getById(userId).getFollowing().get(0), userDao.getById(trainer2Id));
+		assertEquals(userDao.findById(userId).get().getFollowing().get(0), userDao.findById(trainer2Id).get());
 	}
+
+	@Test
+	public void testSendFollowRequest_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto user2 = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long userId2 = user2.getUserDto().getId();
+
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userId2)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.senderId").value(userId))
+				.andExpect(jsonPath("$.receiverId").value(userId2))
+				.andExpect(jsonPath("$.accepted").value(false))
+				.andExpect(jsonPath("$.senderUserName").value("testuser"))
+				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
+	}
+
+	@Test
+	public void testAcceptFollow_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto user2 = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long userId2 = user2.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userId2)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(3L))
+				.andExpect(jsonPath("$.senderId").value(userId))
+				.andExpect(jsonPath("$.receiverId").value(userId2))
+				.andExpect(jsonPath("$.accepted").value(false))
+				.andExpect(jsonPath("$.senderUserName").value("testuser"))
+				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
+
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",3L)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void testRejectFollow_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto user2 = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long userId2 = user2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userId2)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(2L))
+				.andExpect(jsonPath("$.senderId").value(userId))
+				.andExpect(jsonPath("$.receiverId").value(userId2))
+				.andExpect(jsonPath("$.accepted").value(false))
+				.andExpect(jsonPath("$.senderUserName").value("testuser"))
+				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
+
+		mockMvc.perform(delete("/api/users/rejectFollowRequest/{id}",2L)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+        assertFalse(followRequestDao.existsBySenderIdAndReceiverId(userId, userId2));
+
+	}
+	
+	@Test
+	public void testGetFollowRequests_Ok() throws Exception {
+
+
+		AuthenticatedUserDto sender = createAuthenticatedUser("testuser", RoleType.USER);
+		Long senderId = sender.getUserDto().getId();
+
+		AuthenticatedUserDto receiver = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long receiverId = receiver.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", receiverId)
+						.header("Authorization", "Bearer " + sender.getServiceToken())
+						.requestAttr("senderId", senderId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.senderId").value(senderId))
+				.andExpect(jsonPath("$.receiverId").value(receiverId))
+				.andExpect(jsonPath("$.accepted").value(false));
+
+
+		mockMvc.perform(get("/api/users/FollowRequest")
+						.header("Authorization", "Bearer " + receiver.getServiceToken())
+						.requestAttr("userId", receiverId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$[0].senderId").value(senderId))
+				.andExpect(jsonPath("$[0].receiverId").value(receiverId))
+				.andExpect(jsonPath("$[0].accepted").value(false))
+				.andExpect(jsonPath("$[0].senderUserName").value("testuser"))
+				.andExpect(jsonPath("$[0].receiverUserName").value("testuser2"));
+	}
+
 }

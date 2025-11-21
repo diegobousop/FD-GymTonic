@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Spinner from '../common/spinner';
 import Pager from '../common/pager';
 
-import { SVG_ICONS } from '../../../../config/constants'; 
+import { svgIcons } from '../../../../config/constants'; 
 
 const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selectedDay}) => {
 
@@ -90,7 +90,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
       {
       trainingData.length === 0 && !dayFilterActivated? (
         <div className="flex flex-col items-center justify-center">
-          <SVG_ICONS.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
+          <svgIcons.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
           <p className="text-white text-center items-center ml-10">Ningún entrenamiento registrado</p>
           
        </div>
@@ -103,13 +103,13 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
               <button onClick={() => {
                 setFilterActivated(false);
               }}>
-                <SVG_ICONS.CancelIcon className="w-8 h-8 text-white mr-3"/>
+                <svgIcons.CancelIcon className="w-8 h-8 text-white mr-3"/>
               </button>
               Entrenos el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}
               </p>
             )}
           </div>
-          <SVG_ICONS.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
+          <svgIcons.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
           <p className="text-white text-center items-center ml-10">Ningún entrenamiento registrado para el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}.</p>
        </div>
        
@@ -122,7 +122,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
               <button onClick={() => {
                 setFilterActivated(false);
               }}>
-                <SVG_ICONS.CancelIcon className="w-8 h-8 text-white mr-3"/>
+                <svgIcons.CancelIcon className="w-8 h-8 text-white mr-3"/>
               </button>
               Entrenos el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}
               </p>
@@ -163,7 +163,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
               <div className="bg-[#262626] rounded-md p-5 mt-10 w-fit self-start inline-block">
                 <div className="flex flex-col">
                   <div className="flex flex-row">
-                    <SVG_ICONS.SeparationExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
+                    <svgIcons.SeparationExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
                     {training.exercises.map((exercise, index) => (
                       <div key={index} className="flex flex-row items-center">
                         <div className="flex flex-col justify-center items-center p-2 text-center ">
@@ -172,9 +172,9 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
                         </div>
 
                         {index !== training.exercises.length - 1 ? (
-                          <SVG_ICONS.NextExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
+                          <svgIcons.NextExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
                         ) : (
-                          <SVG_ICONS.SeparationExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
+                          <svgIcons.SeparationExerciseIcon className="w-6 h-6 text-[#CA0D0A] self-center mb-7" />
                         )}
                       </div>
                     ))}
@@ -185,7 +185,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
               </div>
               {!training.public ? (
                 <div className="flex flex-row mt-2 text-[12px] items-center">
-                  <SVG_ICONS.LockIcon className="text-white h-[24px] w-[24px]"/>
+                  <svgIcons.LockIcon className="text-white h-[24px] w-[24px]"/>
                   <p className="ml-2">Solo tú puedes ver este entrenamiento.</p>
                 </div>
               ) : null}

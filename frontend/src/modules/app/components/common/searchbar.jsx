@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 import backend from "../../../../backend";
 import Spinner from "./spinner";
-import { SVG_ICONS as SvgIcons } from "../../../../config/constants";
+import { svgIcons } from "../../../../config/constants";
 
 const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -97,7 +97,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
           className="border border-gray-600 bg-[#1a1a1a] text-white px-3 py-2 text-sm 
                      rounded-md hover:border-[#ff0000] focus:ring-2 focus:ring-[#ff0000]"
         >
-          <SvgIcons.SearchIcon className="w-5 h-5 text-white" />
+          <svgIcons.SearchIcon className="w-5 h-5 text-white" />
         </button>
 
         <button
@@ -224,11 +224,10 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
               <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
                 Usuarios
               </div>
-              {groupedSuggestions.user.map((u) => (
+              {groupedSuggestions.user.map((u, idx) => (
                 <button
-                  key={`user-${u.id}`}
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+                  key={`user-${u.id}-${idx}`}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
                   onClick={() => {
                     setQuery(u.name);
                     onSearch();
@@ -247,11 +246,10 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
               <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
                 Rutinas
               </div>
-              {groupedSuggestions.routine.map((r) => (
+              {groupedSuggestions.routine.map((r, idx) => (
                 <button
-                  key={`routine-${r.id}`}
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+                  key={`routine-${r.id}-${idx}`}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
                   onClick={() => {
                     setQuery(r.name);
                     onSearch();
@@ -270,11 +268,10 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
               <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
                 Ejercicios
               </div>
-              {groupedSuggestions.exercise.map((e) => (
+              {groupedSuggestions.exercise.map((e, idx) => (
                 <button
-                  key={`exercise-${e.id}`}
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+                  key={`exercise-${e.id}-${idx}`}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
                   onClick={() => {
                     setQuery(e.name);
                     onSearch();

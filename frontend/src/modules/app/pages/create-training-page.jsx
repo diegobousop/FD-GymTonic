@@ -1,14 +1,10 @@
 import {useState,useEffect} from "react";
 import { useToast } from '../components/common/toast-provider'
-
-
 import backend from "../../../backend";
-
 import TextInput from '../components/common/text-input';
 import ParagraphInput from '../components/common/paragraph-input';
 import MinuteInput from '../components/routine/minute-input';
 import VisibilityInput from '../components/routine/visibility-input';
-
 import RoutineSelector from '../components/training/routine-selector';
 import Spinner from '../components/common/spinner';
 import TrainingButton from "../components/training/training-button";
@@ -26,7 +22,7 @@ const CreateTraining = () => {
 
     //variables del form
     const [name, setName] = useState("");
-    const [exerciseDescripcion, setExerciseDescription] = useState("");
+    const [exerciseDescription, setExerciseDescription] = useState("");
     const [duration, setDuration] = useState("");
     const [visibility, setVisibility] = useState(true);
     
@@ -36,7 +32,6 @@ const CreateTraining = () => {
 
     //Rutina seleccionada
     const [selectedRoutine, setSelectedRoutine] = useState(null);
-    const [selectRoutineExercises, setSelectRoutineExercises] = useState([]);
     const [selectedRoutineDetails, setSelectedRoutineDetails] = useState(() => {
       const saved = localStorage.getItem('selectedRoutineDetails');
       return saved ? JSON.parse(saved) : null;
@@ -122,23 +117,27 @@ const CreateTraining = () => {
         }));
 
         backend.routineService.createTraining(
-          selectedRoutine.id,
-          name,
-          exerciseDescripcion,
-          duration,
-          visibility,
-          exercises,
-          (createdTraining) => {
-            console.log("Training created successfully:", createdTraining);
-            setValidationErrors({});
-            showToast('Entrenamiento creado con éxito', 'success');
-            setLoading(false);
+          {
+            routineId: selectedRoutine.id,
+            name,
+            description: exerciseDescription,
+            duration,
+            visibility,
+            exercises
           },
-          (err) => {
-            console.error("Error creating training:", err);
-            setError(err);
-            showToast('Error al crear el entrenamiento', 'error');
-            setLoading(false);
+          {
+            onSuccess: (createdTraining) => {
+              console.log("Training created successfully:", createdTraining);
+              setValidationErrors({});
+              showToast('Entrenamiento creado con éxito', 'success');
+              setLoading(false);
+            },
+            onErrors: (err) => {
+              console.error("Error creating training:", err);
+              setError(err);
+              showToast('Error al crear el entrenamiento', 'error');
+              setLoading(false);
+            }
           }
         );
     };
@@ -165,6 +164,12 @@ const CreateTraining = () => {
 
     if (loading){      
       return <Spinner size={100}/>
+    }
+
+    if (error) {
+      return (
+        <div className="p-10">{error}</div>
+      );
     }
 
   return (
@@ -198,7 +203,7 @@ const CreateTraining = () => {
                       name="exerciseDescription"
                       label="Descripcion"
                       placeholder={"Opcional"}
-                      value={exerciseDescripcion}
+                      value={exerciseDescription}
                       onChange={(e) => setExerciseDescription(e.target.value)}
                       maxLength={300}
                       className="h-40 w-full"
@@ -226,7 +231,7 @@ const CreateTraining = () => {
                   onChange={(e) => setVisibility(e.target.value)}
               />
 
-              <TrainingButton isLoading={loading} children="Crear" onClick={handleSubmit}></TrainingButton>
+              <TrainingButton isLoading={loading} onClick={handleSubmit}>Crear</TrainingButton>
             </div>
 
          </div>

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 
-public class RoutineParamsDto {     /// CAMBIAR EXERCISE POR LONG (SON IDS)
+public class RoutineParamsDto {     
     private String name;
     private Long duration; // Duration in minutes
     private List<Long> exercises;

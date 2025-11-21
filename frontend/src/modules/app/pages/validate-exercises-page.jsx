@@ -6,7 +6,7 @@ import ExerciseCard from '../components/exercise/exercise-card'
 import Spinner from '../components/common/spinner';
 import Pager from '../components/common/pager';
 
-import { SVG_ICONS } from '../../../config/constants'
+import { svgIcons } from '../../../config/constants'
 
 const ValidateExercises = () => {
     const { showToast } = useToast()
@@ -75,7 +75,7 @@ const ValidateExercises = () => {
     if (exercises.length === 0 && !error) {
         return (
             <div className="flex flex-col h-[500px] justify-center items-center">
-                <SVG_ICONS.AcceptIcon className="text-[#ff0000] w-16 h-16"/>
+                <svgIcons.AcceptIcon className="text-[#ff0000] w-16 h-16"/>
                 <p className="text-center text-white text-[24px] font-semibold mb-2">Estás al día</p>
                 <p>Cuando un Entrenador PRO cree un nuevo ejercicio aparecerá aquí</p>
             </div>

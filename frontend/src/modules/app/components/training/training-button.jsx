@@ -1,6 +1,6 @@
 import React from 'react'
 import { GENERAL_ICONS } from '../../../../config/constants'
-
+import PropTypes from 'prop-types'
 
 const TrainingButton = ({ onClick, type, children, isLoading = false }) => {
   const content = (
@@ -41,6 +41,13 @@ const TrainingButton = ({ onClick, type, children, isLoading = false }) => {
       {content}
     </a>
   )
+}
+
+TrainingButton.propTypes = {
+  onClick: PropTypes.func,
+  type: PropTypes.string,
+  children: PropTypes.node,
+  isLoading: PropTypes.bool,
 }
 
 export default TrainingButton

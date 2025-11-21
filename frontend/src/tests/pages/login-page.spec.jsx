@@ -3,17 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { HashRouter as Router } from 'react-router-dom';
 import LoginPage from '../../modules/app/pages/login-page';
 import { UserContext } from '../../modules/app/components/common/user-provider';
-
 import '@testing-library/jest-dom/extend-expect';
-
-
-
 
 jest.mock('../../backend/userService', () => ({
     login: jest.fn(),
 }));
-
-
 
 describe('LoginPage', () => {
     const setUser = jest.fn();
@@ -29,13 +23,13 @@ describe('LoginPage', () => {
 
    beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/login';
+        globalThis.location.hash = '#/login';
     });
 
 
     
 
-    test('renders the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         renderComponent();
 
         expect(screen.getByText('Bienvenido/a de vuelta!')).toBeInTheDocument();
@@ -113,10 +107,7 @@ describe('LoginPage', () => {
         fireEvent.click(registerLink);
 
         expect(registerLink).toBeInTheDocument();
-        expect(window.location.hash).toBe('#/register');
-
-
+        expect(globalThis.location.hash).toBe('#/register');
     });
-
 
 });

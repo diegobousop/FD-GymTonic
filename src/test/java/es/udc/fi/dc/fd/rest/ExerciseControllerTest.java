@@ -35,6 +35,8 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 /**
  * The Class UserControllerTest.
  */
+
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,8 +57,7 @@ public class ExerciseControllerTest {
     }
 
     private ExerciseDto createExerciseDto(String name, String description, grupoMuscular grupo, int numeroSeries) {
-        ExerciseDto dto = new ExerciseDto(name, description, grupo, numeroSeries, Difficulty.FACIL, Equipment.POLEA_CABLE);
-        return dto;
+        return new ExerciseDto(name, description, grupo, numeroSeries, Difficulty.FACIL, Equipment.POLEA_CABLE);
     }
 
 
@@ -530,7 +531,6 @@ public class ExerciseControllerTest {
         // Mockear el comportamiento del servicio
 
 
-        ObjectMapper mapper = createObjectMapper();
 
         mockMvc.perform(post("/api/exercise/Series/create?exerciseId=1&routineId=1" )
                         .header("Authorization", "Bearer " + user.getServiceToken())

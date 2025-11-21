@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import backend from "../../../../backend";
+import PropTypes from "prop-types";
 
 const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate }) => {
   const [series, setSeries] = useState([]);
@@ -17,6 +18,22 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
     );
   }, [exerciseId, routineId]);
 
+  // Helpers para evitar anidación profunda
+  const removeSerieFromState = (idToRemove) => {
+    setSeries((prev) => prev.filter((s) => s.id !== idToRemove));
+  };
+
+  const modifySerieAsync = (serie) =>
+    new Promise((resolve, reject) => {
+      backend.exerciseService.modifySerie(
+        serie.id,
+        serie.repeticiones,
+        serie.peso,
+        resolve,   // evita funciones inline () => resolve()
+        reject     // evita funciones inline (err) => reject(err)
+      );
+    });
+
   // Añadir nueva serie directamente en backend
   const addSerie = () => {
     backend.exerciseService.createSerie(
@@ -31,13 +48,11 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
 
   // Eliminar serie directamente en backend
   const deleteSerie = (id) => {
-    backend.exerciseService.deleteSerie(
-      id,
-      () => {
-        setSeries((prev) => prev.filter((s) => s.id !== id));
-      },
-      (err) => console.error(`❌ Error al eliminar serie ${id}:`, err)
-    );
+    const onDeleted = () => removeSerieFromState(id);
+    const onDeleteError = (err) =>
+      console.error(`❌ Error al eliminar serie ${id}:`, err);
+
+    backend.exerciseService.deleteSerie(id, onDeleted, onDeleteError);
   };
 
   // Actualizar repeticiones o peso en el estado local
@@ -53,20 +68,7 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
   const handleConfirm = async () => {
     setSaving(true);
     try {
-      await Promise.all(
-        series.map(
-          (serie) =>
-            new Promise((resolve, reject) => {
-              backend.exerciseService.modifySerie(
-                serie.id,
-                serie.repeticiones,
-                serie.peso,
-                () => resolve(),
-                (err) => reject(err)
-              );
-            })
-        )
-      );
+      await Promise.all(series.map(modifySerieAsync));
 
       await new Promise((resolve, reject) => {
         backend.exerciseService.editRestTime(
@@ -83,11 +85,56 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
       onClose();
     } catch (err) {
       console.error("❌ Error al modificar series:", err);
-    }finally{
+    } finally {
       setSaving(false);
     }
   };
 
+  const renderSeries = () => {
+    if (error) {
+      return <p className="text-red-400 text-xs p-2">{error}</p>;
+    }
+    if (series.length === 0) {
+      return <p className="text-gray-400 text-xs p-2">Sin series registradas</p>;
+    }
+    return series.map((serie) => (
+      <div
+        key={serie.id}
+        className="grid grid-cols-4 items-center py-1 text-sm"
+      >
+        <span>{serie.numeroSerie}</span>
+        <input
+          type="number"
+          value={serie.repeticiones}
+          onChange={(e) =>
+            updateSerie(serie.id, "repeticiones", e.target.value)
+          }
+          className="bg-gray-800 text-white w-16 rounded text-center"
+          aria-label={`Repeticiones serie ${serie.numeroSerie}`}
+          min="0"
+        />
+        <input
+          type="number"
+          value={serie.peso}
+          onChange={(e) =>
+            updateSerie(serie.id, "peso", e.target.value)
+          }
+          className="bg-gray-800 text-white w-16 rounded text-center"
+          aria-label={`Peso serie ${serie.numeroSerie}`}
+          min="0"
+        />
+        {series.length === serie.numeroSerie && (
+          <button
+            onClick={() => deleteSerie(serie.id)}
+            className="text-red-500 hover:text-red-400"
+            title="Eliminar serie"
+          >
+            ❌
+          </button>
+        )}
+      </div>
+    ));
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
@@ -106,50 +153,7 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
           </div>
 
           {/* Series dinámicas */}
-          {error ? (
-            <p className="text-red-400 text-xs p-2">{error}</p>
-          ) : series.length > 0 ? (
-            series.map((serie) => (
-              <div
-                key={serie.id}
-                className="grid grid-cols-4 items-center py-1 text-sm"
-              >
-                <span>{serie.numeroSerie}</span>
-                <input
-                  type="number"
-                  value={serie.repeticiones}
-                  onChange={(e) =>
-                    updateSerie(serie.id, "repeticiones", e.target.value)
-                  }
-                  className="bg-gray-800 text-white w-16 rounded text-center"
-                  aria-label={`Repeticiones serie ${serie.numeroSerie}`}
-                  min="0"
-                />
-                <input
-                  type="number"
-                  value={serie.peso}
-                  onChange={(e) =>
-                    updateSerie(serie.id, "peso", e.target.value)
-                  }
-                  className="bg-gray-800 text-white w-16 rounded text-center"
-                  aria-label={`Peso serie ${serie.numeroSerie}`}
-                  min="0"
-                />
-                {series.length === serie.numeroSerie &&
-                  <button
-                    onClick={() => deleteSerie(serie.id)}
-                    className="text-red-500 hover:text-red-400"
-                    title="Eliminar serie"
-                  >
-                    ❌
-                  </button>
-                  }
-
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 text-xs p-2">Sin series registradas</p>
-          )}
+          {renderSeries()}
         </div>
 
         <div className="flex flex-row items-center self-center mt-3">
@@ -186,6 +190,13 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
       </div>
     </div>
   );
+};
+
+EditSeriesModal.propTypes = {
+  exerciseId: PropTypes.number.isRequired,
+  routineId: PropTypes.number.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func,
 };
 
 export default EditSeriesModal;

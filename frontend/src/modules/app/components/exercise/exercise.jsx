@@ -2,8 +2,9 @@ import { useEffect, useState, useContext } from "react";
 import { getSerieByExercise } from "../../../../backend/exerciseService";
 import EditSeries from "../routine/edit-series-routine";
 import { UserContext } from "../common/user-provider";
+import PropTypes from 'prop-types'
 import BubbleButton from '../common/bubble-button'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 
 const Exercise = ({ ex, routineId, routineCreator, onExerciseUpdated }) => {
   const [series, setSeries] = useState([]);
@@ -109,7 +110,7 @@ const refreshSeries = () => {
 
           {user && user.userName === routineCreator &&
             <BubbleButton 
-              icon={<SVG_ICONS.CreateRoutineIcon
+              icon={<svgIcons.CreateRoutineIcon
                   className="text-[#ff0000]"
                 />}
               ariaLabel="Editar Series"
@@ -142,5 +143,11 @@ const refreshSeries = () => {
 
     </div>
   )}
+
+Exercise.propTypes = {
+   ex: PropTypes.object.isRequired,
+   routineId: PropTypes.number.isRequired,
+   routineCreator: PropTypes.string.isRequired
+}
 
 export default Exercise;

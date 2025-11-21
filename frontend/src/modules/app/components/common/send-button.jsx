@@ -1,6 +1,6 @@
 import React from 'react'
 import { GENERAL_ICONS } from '../../../../config/constants'
-
+import PropTypes from 'prop-types';
 
 const SendButton = ({ onClick, type, children, isLoading = false }) => {
   const content = (
@@ -41,6 +41,13 @@ const SendButton = ({ onClick, type, children, isLoading = false }) => {
       {content}
     </a>
   )
+}
+
+SendButton.propTypes = {
+  onClick: PropTypes.func,
+  type: PropTypes.string,
+  children: PropTypes.node,
+  isLoading: PropTypes.bool,
 }
 
 export default SendButton

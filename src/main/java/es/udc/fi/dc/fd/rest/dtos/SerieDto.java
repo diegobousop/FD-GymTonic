@@ -5,7 +5,7 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 import jakarta.validation.constraints.NotNull;
 
 public class SerieDto {
-    private long Id;
+    private long id;
     private Long exerciseId;
     private int numeroSerie;
     private int repeticiones;
@@ -14,7 +14,7 @@ public class SerieDto {
     public SerieDto() {}
 
     public SerieDto(long id, int numeroSerie, int repeticiones, int peso,Exercise exercise, Routine routine) {
-        this.Id = id;
+        this.id = id;
         this.numeroSerie = numeroSerie;
         this.repeticiones = repeticiones;
         this.peso = peso;
@@ -23,8 +23,8 @@ public class SerieDto {
     }
 
     @NotNull
-    public long getId() {return Id;}
-    public void setId(long id) {Id = id;}
+    public long getId() {return id;}
+    public void setId(long id) {this.id = id;}
 
     @NotNull
     public int getNumeroSerie() {return numeroSerie;}
