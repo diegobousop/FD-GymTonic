@@ -1,11 +1,9 @@
 package es.udc.fi.dc.fd.model.services;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +28,10 @@ public class SearchServiceImpl implements SearchService {
         this.userDao = userDao;
     }
 
+    // ----------------------------------------------------------------------
+    //  FIND SUGGESTIONS
+    // ----------------------------------------------------------------------
+
     @Override
     public List<SearchSuggestionDto> findSuggestions(String text, int limitPerType) {
         return findSuggestions(text, limitPerType, null);
@@ -41,19 +43,11 @@ public class SearchServiceImpl implements SearchService {
             return List.of();
         }
 
-        List<SearchSuggestionDto> suggestions = new ArrayList<>();
+        boolean isSearcherAdmin = isAdmin(searcherUserId);
 
-        // Filter admin users from suggestions unless searcher is admin
-        boolean isSearcherAdmin = false;
-        if (searcherUserId != null) {
-            Optional<Users> searcher = userDao.findById(searcherUserId);
-            isSearcherAdmin = searcher.isPresent() && searcher.get().getRole() == RoleType.ADMIN;
-        }
-
-        final boolean showAdmins = isSearcherAdmin;
-        suggestions.addAll(searchDao.findUserSuggestions(text, limitPerType * 2).stream()
+        List<SearchSuggestionDto> users = searchDao.findUserSuggestions(text, limitPerType * 2).stream()
                 .filter(r -> {
-                    if (!showAdmins) {
+                    if (!isSearcherAdmin) {
                         Long userId = (Long) r[0];
                         Optional<Users> user = userDao.findById(userId);
                         return user.isPresent() && user.get().getRole() != RoleType.ADMIN;
@@ -62,51 +56,76 @@ public class SearchServiceImpl implements SearchService {
                 })
                 .limit(limitPerType)
                 .map(r -> new SearchSuggestionDto((Long) r[0], "user", (String) r[1]))
-                .collect(Collectors.toList()));
+                .toList();
 
-        suggestions.addAll(searchDao.findRoutineSuggestions(text, limitPerType).stream()
+        List<SearchSuggestionDto> routines = searchDao.findRoutineSuggestions(text, limitPerType).stream()
                 .map(r -> new SearchSuggestionDto((Long) r[0], "routine", (String) r[1]))
-                .collect(Collectors.toList()));
+                .toList();
 
-        suggestions.addAll(searchDao.findExerciseSuggestions(text, limitPerType).stream()
+        List<SearchSuggestionDto> exercises = searchDao.findExerciseSuggestions(text, limitPerType).stream()
                 .map(r -> new SearchSuggestionDto((Long) r[0], "exercise", (String) r[1]))
-                .collect(Collectors.toList()));
+                .toList();
 
-        return suggestions;
+        List<SearchSuggestionDto> combined = new java.util.ArrayList<>();
+        combined.addAll(users);
+        combined.addAll(routines);
+        combined.addAll(exercises);
+
+        return combined;
     }
 
+    // ----------------------------------------------------------------------
+    //  FIND FULL RESULTS
+    // ----------------------------------------------------------------------
+
     @Override
-    public Map<String, List<SearchFullDto>> findFullResults(String text, String trainerName, String muscleGroup, int limit, String difficulty, Long searcherUserId) {
+    public Map<String, List<SearchFullDto>> findFullResults(
+            String text, String trainerName, String muscleGroup,
+            int limit, String difficulty, String equipment, Long searcherUserId) {
+
         if (text == null || text.isBlank()) {
-            return Map.of(
-                    "users", List.of(),
-                    "routines", List.of(),
-                    "exercises", List.of()
-            );
+            return emptyResults();
         }
 
         String safeText = text.toLowerCase();
         String safeTrainer = trainerName == null ? "" : trainerName.toLowerCase();
         String safeMuscle = muscleGroup == null ? "" : muscleGroup.toUpperCase();
         String safeDifficulty = difficulty == null ? "" : difficulty.toUpperCase();
+        String safeEquipment = equipment == null ? "" : equipment.toUpperCase();
 
-        boolean noTrainer = safeTrainer.isBlank();
-        boolean noMuscle = safeMuscle.isBlank();
-        boolean noDifficulty = safeDifficulty.isBlank();
+        boolean isAdmin = isAdmin(searcherUserId);
 
-        Map<String, List<SearchFullDto>> resultMap = new HashMap<>();
+        Map<String, List<SearchFullDto>> result = new HashMap<>();
+        result.put("users", findUsers(safeText, limit, isAdmin));
+        result.put("routines", findRoutines(safeText, safeTrainer, limit));
+        result.put("exercises", findExercises(safeText, safeMuscle, safeDifficulty, safeEquipment, limit));
 
-        // Check if searcher is admin
-        boolean isSearcherAdmin = false;
-        if (searcherUserId != null) {
-            Optional<Users> searcher = userDao.findById(searcherUserId);
-            isSearcherAdmin = searcher.isPresent() && searcher.get().getRole() == RoleType.ADMIN;
-        }
+        return result;
+    }
 
-        final boolean showAdmins = isSearcherAdmin;
-        
-        // Usuarios - filter out admins unless searcher is admin
-        List<SearchFullDto> users = searchDao.findUsersDetailed(safeText, limit * 2).stream()
+    // ----------------------------------------------------------------------
+    //  MÉTODOS PRIVADOS
+    // ----------------------------------------------------------------------
+
+    private boolean isAdmin(Long userId) {
+        if (userId == null) return false;
+        return userDao.findById(userId)
+                .map(u -> u.getRole() == RoleType.ADMIN)
+                .orElse(false);
+    }
+
+    private Map<String, List<SearchFullDto>> emptyResults() {
+        return Map.of(
+                "users", List.of(),
+                "routines", List.of(),
+                "exercises", List.of()
+        );
+    }
+
+    // USERS -------------------------------------------------------------
+
+    private List<SearchFullDto> findUsers(String text, int limit, boolean showAdmins) {
+        return searchDao.findUsersDetailed(text, limit * 2).stream()
                 .filter(u -> showAdmins || u.getRole() != RoleType.ADMIN)
                 .limit(limit)
                 .map(u -> SearchFullDto.fromUser(
@@ -115,19 +134,23 @@ public class SearchServiceImpl implements SearchService {
                         u.getAvatar() != null ? u.getAvatar().getAvatarBase64() : null,
                         u.getRole()
                 ))
-                .collect(Collectors.toList());
-        resultMap.put("users", users);
+                .toList();
+    }
 
-        List<SearchFullDto> routines = searchDao.findRoutinesDetailed(safeText, limit).stream()
-                .filter(r -> noTrainer || r.getCreator().getUserName().toLowerCase().contains(safeTrainer))
+    // ROUTINES ----------------------------------------------------------
+
+    private List<SearchFullDto> findRoutines(String text, String trainer, int limit) {
+        boolean noTrainer = trainer.isBlank();
+
+        return searchDao.findRoutinesDetailedIncludingExercise(text, limit).stream()
+                .filter(r -> noTrainer || r.getCreator().getUserName().toLowerCase().contains(trainer))
                 .map(r -> {
-                    // Mapeo de ejercicios a SearchExerciseForRoutineDto
                     List<SearchExerciseForRoutineDto> exercises = r.getRoutineExercises().stream()
                             .map(e -> new SearchExerciseForRoutineDto(
                                     e.getExercise().getExerciseName(),
                                     e.getExercise().getNumeroSeries()
                             ))
-                            .collect(Collectors.toList());
+                            .toList();
 
                     return SearchFullDto.fromRoutine(
                             r.getId(),
@@ -137,20 +160,28 @@ public class SearchServiceImpl implements SearchService {
                             exercises
                     );
                 })
-                .collect(Collectors.toList());
-        resultMap.put("routines", routines);
+                .toList();
+    }
 
-        List<SearchFullDto> exercises = searchDao.findExercisesDetailed(safeText, limit).stream()
-                .filter(e -> noMuscle || e.getGrupoMuscular().name().equalsIgnoreCase(safeMuscle))
-                .filter(e -> noDifficulty || e.getDifficulty().name().equalsIgnoreCase(safeDifficulty))
+    // EXERCISES ---------------------------------------------------------
+
+    private List<SearchFullDto> findExercises(
+            String text, String muscle, String difficulty, String equipment, int limit) {
+
+        boolean noMuscle = muscle.isBlank();
+        boolean noDifficulty = difficulty.isBlank();
+        boolean noEquipment = equipment.isBlank();
+
+        return searchDao.findExercisesDetailed(text, limit).stream()
+                .filter(e -> noMuscle || e.getGrupoMuscular().name().equalsIgnoreCase(muscle))
+                .filter(e -> noDifficulty || e.getDifficulty().name().equalsIgnoreCase(difficulty))
+                .filter(e -> noEquipment || e.getEquipment().name().equalsIgnoreCase(equipment))
                 .map(e -> SearchFullDto.fromExercise(
                         e.getId(),
                         e.getExerciseName(),
-                        e.getGrupoMuscular().toString()
+                        e.getGrupoMuscular().toString(),
+                        e.getEquipment().toString()
                 ))
-                .collect(Collectors.toList());
-        resultMap.put("exercises", exercises);
-
-        return resultMap;
+                .toList();
     }
 }

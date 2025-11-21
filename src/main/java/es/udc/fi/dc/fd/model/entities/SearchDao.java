@@ -10,5 +10,6 @@ public interface SearchDao {
 
     List<Users> findUsersDetailed(String text, int limit);
     List<Routine> findRoutinesDetailed(String text, int limit);
+    List<Routine> findRoutinesDetailedIncludingExercise(String text, int limit);
     List<Exercise> findExercisesDetailed(String text, int limit);
 }
