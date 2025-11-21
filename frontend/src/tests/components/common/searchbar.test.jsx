@@ -27,7 +27,7 @@ describe('SearchBar', () => {
   const mockSetQuery = jest.fn();
   const mockSetFilters = jest.fn();
   const mockOnSearch = jest.fn();
-  const defaultFilters = { trainerName: '', muscleGroup: '', difficulty: '' };
+  const defaultFilters = { trainerName: '', muscleGroup: '', difficulty: '', equipment: '' };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -89,6 +89,7 @@ describe('SearchBar', () => {
     expect(screen.getByText('Nombre del entrenador')).toBeInTheDocument();
     expect(screen.getByText('Grupo muscular')).toBeInTheDocument();
     expect(screen.getByText('Dificultad')).toBeInTheDocument();
+    expect(screen.getByText('Equipamiento')).toBeInTheDocument();
   });
 
   it('actualiza valores de filtro cuando cambian', () => {
@@ -107,7 +108,7 @@ describe('SearchBar', () => {
   });
 
   it('limpia filtros cuando se hace clic en el botón Limpiar filtros', () => {
-    const filters = { trainerName: 'John', muscleGroup: 'PECHO', difficulty: 'FACIL' };
+    const filters = { trainerName: 'John', muscleGroup: 'PECHO', difficulty: 'FACIL', equipment: 'POLEA_CABLE' };
     renderSearchBar('', filters);
 
     fireEvent.click(screen.getByText('Filtrar'));
@@ -117,6 +118,7 @@ describe('SearchBar', () => {
       trainerName: '',
       muscleGroup: '',
       difficulty: '',
+      equipment: '',
     });
   });
 
@@ -165,5 +167,19 @@ describe('SearchBar', () => {
       difficulty: 'FACIL',
     });
   });
-});
 
+  it('actualiza filtro de equipamiento', () => {
+    const { container } = renderSearchBar();
+
+    fireEvent.click(screen.getByText('Filtrar'));
+
+    const selects = container.querySelectorAll('select');
+    const equipmentSelect = selects[2]; // Third select is equipment
+    fireEvent.change(equipmentSelect, { target: { value: 'MAQUINA' } });
+
+    expect(mockSetFilters).toHaveBeenCalledWith({
+      ...defaultFilters,
+      equipment: 'MAQUINA',
+    });
+  });
+});

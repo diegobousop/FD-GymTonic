@@ -11,11 +11,7 @@ const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
 
-  const [results, setResults] = useState({
-    users: [],
-    routines: [],
-    exercises: [],
-  });
+  const [results, setResults] = useState({ users: [], routines: [], exercises: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [itemTypeFilter, setItemTypeFilter] = useState("TODO");
@@ -168,9 +164,6 @@ const SearchResultsPage = () => {
     );
   };
 
-  // ----------------------------
-  // Botones separados
-  // ----------------------------
   const renderFollowButton = (userItem) => {
     const isFollowing = userItem.isFollowing;
     const requestSent = userItem.requestSent;
@@ -217,101 +210,104 @@ const SearchResultsPage = () => {
   };
 
   // ----------------------------
-  // Contenido principal (sin ternarios anidados)
+  // Render helpers
   // ----------------------------
+  const renderUsers = () => (
+    <div>
+      <h2 className="font-semibold mb-2">Usuarios</h2>
+      <ul className="space-y-2">
+        {results.users.map((userItem) => {
+          const isMe = userItem.id === user.id;
+          return (
+            <li
+              key={userItem.id}
+              className="border border-gray-700 p-2 rounded-md shadow-sm flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                {userItem.avatarBase64 && (
+                  <img
+                    src={userItem.avatarBase64}
+                    alt={userItem.name}
+                    className="w-10 h-10 object-cover"
+                  />
+                )}
+                <Link
+                  to={`/profile/${userItem.id}`}
+                  className="text-white hover:text-[#CA0D0A]"
+                >
+                  {userItem.name}
+                </Link>
+              </div>
+
+              {!isMe && (
+                <div className="flex gap-2">
+                  {renderFollowButton(userItem)}
+                  {user.role !== "ADMIN" && userItem.role !== "ADMIN" && renderBlockButton(userItem)}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
+  const renderRoutines = () => (
+    <div>
+      <h2 className="font-semibold mb-2">Rutinas</h2>
+      <div className="flex flex-col space-y-4 mt-4 ml-4 mr-4">
+        {results.routines.map((routine) => (
+          <Routine routine={routine} key={routine.id} />
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderExercises = () => (
+    <div>
+      <h2 className="font-semibold mb-2 text-lg">Ejercicios</h2>
+      <ul className="space-y-3">
+        {results.exercises.map((exercise) => (
+          <li
+            key={exercise.id}
+            className="border border-gray-700 p-3 rounded-lg shadow-md flex justify-between items-center hover:bg-gray-800 transition"
+          >
+            <span className="font-bold text-white text-lg">{exercise.name}</span>
+            <div className="flex flex-row items-center gap-4">
+              <span className="text-sm text-gray-300">
+                Grupo muscular: {exercise.grupoMuscular}
+              </span>
+              <span className="text-sm text-gray-400">
+                Equipamiento: {exercise.equipment || "N/A"}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  // ----------------------------
+  // Render principal
+  // ----------------------------
+  const shouldShowUsers = itemTypeFilter === "TODO" || itemTypeFilter === "USUARIOS";
+  const shouldShowRoutines = itemTypeFilter === "TODO" || itemTypeFilter === "RUTINAS";
+  const shouldShowExercises = itemTypeFilter === "TODO" || itemTypeFilter === "EJERCICIOS";
+
   let content;
-  if (loading) {
-    content = <p>Cargando resultados...</p>;
-  } else if (error) {
-    content = <p className="text-red-500">{error}</p>;
-  } else {
+  if (loading) content = <p>Cargando resultados...</p>;
+  else if (error) content = <p className="text-red-500">{error}</p>;
+  else
     content = (
       <div className="flex flex-col gap-6">
-        {/* Usuarios */}
-        {(itemTypeFilter === "TODO" || itemTypeFilter === "USUARIOS") &&
-          results.users.length > 0 && (
-            <div>
-              <h2 className="font-semibold mb-2">Usuarios</h2>
-              <ul className="space-y-2">
-                {results.users.map((userItem) => {
-                  const isMe = userItem.id === user.id;
-
-                  return (
-                    <li
-                      key={userItem.id}
-                      className="border border-gray-700 p-2 rounded-md shadow-sm flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        {userItem.avatarBase64 && (
-                          <img
-                            src={userItem.avatarBase64}
-                            alt={userItem.name}
-                            className="w-10 h-10 object-cover"
-                          />
-                        )}
-                        <Link
-                          to={`/profile/${userItem.id}`}
-                          className="text-white hover:text-[#CA0D0A] cursor-pointer"
-                        >
-                          {userItem.name}
-                        </Link>
-                      </div>
-
-                      {!isMe && (
-                        <div className="flex gap-2">
-                          {renderFollowButton(userItem)}
-                          {user.role !== "ADMIN" && userItem.role !== "ADMIN" &&
-                            renderBlockButton(userItem)}
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-
-        {/* Rutinas */}
-        {(itemTypeFilter === "TODO" || itemTypeFilter === "RUTINAS") &&
-          results.routines.length > 0 && (
-            <div>
-              <h2 className="font-semibold mb-2">Rutinas</h2>
-              <div className="flex flex-col space-y-4 mt-4 ml-4 mr-4">
-                {results.routines.map((routine) => (
-                  <Routine routine={routine} key={routine.id} />
-                ))}
-              </div>
-            </div>
-          )}
-
-        {/* Ejercicios */}
-        {(itemTypeFilter === "TODO" || itemTypeFilter === "EJERCICIOS") &&
-          results.exercises.length > 0 && (
-            <div>
-              <h2 className="font-semibold mb-2">Ejercicios</h2>
-              <ul className="space-y-2">
-                {results.exercises.map((exercise) => (
-                  <li
-                    key={exercise.id}
-                    className="border border-gray-700 p-2 rounded-md shadow-sm"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{exercise.name}</span>
-                      <span className="text-sm text-gray-300">{exercise.grupoMuscular}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-        {/* Sin resultados */}
-        {!results.users.length && !results.routines.length && !results.exercises.length && (
-          <p className="text-gray-400">No se encontraron resultados.</p>
-        )}
+        {shouldShowUsers && results.users.length > 0 && renderUsers()}
+        {shouldShowRoutines && results.routines.length > 0 && renderRoutines()}
+        {shouldShowExercises && results.exercises.length > 0 && renderExercises()}
+        {!results.users.length &&
+          !results.routines.length &&
+          !results.exercises.length && <p className="text-gray-400">No se encontraron resultados.</p>}
       </div>
     );
-  }
 
   return (
     <div className="flex flex-col mt-10 justify-start ml-10 mr-10 text-white pb-16">
@@ -321,19 +317,17 @@ const SearchResultsPage = () => {
 
       {/* Filtros */}
       <div className="mb-6 flex gap-2">
-        {["TODO", "RUTINAS", "EJERCICIOS", "USUARIOS"].map((type) => {
-          const btnLabel = type === "TODO" ? "Todo" : type.charAt(0) + type.slice(1).toLowerCase();
-          const btnClass = itemTypeFilter === type ? "bg-red-600" : "bg-gray-700";
-          return (
-            <button
-              key={type}
-              className={`px-3 py-1 rounded-md text-sm transition ${btnClass} hover:bg-gray-600`}
-              onClick={() => setItemTypeFilter(type)}
-            >
-              {btnLabel}
-            </button>
-          );
-        })}
+        {["TODO", "RUTINAS", "EJERCICIOS", "USUARIOS"].map((type) => (
+          <button
+            key={type}
+            className={`px-3 py-1 rounded-md text-sm transition ${
+              itemTypeFilter === type ? "bg-red-600" : "bg-gray-700"
+            } hover:bg-gray-600`}
+            onClick={() => setItemTypeFilter(type)}
+          >
+            {type === "TODO" ? "Todo" : type.charAt(0) + type.slice(1).toLowerCase()}
+          </button>
+        ))}
       </div>
 
       {content}
