@@ -47,9 +47,8 @@ describe('RoutineActions', () => {
         {...mockCallbacks}
       />
     );
-
-    expect(screen.getByTitle('Editar rutina')).toBeInTheDocument();
-    expect(screen.getByTitle('Eliminar rutina')).toBeInTheDocument();
+    expect(screen.getByLabelText('Editar rutina')).toBeInTheDocument();
+    expect(screen.getByLabelText('Eliminar rutina')).toBeInTheDocument();
   });
 
   it('renderiza el botón de visibilidad para el creador de la rutina', () => {
@@ -61,7 +60,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    expect(screen.getByTitle('Hacer privada')).toBeInTheDocument();
+    expect(screen.getByLabelText('Cambiar visibilidad')).toBeInTheDocument();
   });
 
   it('muestra "Hacer pública" cuando la rutina es privada', () => {
@@ -75,7 +74,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    expect(screen.getByTitle('Hacer pública')).toBeInTheDocument();
+    expect(screen.getByLabelText('Cambiar visibilidad')).toBeInTheDocument();
   });
 
   it('llama a onEdit cuando se hace clic en el botón de editar', () => {
@@ -87,7 +86,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Editar rutina'));
+    fireEvent.click(screen.getByLabelText('Editar rutina'));
     expect(mockCallbacks.onEdit).toHaveBeenCalledTimes(1);
   });
 
@@ -104,7 +103,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Eliminar rutina'));
+    fireEvent.click(screen.getByLabelText('Eliminar rutina'));
     
     expect(globalThis.confirm).toHaveBeenCalledWith(
       '¿Seguro que quieres eliminar la rutina "Test Routine"?'
@@ -128,7 +127,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Eliminar rutina'));
+    fireEvent.click(screen.getByLabelText('Eliminar rutina'));
     
     expect(backend.routineService.deleteRoutine).not.toHaveBeenCalled();
   });
@@ -146,7 +145,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Eliminar rutina'));
+    fireEvent.click(screen.getByLabelText('Eliminar rutina'));
     
     expect(mockCallbacks.onError).toHaveBeenCalledWith('Delete failed');
   });
@@ -164,7 +163,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Hacer privada'));
+    fireEvent.click(screen.getByLabelText('Cambiar visibilidad'));
     
     expect(backend.routineService.modifyRoutine).toHaveBeenCalledWith(
       1,
@@ -190,7 +189,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Hacer privada'));
+    fireEvent.click(screen.getByLabelText('Cambiar visibilidad'));
     
     expect(mockCallbacks.onError).toHaveBeenCalledWith('Visibility change failed');
   });
@@ -220,8 +219,8 @@ describe('RoutineActions', () => {
       />
     );
 
-    expect(screen.getByTitle('Editar rutina')).toBeInTheDocument();
-    expect(screen.getByTitle('Eliminar rutina')).toBeInTheDocument();
+    expect(screen.getByLabelText('Editar rutina')).toBeInTheDocument();
+    expect(screen.getByLabelText('Eliminar rutina')).toBeInTheDocument();
   });
 
   it('no renderiza el botón de visibilidad para admin que no es el creador', () => {
@@ -251,7 +250,7 @@ describe('RoutineActions', () => {
     );
 
     // Click delete as valid user first
-    fireEvent.click(screen.getByTitle('Eliminar rutina'));
+    fireEvent.click(screen.getByLabelText('Eliminar rutina'));
     
     // Now update to invalid user and try again
     globalThis.confirm = jest.fn(() => true);
@@ -270,7 +269,7 @@ describe('RoutineActions', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Hacer privada'));
+    fireEvent.click(screen.getByLabelText('Cambiar visibilidad'));
   });
 });
 

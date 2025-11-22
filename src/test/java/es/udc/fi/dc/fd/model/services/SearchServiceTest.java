@@ -119,7 +119,7 @@ public class SearchServiceTest {
 
     @Test
     public void testFindFullResultsWithoutFilters() {
-        Map<String, List<SearchFullDto>> results = searchService.findFullResults("bench", null, null, 10, null, null);
+        Map<String, List<SearchFullDto>> results = searchService.findFullResults("bench", null, null, 10, null, null, null);
         assertNotNull(results);
         assertTrue(results.get("exercises").stream()
                 .anyMatch(e -> e.getName().equals(exerciseBench.getExerciseName())));
@@ -131,8 +131,8 @@ public class SearchServiceTest {
 
     @Test
     public void testFindFullResultsEmptyText() {
-        Map<String, List<SearchFullDto>> resultsEmpty = searchService.findFullResults("", null, null, 10, null, null);
-        Map<String, List<SearchFullDto>> resultsNull = searchService.findFullResults(null, null, null, 10, null, null);
+        Map<String, List<SearchFullDto>> resultsEmpty = searchService.findFullResults("", null, null, 10, null, null, null);
+        Map<String, List<SearchFullDto>> resultsNull = searchService.findFullResults(null, null, null, 10, null, null, null);
         assertNotNull(resultsEmpty);
         assertNotNull(resultsNull);
         assertTrue(resultsEmpty.get("users").isEmpty());
@@ -173,13 +173,13 @@ public class SearchServiceTest {
         Users regularUser = createUser("regularUser", Users.RoleType.USER);
         Users trainer = createUser("trainerUser", Users.RoleType.TRAINER);
         
-        Map<String, List<SearchFullDto>> resultsUnauthenticated = searchService.findFullResults("user", null, null, 10, null, null);
+        Map<String, List<SearchFullDto>> resultsUnauthenticated = searchService.findFullResults("user", null, null, 10, null, null, null);
         assertTrue(resultsUnauthenticated.get("users").stream()
                 .noneMatch(u -> u.getId().equals(admin.getId())));
         assertTrue(resultsUnauthenticated.get("users").stream()
                 .anyMatch(u -> u.getId().equals(regularUser.getId()) || u.getId().equals(trainer.getId())));
         
-        Map<String, List<SearchFullDto>> resultsAsUser = searchService.findFullResults("user", null, null, 10, null, regularUser.getId());
+        Map<String, List<SearchFullDto>> resultsAsUser = searchService.findFullResults("user", null, null, 10, null, null, regularUser.getId());
         assertTrue(resultsAsUser.get("users").stream()
                 .noneMatch(u -> u.getId().equals(admin.getId())));
     }
@@ -189,7 +189,7 @@ public class SearchServiceTest {
         Users admin1 = createUser("admin1", Users.RoleType.ADMIN);
         Users admin2 = createUser("admin2", Users.RoleType.ADMIN);
         
-        Map<String, List<SearchFullDto>> resultsAsAdmin = searchService.findFullResults("admin", null, null, 10, null, admin1.getId());
+        Map<String, List<SearchFullDto>> resultsAsAdmin = searchService.findFullResults("admin", null, null, 10, null, null, admin1.getId());
         assertTrue(resultsAsAdmin.get("users").stream()
                 .anyMatch(u -> u.getId().equals(admin2.getId())));
     }
