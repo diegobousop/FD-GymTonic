@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,19 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.RoutineDao;
-import es.udc.fi.dc.fd.model.entities.RoutineExercise;
-import es.udc.fi.dc.fd.model.entities.RoutineExerciseId;
-import es.udc.fi.dc.fd.model.entities.RoutineFollow;
-import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
-import es.udc.fi.dc.fd.model.entities.Training;
-import es.udc.fi.dc.fd.model.entities.TrainingDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -51,6 +40,9 @@ public class RoutineServiceImpl implements RoutineService {
 
     @Autowired
     private TrainingDao trainingDao;
+
+    @Autowired
+    private UserDao userDao;
 
     @Autowired
     private RoutineFollowDao routineFollowDao;
@@ -407,9 +399,17 @@ public class RoutineServiceImpl implements RoutineService {
 
         return new Block<>(followers, followsPage.hasNext());
     }
-
+    /*userId creador, Id el que lo busca*/
     @Override
-    public Page<Training> findTrainings(Long userId, Pageable pageable) throws InstanceNotFoundException, PermissionException {
+    public Page<Training> findTrainings(Long userId, Long Id,Pageable pageable) throws InstanceNotFoundException, PermissionException {
+        if (!Objects.equals(userId, Id)){
+            Users user = userDao.findById(Id)
+                    .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(Id) ));
+            Users requestedUser = userDao.findById(userId)
+                    .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(userId)));
+                if (user.getFollowing().isEmpty()&&!user.getFollowing().contains(requestedUser) )
+                    return Page.empty();
+            }
         return trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
     }
 

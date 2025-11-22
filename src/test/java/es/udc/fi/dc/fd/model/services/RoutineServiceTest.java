@@ -1,8 +1,5 @@
 package es.udc.fi.dc.fd.model.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +31,8 @@ import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
 import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -745,7 +744,7 @@ public class RoutineServiceTest {
         Users newUser = createUser("noTrainingsUser_" + System.currentTimeMillis(), Users.RoleType.USER, Users.Gender.OTHER);
         userService.signUp(newUser, Users.RoleType.USER);
 
-        List<Training> trainings = routineService.findTrainings(newUser.getId(), PageRequest.of(0, 10)).getContent();
+        List<Training> trainings = routineService.findTrainings(newUser.getId(), newUser.getId(), PageRequest.of(0, 10)).getContent();
         assertEquals(0, trainings.size());
     }
 
@@ -769,7 +768,7 @@ public class RoutineServiceTest {
             routine.getId()
         );
 
-        List<Training> trainings = routineService.findTrainings(creator.getId(), PageRequest.of(0, 10)).getContent();
+        List<Training> trainings = routineService.findTrainings(creator.getId(), creator.getId(),PageRequest.of(0, 10)).getContent();
         assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
     }
 
@@ -794,8 +793,90 @@ public class RoutineServiceTest {
             routine.getId()
         );
 
-        List<Training> trainings = routineService.findTrainings(user.getId(), PageRequest.of(0, 10)).getContent();
+        List<Training> trainings = routineService.findTrainings(user.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
         assertTrue(trainings.stream().anyMatch(t -> t.getId().equals(createdTraining.getId())));
+    }
+
+    @Test
+    public void userFindOtherCreatedTrainingFailed1() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("user2", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1",
+                new ArrayList<>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+        routineService.createTrainingFromRoutine(
+                creator.getId(),
+                "Training 1",
+                "Description of training",
+                45L,
+                true,
+                series,
+                routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
+        assertEquals(0, trainings.size());
+    }
+
+    @Test
+    public void userFindOtherCreatedTrainingFailed2() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("user2", "12345");
+        Users user = new Users();
+        user.setId(1000L);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1",
+                new ArrayList<>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+         routineService.createTrainingFromRoutine(
+                creator.getId(),
+                "Training 1",
+                "Description of training",
+                45L,
+                true,
+                series,
+                routine.getId()
+        );
+        assertThrows(InstanceNotFoundException.class, () ->
+                routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent());
+    }
+
+    @Test
+    public void userFindTrainingSuccess() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1",
+                new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+        Training createdTraining = routineService.createTrainingFromRoutine(
+                user.getId(),
+                "Training 1",
+                "Description of training",
+                45L,
+                true,
+                series,
+                routine.getId()
+        );
+
+        assertEquals(createdTraining,routineService.findTrainingById(createdTraining.getId()));
+    }
+
+    @Test
+    public void userFindTrainingFail()  {
+        Training training= new Training();
+        training.setId(1000L);
+
+        assertThrows(InstanceNotFoundException.class, () ->routineService.findTrainingById(training.getId()));
     }
 
     @Test

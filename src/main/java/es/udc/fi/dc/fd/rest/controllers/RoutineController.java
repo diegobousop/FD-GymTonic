@@ -246,20 +246,21 @@ public class RoutineController {
     /**
      * Obtener los entrenamientos () de un usuario
      * Requiere que el usuario esté autenticado y sea el propietario del entrenamiento o seguidor de este
-     *  @param userId ID del usuario que realiza la solicitud (obtenido del atributo de la solicitud)
+     *  @param id ID del usuario que realiza la solicitud (obtenido del atributo de la solicitud)
      *  @param  page número de página para paginación
      *  @param  size tamaño de página para paginación
      *  @return DTO el resumen de los entrenamientos
      *  @throws InstanceNotFoundException si el entrenamiento no existe
      */
-    @GetMapping("/findTrainings/{userId}")
+    @GetMapping("/findTrainings/{id}")
     public BlockDto<TrainingDetailsDto> viewUserTrainings(
-            @PathVariable Long userId,
+            @PathVariable Long id,
+            @RequestAttribute Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Training> trainingsPage = routineService.findTrainings(userId, pageable);
+        Page<Training> trainingsPage = routineService.findTrainings(id, userId,pageable);
 
         List<TrainingDetailsDto> items = new ArrayList<>();
 

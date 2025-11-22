@@ -821,6 +821,7 @@ public class RoutineControllerTest {
 
         mockMvc.perform(get("/api/routines/findTrainings/"+user.getUserDto().getId()+"?page=" + 0 + "&size=10")
                 .header("Authorization", "Bearer " + user.getServiceToken())
+                        .requestAttr("userId", user.getUserDto().getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(1)));
@@ -842,6 +843,7 @@ public class RoutineControllerTest {
 
 
         mockMvc.perform(get("/api/routines/findTrainings/"+user.getUserDto().getId()+"?page=" + 0 + "&size=10")
+                        .requestAttr("userId", user.getUserDto().getId())
                 .header("Authorization", "Bearer " + user.getServiceToken())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
