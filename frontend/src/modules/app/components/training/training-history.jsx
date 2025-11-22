@@ -28,7 +28,9 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
 
     const viewLastTrainings = (pageNumber) => {
         setLoading(true);
+        if(user!=null){
         backend.routineService.viewUserTrainings(
+            user.id,
         pageNumber,
         size,
           (data) => {
@@ -41,7 +43,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
             setError(err || "Error inesperado al cargar entrenamientos");
             setLoading(false);
           }
-        );
+        );}
       };
 
     const viewDayTrainings = (pageNumber) => {

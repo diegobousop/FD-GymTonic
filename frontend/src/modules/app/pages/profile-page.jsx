@@ -2,67 +2,96 @@ import React, { useEffect, useState } from 'react';
 
 import Spinner from '../components/common/spinner';
 
-import { getProfile, getFollowersCount } from '../../../backend/userService';
+import {
+    getProfile,
+    getFollowersCount,
+} from '../../../backend/userService';
+
+import { viewUserTrainings } from '../../../backend/routineService';
+
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const ProfilePage = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
+    const navigate = useNavigate();
+    const { id } = useParams();
 
-  const [profile, setProfile] = useState(null);
-  const [error, setError] = useState('');
-  const [followersCount, setFollowersCount] = useState(0);
-  const [loadingCount, setLoadingCount] = useState(false);
-  const [edad, setEdad] = useState(0);
+    const [profile, setProfile] = useState(null);
+    const [error, setError] = useState('');
+    const [followersCount, setFollowersCount] = useState(0);
+    const [loadingCount, setLoadingCount] = useState(false);
+    const [edad, setEdad] = useState(0);
 
-  useEffect(() => {
-    setError('');
-    setProfile(null);
+    const [trainings, setTrainings] = useState([]);
+    const [loadingTrainings, setLoadingTrainings] = useState(false);
 
-    getProfile(
-      { id },
-      (data) => {
-        setProfile(data);
+    useEffect(() => {
+        setError('');
+        setProfile(null);
 
-        if (data?.birthDate) {
-          setEdad(calcularEdad(data.birthDate));
-        }
+        getProfile(
+            { id },
+            (data) => {
+                setProfile(data);
 
-        if (data?.role !== 'ADMIN') {
-          setLoadingCount(true);
-          getFollowersCount(
-            (count) => {
-              setFollowersCount(count);
-              setLoadingCount(false);
+                if (data?.birthDate) {
+                    setEdad(calcularEdad(data.birthDate));
+                }
+
+                if (data?.role !== 'ADMIN') {
+                    setLoadingCount(true);
+                    getFollowersCount(
+                        (count) => {
+                            setFollowersCount(count);
+                            setLoadingCount(false);
+                        },
+                        () => {
+                            setLoadingCount(false);
+                        }
+                    );
+                }
+
+                //  Cargar entrenamientos del usuario
+                setLoadingTrainings(true);
+                viewUserTrainings(
+                    id,
+                    0,
+                    20,
+                    (data) => {
+                        setTrainings(data.items);
+                        setLoadingTrainings(false);
+                    },
+                    () => {
+                        setTrainings([]);
+                        setLoadingTrainings(false);
+                    }
+                );
             },
             () => {
-              setLoadingCount(false);
+                setError('Error al cargar el perfil');
             }
-          );
-        }
-      },
-      () => {
-        setError('Error al cargar el perfil');
-      }
-    );
-  }, [id]);
+        );
+    }, [id]);
 
-  const getFollowersLabel = () => {
-    if (profile?.role === 'USER') return 'Seguidores';
-    if (profile?.role === 'TRAINER') return 'Subscriptores';
-    return '';
-  };
+    const getFollowersLabel = () => {
+        if (profile?.role === 'USER') return 'Seguidores';
+        if (profile?.role === 'TRAINER') return 'Subscriptores';
+        return '';
+    };
 
-  return (
-    <div className="w-full mt-5 py-5 bg-auto ">
-      {error && <div className="text-red-600 mb-2">{error}</div>}
+    return (
+        <div className="w-full mt-5 py-5 bg-auto ">
+            {error && <div className="text-red-600 mb-2">{error}</div>}
 
-      {profile ? (
-        <div className="flex flex-col text-white pb-5">
-          <div className="flex flex-row border-b border-b-[#990000] items-center px-5 pb-10">
-            <img src={profile.avatar.avatarBase64} alt="Profile" className="w-24 h-24 object-cover ml-5 "/>
-            <h1 className="ml-5">{profile.userName}</h1>
-          </div>
+            {profile ? (
+                <div className="flex flex-col text-white pb-5">
+                    <div className="flex flex-row border-b border-b-[#990000] items-center px-5 pb-10">
+                        <img
+                            src={profile.avatar.avatarBase64}
+                            alt="Profile"
+                            className="w-24 h-24 object-cover ml-5"
+                        />
+                        <h1 className="ml-5">{profile.userName}</h1>
+                    </div>
 
           <div className="flex flex-row space-y-2 text-white justify-start gap-4 items-center p-10">
             <div className="flex flex-col">
@@ -94,13 +123,40 @@ const ProfilePage = () => {
                 </div>
               )}
             </div>
-          </div>
         </div>
-      ) : (
-        <Spinner />
-      )}
-    </div>
-  );
+
+
+                    <div className="px-10 mt-5 text-white">
+                        <h2 className="text-xl font-bold mb-3">Entrenamientos</h2>
+
+                        {loadingTrainings && <Spinner />}
+
+                        {!loadingTrainings && trainings.length === 0 && (
+                            <p>No hay entrenamientos disponibles o no sigues a este usuario.</p>
+                        )}
+
+                        {!loadingTrainings && trainings.length > 0 && (
+                            <ul className="list-disc ml-5">
+                                {trainings.map((t) => (
+                                    <li key={t.id} className="mb-2">
+                                        <Link
+                                            to={`/trainings/${t.id}/details`}
+                                            className="text-white hover:text-blue-400 underline"
+                                        >
+                                            {t.name}
+                                        </Link>
+                                    </li>
+
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <Spinner/>
+            )}
+        </div>
+    );
 
   function calcularEdad(fechaNacimiento) {
     if (!fechaNacimiento) return 0;

@@ -797,7 +797,7 @@ public class RoutineControllerTest {
     }
 
     @Test
-    public void testFindTrainingsSuccess() throws Exception {
+    public void testViewUserTrainingsSuccess() throws Exception {
         AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         Icon icon = new Icon("iconName", "iconPath");
         iconDao.save(icon);
@@ -819,7 +819,7 @@ public class RoutineControllerTest {
         );
 
 
-        mockMvc.perform(get("/api/routines/findTrainings?page=" + 0 + "&size=10")
+        mockMvc.perform(get("/api/routines/findTrainings/"+user.getUserDto().getId()+"?page=" + 0 + "&size=10")
                 .header("Authorization", "Bearer " + user.getServiceToken())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -828,7 +828,7 @@ public class RoutineControllerTest {
     }
 
     @Test
-    public void testFindTrainingsSuccess0results() throws Exception {
+    public void testViewUserTrainingsSuccess0Results() throws Exception {
         AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
         Icon icon = new Icon("iconName", "iconPath");
         iconDao.save(icon);
@@ -841,7 +841,7 @@ public class RoutineControllerTest {
         
 
 
-        mockMvc.perform(get("/api/routines/findTrainings?page=" + 0 + "&size=10")
+        mockMvc.perform(get("/api/routines/findTrainings/"+user.getUserDto().getId()+"?page=" + 0 + "&size=10")
                 .header("Authorization", "Bearer " + user.getServiceToken())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

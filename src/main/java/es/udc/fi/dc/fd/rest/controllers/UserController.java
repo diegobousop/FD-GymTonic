@@ -308,7 +308,7 @@ public class UserController {
 
 	@GetMapping("/{id}")
 	public UserDto getUser(@RequestAttribute Long userId, @PathVariable Long id) throws InstanceNotFoundException {
-		return toUserDto(userService.getUserById(userId));
+		return toUserDto(userService.getUserById(id));
 	}
 
 	@PostMapping("/ban/{id}")

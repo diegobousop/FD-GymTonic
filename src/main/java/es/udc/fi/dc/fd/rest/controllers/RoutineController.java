@@ -252,9 +252,9 @@ public class RoutineController {
      *  @return DTO el resumen de los entrenamientos
      *  @throws InstanceNotFoundException si el entrenamiento no existe
      */
-    @GetMapping("/findTrainings")
-    public BlockDto<TrainingDetailsDto> findRoutinesWithTrainings(
-            @RequestAttribute Long userId,
+    @GetMapping("/findTrainings/{userId}")
+    public BlockDto<TrainingDetailsDto> viewUserTrainings(
+            @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
 
