@@ -19,6 +19,7 @@ export const searchResults = (params, onSuccess, onErrors) => {
   if (params.trainerName) queryParams.append("trainerName", params.trainerName);
   if (params.muscleGroup) queryParams.append("muscleGroup", params.muscleGroup);
   if (params.difficulty) queryParams.append("difficulty", params.difficulty);
+  if (params.equipment) queryParams.append("equipment", params.equipment);
   if (params.limit) queryParams.append("limit", params.limit);
 
   return appFetch(
