@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +31,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.UserService;
 
-import es.udc.fi.dc.fd.model.entities.Icon;
-import es.udc.fi.dc.fd.model.entities.IconDao;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
@@ -851,6 +842,37 @@ public class RoutineControllerTest {
 
     }
 
+    @Test
+    public void testGetTrainingDetailsSuccess() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1",
+                new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+       Training training= routineService.createTrainingFromRoutine(
+                user.getUserDto().getId(),
+                "Training 1",
+                "Description of training",
+                45L,
+                true,
+                series,
+                routine.getId()
+        );
+
+        mockMvc.perform(get("/api/routines/trainings/"+training.getId()+"/details")
+                        .requestAttr("userId", user.getUserDto().getId())
+                        .header("Authorization", "Bearer " + user.getServiceToken())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(training.getName()))
+                .andExpect(jsonPath("$.description").value(training.getDescription()));
+
+    }
 
     @Test
     public void testFindDayTrainingsSuccess() throws Exception {
