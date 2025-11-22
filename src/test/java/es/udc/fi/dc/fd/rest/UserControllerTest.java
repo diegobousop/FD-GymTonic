@@ -53,6 +53,8 @@ import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 @ActiveProfiles("test")
 @Transactional
 public class UserControllerTest {
+
+	
 	
 	/** The Constant PASSWORD. */
 	private static final String PASSWORD = "password";
@@ -78,6 +80,9 @@ public class UserControllerTest {
 	/** The user controller. */
 	@Autowired
 	private UserController userController;
+
+
+	
 
 	/**
 	 * Creates the authenticated user.
@@ -128,6 +133,51 @@ public class UserControllerTest {
 		return toUserDto(user);
 	}
 
+		@Test
+		public void testParseGender_Male() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "MALE");
+			assertEquals(Users.Gender.MALE, result);
+		}
+
+		@Test
+		public void testParseGender_Female() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "FEMALE");
+			assertEquals(Users.Gender.FEMALE, result);
+		}
+
+		@Test
+		public void testParseGender_Other() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "other");
+			assertEquals(Users.Gender.OTHER, result);
+		}
+
+		@Test
+		public void testParseGender_Null() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, (Object) null);
+			assertNull(result);
+		}
+
+		@Test
+		public void testToLocalDate() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("toLocalDate", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "22-11-2025");
+			assertEquals(java.time.LocalDate.of(2025, 11, 22), result);
+		}
+
 	/**
 	 * Test post login ok.
 	 *
@@ -149,6 +199,95 @@ public class UserControllerTest {
 				.andExpect(status().isOk());
 
 	}
+
+	@Test
+	public void testPostSignUp_Ok() throws Exception {
+
+
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("USER");
+		registerParams.setHeight(1.75f);
+		registerParams.setWeight(70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+
+	}
+
+
+	@Test
+	public void testPostSignUp_NegativeHeight() throws Exception {
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("USER");
+		registerParams.setHeight(-1.75f);
+		registerParams.setWeight(70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	public void testPostSignUp_NegativeWeight() throws Exception {
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("USER");
+		registerParams.setHeight(1.75f);
+		registerParams.setWeight(-70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	public void testPostSignUp_Trainer() throws Exception {
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("TRAINER");
+		registerParams.setHeight(1.75f);
+		registerParams.setWeight(70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+	}
+
 
 	@Test
 	public void testPostChangePassword_Ok() throws Exception {
@@ -186,6 +325,26 @@ public class UserControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsBytes(newLogin)))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testPostChangePassword_WrongUser() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("userChangeCtrl", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		ChangePasswordParamsDto changePasswordParams = new ChangePasswordParamsDto();
+		changePasswordParams.setOldPassword(PASSWORD);
+		changePasswordParams.setNewPassword("NewPass123");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/" + (userId + 1) + "/changePassword")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId+1)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(changePasswordParams)))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -384,6 +543,29 @@ public class UserControllerTest {
 	}
 
 	@Test
+	public void testUnFollowUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		Long trainer2Id = trainer2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/follow/{id}", trainer2Id)
+            .content("")
+            .contentType(MediaType.APPLICATION_JSON)
+			.header("Authorization", "Bearer " + user.getServiceToken())
+			.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/unfollow/{id}", trainer2Id)
+            .content("")
+            .contentType(MediaType.APPLICATION_JSON)
+			.header("Authorization", "Bearer " + user.getServiceToken())
+			.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+	}
+
+	@Test
 	public void testGetFollowersWithNoFollowers() throws Exception{
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		user.getUserDto().getId();
@@ -571,4 +753,63 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$[0].receiverUserName").value("testuser2"));
 	}
 
+
+	@Test
+	public void testPostBlockUser_SelfBlockException() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("selfblock", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/block/{id}", userId)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testGetFollowersCount_Ok() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("followerCount", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		mockMvc.perform(get("/api/users/followers/count")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testGetBlocked_Ok() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("blocklist", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		mockMvc.perform(get("/api/users/getBlocked")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testGetFollowingCount_Ok() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("followingCount", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		mockMvc.perform(get("/api/users/following/count")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testGetGenders_Ok() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("genderUser", RoleType.USER);
+		mockMvc.perform(get("/api/users/getGenders")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0]").exists());
+	}
 }
