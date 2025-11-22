@@ -273,6 +273,8 @@ public class RoutineServiceTest {
 
     }
 
+ 
+
     
     @Test(expected = InstanceNotFoundException.class)
     public void testGetRoutineByIdNonExistent() throws LoginUserBlockedException, InstanceNotFoundException, PermissionException, IncorrectLoginException {
@@ -316,22 +318,22 @@ public class RoutineServiceTest {
     @Test(expected = InstanceNotFoundException.class)
     public void testModifyRoutineNotFound() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        routineService.modifyRoutine(999999L, creator.getId(), "any", new ArrayList<Long>(), 30L, true);
+        routineService.modifyRoutine(999999L, creator.getId(), "any", new ArrayList<>(), 30L, true);
     }
 
     @Test(expected = PermissionException.class)
     public void testModifyRoutinePermissionDenied() throws Exception {
         Users creator = userService.login("admin1", "12345");
         Users otherUser = userService.login("trainer1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
-        routineService.modifyRoutine(routine.getId(), otherUser.getId(), "new-name", new ArrayList<Long>(), 50L, true);
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<>(), 45L, true);
+        routineService.modifyRoutine(routine.getId(), otherUser.getId(), "new-name", new ArrayList<>(), 50L, true);
     }
 
     @Test(expected = InstanceNotFoundException.class)
     public void testModifyRoutineWithInvalidExercise() throws Exception {
         Users creator = userService.login("admin1", "12345");
-        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
-        routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<Long>(){{add(999999L);}}, 45L, true);
+        Routine routine = routineService.createRoutine(creator.getId(), "r1", new ArrayList<>(), 45L, true);
+        routineService.modifyRoutine(routine.getId(), creator.getId(), "r1", new ArrayList<>(){{add(999999L);}}, 45L, true);
     }
 
 
@@ -343,7 +345,7 @@ public class RoutineServiceTest {
         long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,4));
         Exercise exercise1 = exerciseDao.getReferenceById(exerciseId);
-        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<>(), 45L, true);
 
         List<Long> exerciseIds = new ArrayList<>();
         exerciseIds.add(exerciseId);
@@ -364,7 +366,7 @@ public class RoutineServiceTest {
         
         long exerciseId= exerciseService.addExercise(creator.getId(), createExercise("ejercicio de prueba 1",
                 "ejercicio de prueba", grupoMuscular.PECHO,4));
-        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<Long>(), 45L, true);
+        Routine rutina = routineService.createRoutine(creator.getId(), "r1", new ArrayList<>(), 45L, true);
 
         List<Long> exerciseIds = new ArrayList<>();
         exerciseIds.add(exerciseId);
@@ -457,7 +459,7 @@ public class RoutineServiceTest {
             routine.getId(),
             admin.getId(),
             "admin-modified",
-            new ArrayList<Long>(),
+            new ArrayList<>(),
             60L,
             true
         );
@@ -956,5 +958,14 @@ public class RoutineServiceTest {
         assertEquals(0, trainings.size());
     }
 
-
+    @Test
+    public void testGetRoutineByTraining() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        Training training = routineService.createTrainingFromRoutine(creator.getId(), "Training", "Desc", 60L, true, series, routine.getId());
+        Routine foundRoutine = routineService.getRoutineByTraining(training.getId());
+        assertEquals(routine.getId(), foundRoutine.getId());
+    }
 }

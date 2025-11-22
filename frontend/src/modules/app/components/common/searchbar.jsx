@@ -48,7 +48,8 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSubmit = (e) => {
@@ -70,6 +71,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
     <div className="relative w-full md:w-96" ref={containerRef}>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
+          id="search-input"
           type="text"
           className="flex-1 bg-[#1a1a1a] text-white border border-gray-600 px-3 py-2 text-sm 
                      focus:outline-none focus:ring-2 focus:ring-[#ff0000]"
@@ -91,6 +93,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
 
         <button
           type="submit"
+          aria-label="Buscar"
           className="border border-gray-600 bg-[#1a1a1a] text-white px-3 py-2 text-sm 
                      rounded-md hover:border-[#ff0000] focus:ring-2 focus:ring-[#ff0000]"
         >
@@ -99,6 +102,7 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
 
         <button
           type="button"
+          aria-label="Mostrar filtros"
           onClick={() => {
             setShowFilters((prev) => !prev);
             setShowSuggestions(false);
@@ -111,10 +115,15 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       </form>
 
       {showFilters && (
-        <div className="absolute z-40 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
-                        rounded-md shadow-lg p-3 text-white">
-          <label className="block mb-1 text-sm">Nombre del entrenador</label>
+        <div
+          className="absolute z-40 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
+                        rounded-md shadow-lg p-3 text-white"
+        >
+          <label htmlFor="trainerName" className="block mb-1 text-sm">
+            Nombre del entrenador
+          </label>
           <input
+            id="trainerName"
             type="text"
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
             value={filters.trainerName}
@@ -123,8 +132,11 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             }
           />
 
-          <label className="block mb-1 text-sm">Grupo muscular</label>
+          <label htmlFor="muscleGroup" className="block mb-1 text-sm">
+            Grupo muscular
+          </label>
           <select
+            id="muscleGroup"
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
             value={filters.muscleGroup}
             onChange={(e) =>
@@ -141,8 +153,11 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             <option value="FULLBODY">Fullbody</option>
           </select>
 
-          <label className="block mb-1 text-sm">Dificultad</label>
+          <label htmlFor="difficulty" className="block mb-1 text-sm">
+            Dificultad
+          </label>
           <select
+            id="difficulty"
             className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
             value={filters.difficulty || ""}
             onChange={(e) =>
@@ -155,11 +170,34 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
             <option value="DIFICIL">Difícil</option>
           </select>
 
+          <label htmlFor="equipment" className="block mb-1 text-sm">
+            Equipamiento
+          </label>
+          <select
+            id="equipment"
+            className="w-full border border-gray-600 rounded-md px-2 py-1 mb-2 text-sm text-black"
+            value={filters.equipment || ""}
+            onChange={(e) =>
+              setFilters({ ...filters, equipment: e.target.value })
+            }
+          >
+            <option value="">Todos</option>
+            <option value="POLEA_CABLE">Polea/Cable</option>
+            <option value="MAQUINA">Máquina</option>
+            <option value="PESO_LIBRE">Peso libre</option>
+            <option value="OTROS">Otros</option>
+          </select>
+
           <button
             type="button"
             className="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700"
             onClick={() =>
-              setFilters({ trainerName: "", muscleGroup: "", difficulty: "" })
+              setFilters({
+                trainerName: "",
+                muscleGroup: "",
+                difficulty: "",
+                equipment: "",
+              })
             }
           >
             Limpiar filtros
@@ -168,15 +206,19 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
       )}
 
       {loading && (
-        <div className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
-                        shadow-lg text-gray-400 px-3 py-2 text-sm">
+        <div
+          className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
+                        shadow-lg text-gray-400 px-3 py-2 text-sm"
+        >
           <Spinner />
         </div>
       )}
 
       {showSuggestions && !loading && suggestions.length > 0 && (
-        <div className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
-                        shadow-lg text-white max-h-[32rem] overflow-y-auto p-2">
+        <div
+          className="absolute z-50 bg-[#1a1a1a] border border-gray-700 mt-1 w-full 
+                        shadow-lg text-white max-h-[32rem] overflow-y-auto p-2"
+        >
           {groupedSuggestions.user.length > 0 && (
             <div className="mb-2">
               <div className="text-gray-400 text-xs uppercase mb-1 border-b border-gray-700 pb-1">
@@ -251,7 +293,12 @@ const SearchBar = ({ query, setQuery, filters, setFilters, onSearch }) => {
 SearchBar.propTypes = {
   query: PropTypes.string.isRequired,
   setQuery: PropTypes.func.isRequired,
-  filters: PropTypes.object.isRequired,
+  filters: PropTypes.shape({
+    trainerName: PropTypes.string,
+    muscleGroup: PropTypes.string,
+    difficulty: PropTypes.string,
+    equipment: PropTypes.string,
+  }).isRequired,
   setFilters: PropTypes.func.isRequired,
   onSearch: PropTypes.func.isRequired,
 };

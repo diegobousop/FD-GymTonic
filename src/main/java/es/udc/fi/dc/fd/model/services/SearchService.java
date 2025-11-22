@@ -15,5 +15,5 @@ public interface SearchService {
     List<SearchSuggestionDto> findSuggestions(String text, int limitPerType, Long searcherUserId);
     
     // Búsqueda completa con información del buscador
-    Map<String, List<SearchFullDto>> findFullResults(String text, String trainerName, String muscleGroup, int limit, String difficulty, Long searcherUserId);
+    Map<String, List<SearchFullDto>> findFullResults(String text, String trainerName, String muscleGroup, int limit, String difficulty, String equipment, Long searcherUserId);
 }

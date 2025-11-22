@@ -13,6 +13,12 @@ jest.mock("../../backend/routineService", () => ({
   },
 }));
 
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate
+}));
+
 let mockImplementation;
 
 describe("ViewRoutines", () => {
@@ -146,7 +152,7 @@ describe("ViewRoutines", () => {
         });
     });
 
-    it("navega a la página de detalles al hacer click en el nombre de una rutina", async () => {
+    it("navega a la página de detalles al hacer click en el boton", async () => {
         mockImplementation = (params, onSuccess) =>
         onSuccess({
             items: [
@@ -169,9 +175,9 @@ describe("ViewRoutines", () => {
         </MemoryRouter>
         );
 
-        const routineLink = await screen.findByRole("link", { name: /→/i });
-        await userEvent.click(routineLink);
+        const button = await screen.findByRole("button", { name: /ver detalles de rutina/i });
+        await userEvent.click(button);
 
-        expect(routineLink).toHaveAttribute("href", "/routines/5");
-    });
+        expect(mockNavigate).toHaveBeenCalledWith("/routines/5");
+      });
 });

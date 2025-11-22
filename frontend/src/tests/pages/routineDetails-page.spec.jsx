@@ -26,6 +26,7 @@ describe("RoutineDetailsPage", () => {
           { id: 1, name: "Press banca", grupoMuscular: "Pecho", descripcion: "Ejercicio básico de pecho" },
           { id: 2, name: "Dominadas", grupoMuscular: "Espalda", descripcion: "Ejercicio básico de espalda" },
         ],
+        modificationDate: "22/10/2024",
       });
     });
 
@@ -72,6 +73,7 @@ describe("RoutineDetailsPage", () => {
           duration: 50,
           exercises: [],
           creator: "trainer2",
+          modificationDate: "22/10/2024",
         });
     });
 

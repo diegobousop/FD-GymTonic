@@ -1,4 +1,6 @@
 import backend from "../../../../backend";
+import BubbleButton from '../common/bubble-button'
+import { svgIcons } from '../../../../config/constants'
 
 const RoutineActions = ({ user, routine, onEdit, onDeleted, onVisibilityChange, onError }) => {
   const canModify =
@@ -45,30 +47,33 @@ const RoutineActions = ({ user, routine, onEdit, onDeleted, onVisibilityChange, 
   return (
     <div className="flex items-center gap-3 flex-wrap mb-6">
 
-        <button
-            onClick={onEdit}
-            className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded-xl text-xl"
-            title="Editar rutina"
-        >
-            ✏️
-        </button>
+        <BubbleButton 
+          icon={<svgIcons.RoutineEditIcon
+              className="text-[#ff0000]"
+            />}
+          ariaLabel="Editar rutina"
+          size={50}
+          onClick={onEdit}
+        />
 
-        <button
-            onClick={handleDelete}
-            className="bg-gray-800 hover:bg-gray-800 text-white px-3 py-1 rounded-xl text-xl"
-            title="Eliminar rutina"
-        >
-            🗑️
-        </button>
+        <BubbleButton 
+          icon={<svgIcons.RoutineDeleteIcon
+              className="text-[#ff0000]"
+            />}
+          ariaLabel="Eliminar rutina"
+          size={50}
+          onClick={handleDelete}
+        />
 
         {user && user.userName === routine.creator &&
-            <button
-                onClick={handleVisibilityChange}
-                className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded-xl text-xl"
-                title={routine.isPublic ? "Hacer privada" : "Hacer pública"}
-                >
-                {routine.isPublic ? "🔒" : "🔓"}
-            </button>
+          <BubbleButton 
+            icon={<svgIcons.RoutineVisibilityIcon
+                className="text-[#ff0000]"
+              />}
+            ariaLabel="Cambiar visibilidad"
+            size={50}
+            onClick={handleVisibilityChange}
+          />
         }
     </div>
   );

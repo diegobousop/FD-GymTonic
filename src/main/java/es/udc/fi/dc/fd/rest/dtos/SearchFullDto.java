@@ -17,12 +17,13 @@ public class SearchFullDto {
     private RoleType rol;             // solo para usuario
 
     // ---- Campos adicionales para rutina ----
-    private String creatorUsername;   // nombre del creador
-    private Integer duration;         // duración en minutos
+    private String creatorUsername;
+    private Integer duration;
     private List<SearchExerciseForRoutineDto> exercises; // ejercicios con número de series
 
     // ---- Campo para ejercicio ----
-    private String grupoMuscular;     // grupo muscular del ejercicio
+    private String grupoMuscular;
+    private String equipment;
 
     public SearchFullDto() {}
 
@@ -48,9 +49,10 @@ public class SearchFullDto {
         return dto;
     }
 
-    public static SearchFullDto fromExercise(Long id, String exerciseName, String grupoMuscular) {
+    public static SearchFullDto fromExercise(Long id, String exerciseName, String grupoMuscular, String equipment) {
         SearchFullDto dto = new SearchFullDto(id, "exercise", exerciseName);
         dto.setGrupoMuscular(grupoMuscular);
+        dto.setEquipment(equipment);
         return dto;
     }
 
@@ -82,5 +84,8 @@ public class SearchFullDto {
 
     public RoleType getRol(){return rol;}
     public void setRol(RoleType rol){this.rol = rol;}
+
+    public String getEquipment() { return equipment; }
+    public void setEquipment(String equipment) { this.equipment = equipment; }
 
 }

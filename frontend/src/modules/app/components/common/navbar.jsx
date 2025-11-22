@@ -28,7 +28,7 @@ const Navbar = ({ activePage }) => {
   const { user } = useContext(UserContext);
   const [logo, setLogo] = useState(null);
   const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState({ trainerName: '', muscleGroup: '', difficulty: '' });
+  const [filters, setFilters] = useState({ trainerName: '', muscleGroup: '', difficulty: '', equipment: '' });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -50,8 +50,9 @@ const Navbar = ({ activePage }) => {
     const trainerName = searchParams.get('trainerName') || '';
     const muscleGroup = searchParams.get('muscleGroup') || '';
     const difficulty = searchParams.get('difficulty') || '';
+    const equipment = searchParams.get('equipment') || '';
     setQuery(text);
-    setFilters({ trainerName, muscleGroup, difficulty });
+    setFilters({ trainerName, muscleGroup, difficulty, equipment });
   }, [searchParams]);
 
   const handleSearch = () => {
@@ -60,6 +61,7 @@ const Navbar = ({ activePage }) => {
     if (filters.trainerName.trim()) params.append('trainerName', filters.trainerName);
     if (filters.muscleGroup) params.append('muscleGroup', filters.muscleGroup);
     if (filters.difficulty) params.append('difficulty', filters.difficulty);
+    if (filters.equipment) params.append('equipment', filters.equipment);
     navigate(`/search/full?${params.toString()}`);
   };
 

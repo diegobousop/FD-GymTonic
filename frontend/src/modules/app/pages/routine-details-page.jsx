@@ -117,9 +117,12 @@ const handleExerciseUpdated = () => {
       </div>
 
       <div className="flex flex-row items-center self-start mt-5 mb-5 flex-wrap">
+        <img src={routine.creatorAvatarBase64} className="w-[40px] h-[40px]"/>
         <p className="mx-3">{routine.creator}</p>
         <span className="text-white">•</span>
         <p className="mx-3">{routine.duration} minutos</p>
+        <span className="text-white">•</span>
+        <p className="mx-3">{routine.modificationDate.slice(0, 10)}</p>
       </div>
 
       {!editing ? (
