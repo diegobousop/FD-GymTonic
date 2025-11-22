@@ -54,7 +54,8 @@ describe('RoutineDetailsPage', () => {
     exercises: [
       { id: 1, name: 'Exercise 1' },
       { id: 2, name: 'Exercise 2' }
-    ]
+    ],
+    modificationDate: "22/10/2024"
   };
 
   const mockUser = {
