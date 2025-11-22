@@ -110,7 +110,7 @@ const refreshSeries = () => {
 
           {user && user.userName === routineCreator &&
             <BubbleButton 
-              icon={<svgIcons.CreateRoutineIcon
+              icon={<svgIcons.EditSeriesIcon
                   className="text-[#ff0000]"
                 />}
               ariaLabel="Editar Series"
@@ -133,9 +133,9 @@ const refreshSeries = () => {
       {/* Descanso */}
       <div className="border-2 border-red-700 rounded-2xl mt-3 flex items-center w-1/3 justify-between">
         <div className="flex items-center">
-          <span className="border-2 border-red-600 bg-red-600 text-white text-sm px-1 rounded-l-xl flex items-center">
-            🕒
-          </span>
+          <div className="border-2 border-red-600 bg-red-600 text-white text-sm px-1 rounded-l-xl flex items-center justify-center">
+            <svgIcons.TimeIcon className="text-black w-4 h-4" />
+          </div>
           <p className="text-white text-sm ml-2">DESCANSO:</p>
           <p className="text-gray-300 text-sm ml-1">{formatRestTime(ex.restTime)}</p>
         </div>
