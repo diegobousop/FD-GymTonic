@@ -46,7 +46,7 @@ public interface RoutineService {
 
     Block<Users> getFollowersByRoutine(Long routineId, Long trainerId, Pageable pageable) throws InstanceNotFoundException, PermissionException;
 
-    Page<Training> findTrainings(Long userId, Pageable pageable) throws InstanceNotFoundException, PermissionException;
+    Page<Training> findTrainings(Long userId, Long Id,Pageable pageable) throws InstanceNotFoundException, PermissionException;
 
     Page<Training> findTrainingsByDay(Long userId, int day, int month, int year, Pageable pageable) throws InstanceNotFoundException, PermissionException;
 
@@ -55,4 +55,6 @@ public interface RoutineService {
     List<Training> findTrainingsByYear(Long userId, int year) throws InstanceNotFoundException, PermissionException;
 
     Routine getRoutineByTraining(Long trainingId) throws InstanceNotFoundException;
+
+    Training findTrainingById(Long trainingId) throws InstanceNotFoundException;
 }

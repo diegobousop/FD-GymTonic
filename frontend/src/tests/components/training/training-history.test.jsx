@@ -75,7 +75,7 @@ describe('TrainingHistory', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    backend.routineService.viewUserTrainings.mockImplementation((page, size, onSuccess) => {
+    backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess) => {
       onSuccess({ items: mockTrainings, existMoreItems: false });
     });
     backend.routineService.viewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
@@ -115,7 +115,7 @@ describe('TrainingHistory', () => {
     );
 
     await waitFor(() => {
-      expect(backend.routineService.viewUserTrainings).toHaveBeenCalledWith(
+      expect(backend.routineService.viewUserTrainings).toHaveBeenCalledWith(1,
         0,
         5,
         expect.any(Function),
@@ -130,7 +130,7 @@ describe('TrainingHistory', () => {
   });
 
   it('muestra mensaje cuando no hay entrenamientos disponibles', async () => {
-    backend.routineService.viewUserTrainings.mockImplementation((page, size, onSuccess) => {
+    backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess) => {
       onSuccess({ items: [], existMoreItems: false });
     });
 
@@ -307,7 +307,7 @@ describe('TrainingHistory', () => {
   });
 
   it('maneja error al cargar entrenamientos', async () => {
-    backend.routineService.viewUserTrainings.mockImplementation((page, size, onSuccess, onError) => {
+    backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess, onError) => {
       onError('Error loading trainings');
     });
 
@@ -328,7 +328,7 @@ describe('TrainingHistory', () => {
   });
 
   it('actualiza página cuando se hace clic en botón siguiente del paginador', async () => {
-    backend.routineService.viewUserTrainings.mockImplementation((page, size, onSuccess) => {
+    backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess) => {
       onSuccess({ items: mockTrainings, existMoreItems: true });
     });
 

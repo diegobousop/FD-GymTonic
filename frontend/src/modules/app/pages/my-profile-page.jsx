@@ -13,7 +13,7 @@ import { svgIcons } from '../../../config/constants'
 const MyProfilePage = () => {
   const navigate = useNavigate()
 
-  const { user, setUser, handleLogout } = useContext(UserContext);
+  const { user,  handleLogout } = useContext(UserContext);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [profile, setProfile] = useState(null);
@@ -72,6 +72,10 @@ const MyProfilePage = () => {
               >
                 {followingCount} seguidos
               </Link>
+              <span>.</span>
+              <div>
+                <strong>IMC:</strong> {user.imc}
+              </div>
             </div>
           </div>
 

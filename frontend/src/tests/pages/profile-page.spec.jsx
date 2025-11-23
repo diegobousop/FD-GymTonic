@@ -4,8 +4,10 @@ import '@testing-library/jest-dom';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import ProfilePage from '../../modules/app/pages/profile-page';
 import * as userService from '../../backend/userService';
+import * as routineService from "../../backend/routineService";
 
 jest.mock('../../backend/userService');
+jest.mock('../../backend/routineService');
 
 jest.mock('../../modules/app/components/common/spinner', () => {
   return function MockSpinner() {
@@ -333,5 +335,39 @@ describe('ProfilePage', () => {
       expect(link).toHaveStyle({ textDecoration: 'underline' });
     });
   });
+  it('muestra la lista de entrenamientos del usuario', async () => {
+    // Mock de la respuesta de los entrenamientos
+    routineService.viewUserTrainings.mockImplementation(
+        (userId, page, size, onSuccess, onError) => {
+          onSuccess({
+            items: [
+              { id: 10, name: "Press banca",
+                duration: 50,
+                description: "Pecho",
+                exercises: [],
+                creationDate: "2024-01-10T10:00:00",
+                creatorId: 1,
+                creatorUserName: "testuser",
+                routineId: 5,
+                routineName: "Fuerza",
+                isPublic: true}
+            ],
+            totalPages: 1
+          });
+        }
+    );
+    renderProfilePage();
+
+
+    // Esperar a que cargue
+    await waitFor(() => {
+      expect(screen.getByText('Press banca')).toBeInTheDocument();
+    });
+
+    // Verificar que es un enlace clicable
+    const link = screen.getByText('Press banca');
+    expect(link).toHaveAttribute('href', '/trainings/10/details');
+  });
+
 });
 

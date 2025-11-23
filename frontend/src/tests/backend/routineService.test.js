@@ -289,10 +289,10 @@ describe('routineService', () => {
       const mockOnSuccess = jest.fn();
       const mockOnErrors = jest.fn();
 
-      routineService.viewUserTrainings(0, 10, mockOnSuccess, mockOnErrors);
+      routineService.viewUserTrainings(4,0, 10, mockOnSuccess, mockOnErrors);
 
       expect(appFetch).toHaveBeenCalledWith(
-        '/routines/findTrainings?page=0&size=10',
+        `/routines/findTrainings/4?page=0&size=10`,
         expect.objectContaining({ method: 'GET' }),
         mockOnSuccess,
         mockOnErrors

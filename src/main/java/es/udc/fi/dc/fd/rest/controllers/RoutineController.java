@@ -243,14 +243,24 @@ public class RoutineController {
         return UserConversor.toBlockResumeUserDto(followersBlock);
     }
 
-    @GetMapping("/findTrainings")
-    public BlockDto<TrainingDetailsDto> findRoutinesWithTrainings(
+    /**
+     * Obtener los entrenamientos () de un usuario
+     * Requiere que el usuario esté autenticado y sea el propietario del entrenamiento o seguidor de este
+     *  @param id ID del usuario que realiza la solicitud (obtenido del atributo de la solicitud)
+     *  @param  page número de página para paginación
+     *  @param  size tamaño de página para paginación
+     *  @return DTO el resumen de los entrenamientos
+     *  @throws InstanceNotFoundException si el entrenamiento no existe
+     */
+    @GetMapping("/findTrainings/{id}")
+    public BlockDto<TrainingDetailsDto> viewUserTrainings(
+            @PathVariable Long id,
             @RequestAttribute Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Training> trainingsPage = routineService.findTrainings(userId, pageable);
+        Page<Training> trainingsPage = routineService.findTrainings(id, userId,pageable);
 
         List<TrainingDetailsDto> items = new ArrayList<>();
 
@@ -265,6 +275,27 @@ public class RoutineController {
         }
 
         return new BlockDto<>(items, trainingsPage.hasNext());
+    }
+
+    /**
+     * Obtener los detalles de un entrenamiento específico, incluyendo las series asociadas
+     * Requiere que el usuario esté autenticado y sea el propietario del entrenamiento o seguidor de este
+     *  @param userId ID del usuario que realiza la solicitud (obtenido del atributo de la solicitud)
+     *  @param trainingId ID del entrenamiento cuyos detalles se desean obtener
+     *  @return DTO con los detalles completos del entrenamiento
+     *  @throws InstanceNotFoundException si el entrenamiento no existe
+     */
+    @GetMapping("/trainings/{trainingId}/details")
+    public TrainingDetailsDto getTrainingDetails(@RequestAttribute Long userId, @PathVariable Long trainingId) throws InstanceNotFoundException {
+        Training training = routineService.findTrainingById(trainingId);
+        List<ExerciseRoutineDto> exercises = new ArrayList<>();
+        Routine routine = routineService.getRoutineByTraining(trainingId);
+
+        for (Exercise exercise : routineService.findTrainingExercises(trainingId)) {
+                List<Serie> series = exerciseService.findExerciseSeriesInTraining(trainingId, exercise.getId());
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
+        }
+        return RoutineConversor.toTrainingDetailsDto(training, exercises, routine);
     }
 
     @GetMapping("/getTrainingCalendarStats")
@@ -285,7 +316,7 @@ public class RoutineController {
 
         Page<Training> trainingsPage = routineService.findTrainingsByDay(userId, day, month, year, pageable);
 
-        List<TrainingDetailsDto> items = new ArrayList<>();
+            List<TrainingDetailsDto> items = new ArrayList<>();
 
         for (Training t : trainingsPage.getContent()) {
             List<ExerciseRoutineDto> exercises = new ArrayList<>();

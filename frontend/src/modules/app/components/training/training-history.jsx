@@ -28,7 +28,9 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
 
     const viewLastTrainings = (pageNumber) => {
         setLoading(true);
+        if(user!=null){
         backend.routineService.viewUserTrainings(
+            user.id,
         pageNumber,
         size,
           (data) => {
@@ -41,7 +43,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
             setError(err || "Error inesperado al cargar entrenamientos");
             setLoading(false);
           }
-        );
+        );}
       };
 
     const viewDayTrainings = (pageNumber) => {
@@ -138,20 +140,22 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
                 <div className="flex flex-col w-full">
                   <p className="inline-block w-fit text-white hover:text-[#CA0D0A]">{training.creatorUserName}</p>
                   <p className="mb-5">{formatDate(training.creationDate)}</p>
-                  <p className="font-semibold text-[25px] text-white mb-3">{training.name}</p>
+                  <Link 
+                  to={`/trainings/${training.id}/details`} 
+                  className="font-semibold text-[25px] text-white mb-3 hover:text-[#CA0D0A]">
+                    {training.name}
+                  </Link>
                   <p className="mb-3 text-white">{training.description}</p>
                   <div className="flex flex-row gap-10">
                     <p className="text-[12px] w-[12%]">Duración</p>
                     <p className="text-[12px] w-[10%]">Ejercicios</p>
-                    <p className="text-[12px] w-[10%]">Dificultad</p>
                     <p className="text-[12px] w-[40%] ml-4">Rutina</p> 
                   </div>
                   <div className="flex flex-row gap-10">
                     <p className="text-[25px] text-left w-[12%] text-white">{training.duration} min</p>
                     <p className="text-[25px] text-left w-[10%] text-white">{training.exercises.length}</p>
-                    <p className="text-[25px] text-left w-[10%] text-white">Iniciación</p>
                     <Link
-                      to={`/routines/${training.routineId}`}
+                      to={`/trainings/${training.routineId}/details`}
                       className="text-[25px] text-left w-[40%] ml-4 text-white overflow-hidden text-ellipsis whitespace-nowrap hover:text-[#CA0D0A] cursor-pointer"
                     >
                       {training.routineName}

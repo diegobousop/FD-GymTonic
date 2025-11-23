@@ -459,7 +459,7 @@ public class UserControllerTest {
 		mockMvc.perform(get("/api/users/{id}", userId+1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
-		).andExpect(status().isOk());
+		).andExpect(status().isNotFound());
 	}
 
 	@Test

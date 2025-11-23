@@ -4,10 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -15,19 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.RoutineDao;
-import es.udc.fi.dc.fd.model.entities.RoutineExercise;
-import es.udc.fi.dc.fd.model.entities.RoutineExerciseId;
-import es.udc.fi.dc.fd.model.entities.RoutineFollow;
-import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
-import es.udc.fi.dc.fd.model.entities.Training;
-import es.udc.fi.dc.fd.model.entities.TrainingDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -53,7 +43,11 @@ public class RoutineServiceImpl implements RoutineService {
     private TrainingDao trainingDao;
 
     @Autowired
+    private UserDao userDao;
+
+    @Autowired
     private RoutineFollowDao routineFollowDao;
+
     @Autowired
     private NotificationService notificationService;
 
@@ -407,15 +401,40 @@ public class RoutineServiceImpl implements RoutineService {
 
         return new Block<>(followers, followsPage.hasNext());
     }
-
+    /*userId creador, Id el que lo busca*/
     @Override
-    public Page<Training> findTrainings(Long userId, Pageable pageable) throws InstanceNotFoundException, PermissionException {
+    public Page<Training> findTrainings(Long userId, Long id,Pageable pageable) throws InstanceNotFoundException, PermissionException {
+        boolean esDuenho=Objects.equals(userId, id);
+            Users user = userDao.findById(id)
+                    .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(id) ));
+            Users requestedUser = userDao.findById(userId)
+                    .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(userId)));
+            if (!esDuenho) {
+                if (!user.getFollowing().contains(requestedUser))
+                    return Page.empty();
+                else {
+                    Page<Training> trainings = trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
+                    List<Training> filtered = trainings.stream()
+                            .filter(Training::getIsPublic)
+                            .toList();
+                    return new PageImpl<>(filtered, pageable, filtered.size());
+                }
+            }
         return trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
     }
 
     @Override
     public List<Exercise> findTrainingExercises(Long trainingId) throws InstanceNotFoundException {
         return exerciseDao.findExercisesByTrainingId(trainingId);
+    }
+
+    @Override
+    public Training findTrainingById (Long trainingId) throws InstanceNotFoundException {
+        Optional<Training> optionalTraining = trainingDao.findById(trainingId);
+        if (optionalTraining.isEmpty()) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+        return optionalTraining.get();
     }
 
     @Override

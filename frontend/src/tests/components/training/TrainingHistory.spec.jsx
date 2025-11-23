@@ -64,7 +64,7 @@ describe('TrainingHistory', () => {
   
 
   test('estado vacío sin filtro (ningún entrenamiento)', async () => {
-    mockViewUserTrainings.mockImplementation((page, size, onSuccess) => {
+    mockViewUserTrainings.mockImplementation((userId,page, size, onSuccess) => {
       onSuccess({ items: [], existMoreItems: false })
     })
 
@@ -118,11 +118,11 @@ describe('TrainingHistory', () => {
 
   test('paginación: al hacer click en Next llama a viewUserTrainings con página siguiente', async () => {
     // Primera llamada (page 0)
-    mockViewUserTrainings.mockImplementationOnce((page, size, onSuccess) => {
+    mockViewUserTrainings.mockImplementationOnce((userId,page, size, onSuccess) => {
       onSuccess({ items: [makeTraining(1)], existMoreItems: true })
     })
     // Segunda llamada (page 1)
-    mockViewUserTrainings.mockImplementationOnce((page, size, onSuccess) => {
+    mockViewUserTrainings.mockImplementationOnce((userId,page, size, onSuccess) => {
       onSuccess({ items: [makeTraining(2)], existMoreItems: false })
     })
 
@@ -149,8 +149,8 @@ describe('TrainingHistory', () => {
       expect(screen.getByText(/Entrenamiento 2/i)).toBeInTheDocument()
     )
 
-    expect(mockViewUserTrainings).toHaveBeenNthCalledWith(1, 0, 5, expect.any(Function), expect.any(Function))
-    expect(mockViewUserTrainings).toHaveBeenNthCalledWith(2, 1, 5, expect.any(Function), expect.any(Function))
+    expect(mockViewUserTrainings).toHaveBeenNthCalledWith(1,undefined, 0, 5, expect.any(Function), expect.any(Function))
+    expect(mockViewUserTrainings).toHaveBeenNthCalledWith(2, undefined,1, 5, expect.any(Function), expect.any(Function))
   })
 
   test('estado vacío con filtro día muestra mensaje específico', async () => {
@@ -176,7 +176,7 @@ describe('TrainingHistory', () => {
   })
 
   test('muestra duración y número de ejercicios', async () => {
-    mockViewUserTrainings.mockImplementation((page, size, onSuccess) => {
+    mockViewUserTrainings.mockImplementation((userId,page, size, onSuccess) => {
       onSuccess({ items: [makeTraining(5)], existMoreItems: false })
     })
 
