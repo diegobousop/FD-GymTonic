@@ -21,11 +21,15 @@ const formatEnum = (value) =>
         .replace(/\b\w/g, (l) => l.toUpperCase())
     : "";
 
-const formatRestTime = (seconds) =>
-  seconds < 60
-    ? `${seconds} seg`
-    : `${Math.floor(seconds / 60)} min${seconds % 60 > 0 ? ` ${seconds % 60} seg` : ""}`;
-
+const formatRestTime = (seconds) => {
+  if (seconds < 60) {
+    return `${seconds} seg`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  const secondsPart = remaining > 0 ? ` ${remaining} seg` : "";
+  return `${minutes} min${secondsPart}`;
+};
 
 const refreshSeries = () => {
     // Si las series ya vienen como prop, no hacer fetch
@@ -63,7 +67,7 @@ const refreshSeries = () => {
       {/* Detalles de ejercicio */}
       <div className="border-2 border-red-700 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
           {/* IZQUIERDA: Imagen, nombre y descripción */}
-          <img src={ex.exerciseImageBase64} className="w-[80px] h-[80px]"/>
+          <img src={ex.exerciseImageBase64} alt={ex.name} className="w-[80px] h-[80px]"/>
           <div className="flex flex-col mb-3 sm:mb-0 sm:w-1/3">
               <h3 className="text-xl text-white font-bold">
               {ex.name}

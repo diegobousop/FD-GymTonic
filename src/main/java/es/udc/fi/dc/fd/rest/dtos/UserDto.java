@@ -131,6 +131,7 @@ public class UserDto {
 		this.gender = gender;
 		this.birthDate = birthDate;
 		this.imc = weight / ((height / 100f) * (height / 100f));
+		this.idBlocked = idBlockedList;
 	} 	
 
 

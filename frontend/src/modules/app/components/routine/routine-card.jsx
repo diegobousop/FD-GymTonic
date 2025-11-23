@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import BubbleButton from '../common/bubble-button'
 import { svgIcons } from '../../../../config/constants'
+import PropTypes from 'prop-types';
 
 const RoutineCard = ({ routine }) => {
       const navigate = useNavigate()
@@ -40,5 +41,9 @@ const RoutineCard = ({ routine }) => {
                 />
         </div>
     )}
+
+RoutineCard.propTypes = {
+  routine: PropTypes.object.isRequired,
+};
 
 export default RoutineCard;

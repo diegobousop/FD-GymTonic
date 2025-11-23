@@ -129,11 +129,7 @@ const ExerciseTracker = ({ key, exercise, onUpdateSerie }) => {
 
 ExerciseTracker.propTypes = {
   key: PropTypes.number,
-  exercise: PropTypes.shape({
-    id: PropTypes.number,
-    name: PropTypes.string,
-    numeroSeries: PropTypes.number,
-  }),
+  exercise: PropTypes.object.isRequired,
   onUpdateSerie: PropTypes.func
 };
 
