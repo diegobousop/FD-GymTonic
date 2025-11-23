@@ -800,6 +800,56 @@ public class RoutineServiceTest {
     }
 
     @Test
+    public void userFindOtherCreatedTrainingSuccess2() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("user2", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        userService.followUser(user.getId(),creator.getId());
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1",
+                new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+        routineService.createTrainingFromRoutine(
+                creator.getId(),
+                "Training 1",
+                "Description of training",
+                45L,
+                true,
+                series,
+                routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
+        assertEquals(1, trainings.size());
+    }
+
+    @Test
+    public void userFindOtherCreatedTrainingFailed3() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("user2", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        userService.followUser(user.getId(),creator.getId());
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1",
+                new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+        routineService.createTrainingFromRoutine(
+                creator.getId(),
+                "Training 1",
+                "Description of training",
+                45L,
+                false,
+                series,
+                routine.getId()
+        );
+
+        List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
+        assertEquals(0, trainings.size());
+    }
+
+    @Test
     public void userFindOtherCreatedTrainingFailed1() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users creator = userService.login("user2", "12345");
         Users user = userService.login("user1", "12345");

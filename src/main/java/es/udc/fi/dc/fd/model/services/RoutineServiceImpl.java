@@ -10,6 +10,7 @@ import java.util.Optional;
 import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,7 @@ public class RoutineServiceImpl implements RoutineService {
 
     @Autowired
     private RoutineFollowDao routineFollowDao;
+
     @Autowired
     private NotificationService notificationService;
 
@@ -401,14 +403,22 @@ public class RoutineServiceImpl implements RoutineService {
     }
     /*userId creador, Id el que lo busca*/
     @Override
-    public Page<Training> findTrainings(Long userId, Long Id,Pageable pageable) throws InstanceNotFoundException, PermissionException {
-        if (!Objects.equals(userId, Id)){
-            Users user = userDao.findById(Id)
-                    .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(Id) ));
+    public Page<Training> findTrainings(Long userId, Long id,Pageable pageable) throws InstanceNotFoundException, PermissionException {
+        boolean esDuenho=Objects.equals(userId, id);
+            Users user = userDao.findById(id)
+                    .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(id) ));
             Users requestedUser = userDao.findById(userId)
                     .orElseThrow(() -> new InstanceNotFoundException("user not found", userDao.findById(userId)));
-                if (user.getFollowing().isEmpty()&&!user.getFollowing().contains(requestedUser) )
+            if (!esDuenho) {
+                if (!user.getFollowing().contains(requestedUser))
                     return Page.empty();
+                else {
+                    Page<Training> trainings = trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
+                    List<Training> filtered = trainings.stream()
+                            .filter(Training::getIsPublic)
+                            .toList();
+                    return new PageImpl<>(filtered, pageable, filtered.size());
+                }
             }
         return trainingDao.findByUserIdOrderByCreationDateDesc(userId, pageable);
     }

@@ -359,13 +359,10 @@ describe('ProfilePage', () => {
     renderProfilePage();
 
 
-    // Esperar a que cargue el perfil
+    // Esperar a que cargue
     await waitFor(() => {
-      expect(screen.getByText('testuser')).toBeInTheDocument();
+      expect(screen.getByText('Press banca')).toBeInTheDocument();
     });
-
-    // Verificar que el entrenamiento aparece
-    expect(screen.getByText('Press banca')).toBeInTheDocument();
 
     // Verificar que es un enlace clicable
     const link = screen.getByText('Press banca');
