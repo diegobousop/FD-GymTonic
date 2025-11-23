@@ -154,7 +154,7 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
                   <p className="text-[25px] text-left w-[12%] text-white">{training.duration} min</p>
                   <p className="text-[25px] text-left w-[10%] text-white">{training.exercises.length}</p>
                   <Link
-                    to={`/trainings/${training.routineId}/details`}
+                    to={`/routines/${training.routineId}`}
                     className="text-[25px] text-left w-[40%] ml-4 text-white overflow-hidden text-ellipsis whitespace-nowrap hover:text-[#CA0D0A] cursor-pointer"
                   >
                     {training.routineName}
