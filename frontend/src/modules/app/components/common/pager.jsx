@@ -1,3 +1,7 @@
+import { svgIcons } from '../../../../config/constants'
+import PropTypes from 'prop-types'
+
+
 const Pager = ({ back, next }) => (
   <nav aria-label="page navigation" className="mt-6">
     <ul className="flex justify-center space-x-4">
@@ -5,13 +9,9 @@ const Pager = ({ back, next }) => (
         <button
           onClick={back.onClick}
           disabled={!back.enabled}
-          className={`px-4 py-2 rounded ${
-            back.enabled
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-          }`}
+          className={`p-3 bg-[#262626] ${back.enabled ? 'hover:bg-[#3a3a3a]' : ''}`}
         >
-          Back
+          <svgIcons.BackIcon className={`w-[30px] h-auto ${back.enabled ? 'text-white' : 'text-gray-500'}`} />
         </button>
       </li>
 
@@ -19,17 +19,24 @@ const Pager = ({ back, next }) => (
         <button
           onClick={next.onClick}
           disabled={!next.enabled}
-          className={`px-4 py-2 rounded ${
-            next.enabled
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-          }`}
+          className={`p-3 bg-[#262626] ${next.enabled ? 'hover:bg-[#3a3a3a]' : ''}`}
         >
-          Next
+          <svgIcons.NextIcon className={`w-[30px] h-auto ${next.enabled ? 'text-white' : 'text-gray-500'}`} />
         </button>
       </li>
     </ul>
   </nav>
 );
+
+Pager.propTypes = {
+  back: PropTypes.shape({
+    onClick: PropTypes.func.isRequired,
+    enabled: PropTypes.bool.isRequired,
+  }).isRequired,
+  next: PropTypes.shape({
+    onClick: PropTypes.func.isRequired,
+    enabled: PropTypes.bool.isRequired,
+  }).isRequired,
+};
 
 export default Pager;

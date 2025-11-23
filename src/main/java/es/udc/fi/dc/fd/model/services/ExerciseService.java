@@ -1,11 +1,48 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.Optional;
+import java.util.List;
+
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
+import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyValidatedException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 
 
 public interface ExerciseService {
-    Long addExercise(Exercise exercise) throws DuplicateInstanceException;
 
-    Block<Exercise> getExercices(int page, int size);
+    Long addExercise(Long userId, Exercise exercise) throws DuplicateInstanceException, PermissionException, InstanceNotFoundException;
+    
+    Exercise getExerciseById(Long exerciseId) throws InstanceNotFoundException;
+
+    Block<Exercise> getValidatedExercises(int page, int size);
+
+    Block<Exercise> getUnvalidatedExercises(int page, int size);
+
+    Block<Serie> createSeries(Exercise exercise, Optional<Integer> n, long routine) throws  InstanceNotFoundException;
+
+    Serie createSerie(long exercise, long routine) throws InstanceNotFoundException;
+
+    Boolean removeSerie(long serieId) throws InstanceNotFoundException;
+
+    Serie editSerie(Serie serie,int repeticiones, int peso) throws DuplicateInstanceException;
+
+    Serie getSerie(Long serieId);
+
+    Block<Serie> getSeriesByExerciseAndRoutine(long exercise,long routine);
+
+    RoutineExercise getRoutineExercise(Long routineId, Long exerciseId);
+
+    RoutineExercise editRestTime(RoutineExercise routineExercise, int restTime);
+
+    Exercise validateExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
+
+    void declineExercise(Long userId, Long exerciseId) throws InstanceNotFoundException, PermissionException, AlreadyValidatedException;
+
+    void blockExercise(Long userId, Long exerciseId2) throws InstanceNotFoundException;
+
+    List<Serie> findExerciseSeriesInTraining(Long trainingId, Long exerciseId);
 } 

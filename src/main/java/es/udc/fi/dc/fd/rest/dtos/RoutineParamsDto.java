@@ -6,18 +6,20 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 
-public class RoutineParamsDto {     /// CAMBIAR EXERCISE POR LONG (SON IDS)
+public class RoutineParamsDto {     
     private String name;
     private Long duration; // Duration in minutes
     private List<Long> exercises;
+    private Boolean isPublic;
 
     public RoutineParamsDto() {
     }
 
-    public RoutineParamsDto(String name, Long duration, List<Long> exercises) {
+    public RoutineParamsDto(String name, Long duration, List<Long> exercises, Boolean isPublic) {
         this.name = name;
         this.duration = duration;
         this.exercises = exercises;
+        this.isPublic = isPublic;
     }
     @NotNull
     public String getName() {
@@ -41,5 +43,12 @@ public class RoutineParamsDto {     /// CAMBIAR EXERCISE POR LONG (SON IDS)
     }
     public void setExercises(List<Long> exercises) {
         this.exercises = exercises;
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 }

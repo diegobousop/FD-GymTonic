@@ -102,6 +102,15 @@ Steps to follow:
 - **Alfonso Landín**
 - **Javier Parapar**
 
+### Development Team 
+- **Diego Bouso Paz**
+- **Marcos López Barrio**
+- **Aarón Eiroa López**
+- **Alejandro Luis Núñez Alvarellos**
+- **Diego Otero Fontáns**
+- **Alejandro López Vila**
+- **Adrián Rodríguez López**
+
 ---
 
 IRLab ©2021

@@ -1,9 +1,17 @@
 package es.udc.fi.dc.fd.model.entities;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 
 /**
  * The Class User.
@@ -19,6 +27,10 @@ public class Users {
 		USER,
 		TRAINER,
 		ADMIN
+	}
+
+	public enum Gender {
+		MALE, FEMALE, OTHER
 	}
 
 	/** The id. */
@@ -39,8 +51,47 @@ public class Users {
 	/** The email. */
 	private String email;
 
+	/** The avatar. */
+	private Avatar avatar;
+
 	/** The role. */
 	private RoleType role;
+
+	/** Ban */
+	private Boolean banned;
+
+	/** The premium status. */
+	private Boolean premium;
+
+	/** The bank card. */
+	private String bankCard;
+
+	/** The followers. */
+	private List<Users> followers;
+
+	/** The following. */
+	private List<Users> following;
+
+	/** List of users that we blocked */
+	private List<Users> blockedUsers;
+	
+	/** List of users that blocked us */
+	private List<Users> whoBlockUs;
+
+
+	/** The weight. */
+	private float weight;
+
+	/** The height. */
+	private int height;
+
+	/** The gender. */
+	private Gender gender;
+
+	/** The birth date. */
+	private LocalDate birthDate;
+
+
 
 	/**
 	 * Instantiates a new user.
@@ -56,14 +107,32 @@ public class Users {
 	 * @param firstName the first name
 	 * @param lastName  the last name
 	 * @param email     the email
+	 * @param avatar    the avatar
 	 */
-	public Users(String userName, String password, String firstName, String lastName, String email) {
+	public Users(String userName, String password, String firstName, String lastName, String email, Avatar avatar) {
 
 		this.userName = userName;
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
+		this.avatar = avatar;
+		this.banned = false;
+	}
+
+	public Users( String userName, String password, String firstName, String lastName, String email,
+			Avatar avatar, RoleType role, List<Users> followers, List<Users> following, List<Users> blockedUsers, List<Users> usersWhoBlockUs) {
+		this.userName = userName;
+		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+		this.avatar = avatar;
+		this.role = role;
+		this.followers = followers;
+		this.following = following;
+		this.blockedUsers = blockedUsers;
+		this.whoBlockUs = usersWhoBlockUs;
 	}
 
 	/**
@@ -177,6 +246,28 @@ public class Users {
 	}
 
 	/**
+	 * Gets the avatar.
+	 *
+	 * @return the avatar
+	 */
+
+	@ManyToOne
+	@JoinColumn(name = "avatar")
+	public Avatar getAvatar() {
+		return avatar;
+	}
+
+	/**
+	 * Sets the avatar.
+	 *
+	 * @param avatar the new avatar
+	 */
+
+	public void setAvatar(Avatar avatar) {
+		this.avatar = avatar;
+	}
+
+	/**
 	 * Gets the role.
 	 *
 	 * @return the role
@@ -193,5 +284,190 @@ public class Users {
 	public void setRole(RoleType role) {
 		this.role = role;
 	}
+
+
+		/**
+	 * Gets if is blocked.
+	 *
+	 * @return the bool
+	 */
+	public Boolean getBanned() {
+		return banned;
+	}
+
+	/**
+	 * Sets the role.
+	 *
+	 * @param role the new role
+	 */
+	public void setBanned(Boolean banned) {
+		this.banned = banned;
+	}
+
+	/**
+	 * Gets if is premium.
+	 *
+	 * @return the bool
+	 */
+	public Boolean getPremium() {
+		return premium;
+	}
+
+	/**
+	 * Sets the premium status.
+	 *
+	 * @param premium the new premium status
+	 */
+	public void setPremium(Boolean premium) {
+		this.premium = premium;
+	}
+
+	/**
+	 * Gets the bank card.
+	 *
+	 * @return the bank card
+	 */
+	public String getBankCard() {
+		return bankCard;
+	}
+
+	/**
+	 * Sets the bank card.
+	 *
+	 * @param bankCard the new bank card
+	 */
+	public void setBankCard(String bankCard) {
+		this.bankCard = bankCard;
+	}
+
+
+	/**
+	 * Gets the followers.
+	 * @return the followers
+	 */
+	@ManyToMany
+	@JoinTable(name = "User_Follow",
+			joinColumns = @JoinColumn(name = "followed_id"),
+			inverseJoinColumns = @JoinColumn(name = "follower_id")
+	)
+	public List<Users> getFollowers() {
+		return followers;
+	}
+
+	
+	/**
+	 * Sets the followers.
+	 * @param followers the new followers
+	 */
+	public void setFollowers(List<Users> followers) {
+		this.followers = followers;
+	}
+	
+	@ManyToMany
+	@JoinTable(name = "BlockUser", 
+			joinColumns = @JoinColumn(name = "idBlocker"),
+			inverseJoinColumns = @JoinColumn(name = "idBlocked")
+	)
+	public List<Users> getBlockedUsers(){
+		return blockedUsers;
+	}
+
+	public void setBlockedUsers(List<Users> blockedUsers){this.blockedUsers = blockedUsers;}
+
+
+	@ManyToMany(mappedBy = "blockedUsers")
+	public List<Users> getWhoBlockUs(){return whoBlockUs;}
+
+	public void setWhoBlockUs(List<Users> whoBlockUs){this.whoBlockUs = whoBlockUs;}
+
+
+	/**
+	 * Gets the following.
+	 * @return the following
+	 */
+	@ManyToMany(mappedBy = "followers")
+	public List<Users> getFollowing() {
+		return following;
+	}
+
+	/**
+	 * Sets the following.
+	 * @param following the new following
+	 */
+	public void setFollowing(List<Users> following) {
+		this.following = following;
+	}
+
+	/**
+	 * Gets the weight.
+	 *
+	 * @return the weight
+	 */
+	public float getWeight() {
+		return weight;
+	}
+
+	/**
+	 * Sets the weight.
+	 *
+	 * @param weight the new weight
+	 */
+	public void setWeight(float weight) {
+		this.weight = weight;
+	}
+
+	/**
+	 * Gets the height.
+	 *
+	 * @return the height
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * Sets the height.
+	 *
+	 * @param height the new height
+	 */
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	/**
+	 * Gets the gender.
+	 * @return the gender
+	 */	
+	public Gender getGender() {
+		return gender;
+	}
+
+	/**
+	 * Sets the gender.
+	 * @param gender the new gender
+	 */
+	public void setGender(Gender gender) {
+		this.gender = gender;
+	}	
+
+	/**
+	 * Gets the birth date.
+	 *
+	 * @return the birth date
+	 */
+	public LocalDate getBirthDate() {
+		return birthDate;
+	}
+
+	/**
+	 * Sets the birth date.
+	 *
+	 * @param birthDate the new birth date
+	 */
+	public void setBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+
 
 }

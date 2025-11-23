@@ -15,6 +15,30 @@ const processLoginSignUp = (authenticatedUser, reauthenticationCallback, onSucce
   }
 };
 
+export const viewAllUsers = ({page, size}, onSuccess, onErrors) => 
+  appFetch(
+    `/users/getUsers?page=${page}`, 
+    fetchConfig("GET"),
+    onSuccess, 
+    onErrors
+  );
+  
+export const banUser = (userId, onSuccess, onErrors) => 
+  appFetch(
+    `/users/ban/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+    
+export const blockUser = (userId, onSuccess, onErrors) => 
+  appFetch(
+    `/users/block/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  )
+
 export const login = (
   userName,
   password,
@@ -38,7 +62,7 @@ export const tryLoginFromServiceToken = (
   const serviceToken = getServiceToken();
 
   if (!serviceToken) {
-    onSuccess();
+    reauthenticationCallback();
     return;
   }
 
@@ -86,3 +110,98 @@ export const changePassword = (user, oldPassword, newPassword, onSuccess, onErro
     }
   );
 };
+
+export const getBlockedUsers = (onSuccess, onErrors) => 
+  appFetch(
+    `/users/getBlocked`,
+    fetchConfig("GET"),
+    onSuccess,
+    async (err) => {
+      onErrors("Error inesperado")
+    }
+  )
+
+export const followUser = (userId, onSuccess, onErrors) =>
+  appFetch(
+    `/users/follow/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+
+export const unfollowUser = (userId, onSuccess, onErrors) =>
+  appFetch(
+    `/users/unfollow/${userId}`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowers = ({page,size}, onSuccess, onErrors) =>
+  appFetch(
+    `/users/followers?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowing = ({page,size}, onSuccess, onErrors) =>
+  appFetch(
+    `/users/following?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowersCount = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/followers/count`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
+export const getFollowingCount = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/following/count`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+
+export const getGenders = (onSuccess, onErrors) =>
+  appFetch(
+    `/users/getGenders`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+export const sendFollowRequest = (receiverId, onSuccess, onErrors) =>
+    appFetch(
+        `/users/sendFollowRequest/${receiverId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+export const acceptFollowRequest = (requestId, onSuccess, onErrors) =>
+    appFetch(
+        `/users/acceptFollowRequest/${requestId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+export const rejectFollowRequest = (requestId, onSuccess, onErrors) =>
+    appFetch(
+        `/users/rejectFollowRequest/${requestId}`,
+        fetchConfig("DELETE"),
+        onSuccess,
+        onErrors
+    );
+export const getFollowRequests = (onSuccess, onErrors) =>
+    appFetch(
+        `/users/FollowRequest`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
+

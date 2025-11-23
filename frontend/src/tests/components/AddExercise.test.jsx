@@ -25,25 +25,27 @@ describe('AddExercise', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        window.location.hash = '#/admin/addExercise'
+        globalThis.location.hash = '#/admin/addExercise'
     });
 
-    test('render the form correctly', () => {
+    test('renderiza el formulario correctamente', () => {
         renderComponent();
 
         expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Descripcion/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Categoría/i)).toBeInTheDocument();
-        fireEvent.click(screen.getByLabelText(/Categoría/i));
-        
-        expect(screen.getByText('PECHO')).toBeInTheDocument();
-        expect(screen.getByText('PIERNA')).toBeInTheDocument();
-        expect(screen.getByText('BRAZOS')).toBeInTheDocument();
-        
+        expect(screen.getByText(/Grupo Muscular/i)).toBeInTheDocument();
+        expect(screen.getByText(/Numero series/i)).toBeInTheDocument();
+        expect(screen.getByText(/Dificultad/i)).toBeInTheDocument();
+        expect(screen.getByText(/Equipamiento/i)).toBeInTheDocument();
+
+        expect(screen.getByText('Pecho')).toBeInTheDocument();
+        expect(screen.getByText('Pierna')).toBeInTheDocument();
+        expect(screen.getByText('Brazo')).toBeInTheDocument();
+
     });
 
     test('completa los campos de forma correcta', async () => {
-        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular, onSuccess, onError) => {
+        exerciseService.addExercise.mockImplementation((name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment, onSuccess, onError) => {
             onSuccess({
                 "id":6
             });
@@ -53,7 +55,10 @@ describe('AddExercise', () => {
 
         const nameInput = screen.getByLabelText(/Nombre/i);
         const DescripcionInput = screen.getByLabelText(/Descripcion/i);
-        const categoriaInput = screen.getByLabelText(/Categoría/i);
+        const numeroInput=screen.getByLabelText(/Numero series/i);
+        const categoriaInput = screen.getByText('Grupo Muscular');
+        const difficultyInput = screen.getByText('Dificultad');
+        const equipmentInput = screen.getByText('Equipamiento');
 
         fireEvent.change(nameInput, {
             target: { value: 'ejercicio 1' },
@@ -61,9 +66,18 @@ describe('AddExercise', () => {
         fireEvent.change(DescripcionInput, {
             target: { value: 'descripcion de prueba' },
         });
-        fireEvent.change(categoriaInput, {
-            target: {value: 'PECHO'}
+        fireEvent.change(numeroInput, {
+            target: { value: 1 },
         });
+
+        await waitFor(() => expect(screen.getByLabelText('Pecho')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('Pecho'));
+
+        await waitFor(() => expect(screen.getByLabelText('FACIL')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('FACIL'));
+
+        await waitFor(() => expect(screen.getByLabelText('Máquina')).toBeInTheDocument());
+        fireEvent.click(screen.getByLabelText('Máquina'));
 
         fireEvent.submit(screen.getByRole('button', {name: /enviar/i}));
 

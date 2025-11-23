@@ -1,19 +1,16 @@
-import React, { useEffect,useContext } from 'react'
+import React, { useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
-import { SVG_ICONS } from '../../../../config/constants'
+import { svgIcons } from '../../../../config/constants'
 import MenuItem from './menu-item'
-import { UserContext } from "./user-provider";
+import { UserContext } from "./user-provider"
 
-
-const { HomeIcon, ProfileIcon, CreateRoutineIcon } = SVG_ICONS
-
-
-
+const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = svgIcons
 
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
-  const {user} = useContext(UserContext)
+  const { user } = useContext(UserContext)
+
   // Leer la última página activa de localStorage al montar
   useEffect(() => {
     const lastPage = localStorage.getItem('sideMenuActivePage')
@@ -30,20 +27,32 @@ const SideMenu = ({ activePage, setActivePage }) => {
     if (path) navigate(path)
   }
 
-
   return (
-    <div className="flex flex-col w-[252px] border-r border-[#ff0000] h-full items-center px-8">
+    <div className="fixed left-0 flex flex-col w-[270px] border-r border-[#990000] h-full items-center px-4 py-20">
       <MenuItem title="Inicio" activePage={isActive} page={'home'} onClick={() => go('home', '/home')} icon={HomeIcon} />
       <MenuItem title="Ver perfil" activePage={isActive} page={'profile'} onClick={() => go('profile', '/profile')} icon={ProfileIcon} />
-      
+      <MenuItem title="Crear Entrenamiento" activePage={isActive} page={'createTraining'} onClick={() => go('createTraining', '/trainings/create-training')} icon={TrainingIcon} />
+      { user && (user.role === 'USER') &&
+      <MenuItem title="Solicitudes" activePage={isActive} page={'ViewFollowRequestsPage'} onClick={() => go('ViewFollowRequestsPage', '/profile/follow-request')} icon={ProfileIcon} />
+      }
       { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
         <MenuItem title="Crear rutina" activePage={isActive} page={'createRoutine'} onClick={() => go('createRoutine', '/routines/create-routine')} icon={CreateRoutineIcon} />
       }
-      <MenuItem title="Editar perfil" activePage={isActive} page={'userEdit'} onClick={() => go('userEdit', '/profileUpdate')} icon={ProfileIcon} />
-      { user && user.role === 'ADMIN' &&
+      { user && (user.role === 'ADMIN' || user.role === 'TRAINER') &&
         <MenuItem title="Crear Ejercicio" activePage={isActive} page={'createExercise'} onClick={() => go('createExercise', '/admin/addExercise')} icon={CreateRoutineIcon} />
       }
-      <MenuItem title="Cambiar contraseña" activePage={isActive} page={'change-password'} onClick={() => go('change-password', '/change-password')} icon={ProfileIcon} />
+      { user && user.role === 'ADMIN' &&
+        <MenuItem title="Validar Ejercicios" activePage={isActive} page={'validateExercises'} onClick={() => go('validateExercises', '/admin/validateExercises')} icon={CreateExerciseIcon} />
+      }     
+      { user && user.role === 'ADMIN' &&
+        <MenuItem title="Ver Usuarios" activePage={isActive} page={'seeUsers'} onClick={() => go('seeUsers', '/admin/seeUsers')} icon={ProfileIcon} />
+      }
+      { user && user.role === 'ADMIN' &&
+        <MenuItem title="Bloquear Ejercicios" activePage={isActive} page={'blockExercises'} onClick={() => go('blockExercises', '/admin/blockExercises')} icon={CreateExerciseIcon} />
+      }
+      { user && user.role === 'TRAINER' &&
+        <MenuItem title="Seguidores" activePage={isActive} page={'myFollowers'} onClick={() => go('myFollowers', '/routines/my-followers')} icon={ProfileIcon} />
+      }
     </div>
   )
 }

@@ -1,10 +1,18 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.util.List;
+
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
+import es.udc.fi.dc.fd.model.entities.FollowRequest;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 
 /**
  * The Interface UserService.
@@ -17,8 +25,9 @@ public interface UserService {
 	 * @param user the user
 	 * @param roleType the role
 	 * @throws DuplicateInstanceException the duplicate instance exception
+	 * @throws InstanceNotFoundException 
 	 */
-	void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException;
+	void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException, InstanceNotFoundException;
 	
 	/**
 	 * Login.
@@ -28,7 +37,7 @@ public interface UserService {
 	 * @return the user
 	 * @throws IncorrectLoginException the incorrect login exception
 	 */
-	Users login(String userName, String password) throws IncorrectLoginException;
+	Users login(String userName, String password) throws LoginUserBlockedException ,IncorrectLoginException;
 	
 	/**
 	 * Login from id.
@@ -46,10 +55,16 @@ public interface UserService {
 	 * @param firstName the first name
 	 * @param lastName the last name
 	 * @param email the email
+	 * @param avatarName the avatar name
+	 * @param cardNumber the card number
+	 * @param height the height
+	 * @param weight the weight
+	 * @param gender the gender
+	 * @param birthDate the birth date
 	 * @return the user
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
-	Users updateProfile(Long id, String firstName, String lastName, String email) throws InstanceNotFoundException;
+	Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber, int height, float weight, String gender, String birthDate) throws InstanceNotFoundException;
 	
 	/**
 	 * Change password.
@@ -70,4 +85,93 @@ public interface UserService {
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
 	Users getUserById(Long id) throws InstanceNotFoundException;
+
+
+	/**
+	 * Block a User
+	 * @param idBlocker id who blocks
+	 * @param idBlocked id of user being blocked
+	 * @throws AlreadyBlockException the user was already blocked
+	 */
+	void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException,PermissionException, InstanceNotFoundException;	
+
+	Block<Users> getAllUser (int page, int size);
+
+	BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException;
+
+	
+
+	/**
+	 * Follow a user
+	 * @param idFollower id of the follower
+	 * @param idFollowed id of the user to follow
+	 * @return true if the user was followed, false if already following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 * @throws PermissionException the permission exception (if trying to follow an admin without being admin)
+	 */
+	boolean followUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException, PermissionException;
+
+	/**
+	 * Unfollow a user
+	 * @param idFollower id of the follower
+	 * @param idFollowed id of the user to unfollow
+	 * @return true if the user was unfollowed, false if not following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	boolean unfollowUser(Long idFollower, Long idFollowed) throws InstanceNotFoundException;
+
+	/**
+	 * Get followers of a user
+	 * @param id the id
+	 * @return list of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	Block<Users> getFollowers(Long id, int page, int size) throws InstanceNotFoundException;
+
+	/**
+	 * Get following of a user
+	 * @param id the id
+	 * @return list of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	Block<Users> getFollowing(Long id, int page, int size) throws InstanceNotFoundException;
+
+	/**
+	 * Get blocked useres
+	 * @param id the id
+	 * @return list of blocked
+	 * @throws InstanceNotFoundException 
+	 */
+	List<Users> getBlocked(Long id) throws InstanceNotFoundException;
+
+	/**
+	 * Get followers count of a user
+	 * @param id the userId
+	 * @return count of followers
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	int getFollowersCount(Long id) throws InstanceNotFoundException;
+
+	/**
+	 * Get following count of a user
+	 * @param id the userId
+	 * @return count of following
+	 * @throws InstanceNotFoundException the instance not found exception
+	 */
+	int getFollowingCount(Long id) throws InstanceNotFoundException;
+
+	/*
+	 * Get the diferents genders for users
+	 * @return list of genders
+	 */
+	List<String> getGenders();
+
+	FollowRequest sendFollowRequest(Long senderId, Long receiverId) throws InstanceNotFoundException, PermissionException;
+
+	public boolean acceptFollowRequest(Long requestId) throws InstanceNotFoundException,PermissionException;
+
+	public void rejectFollowRequest(Long requestId) throws InstanceNotFoundException;
+
+	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException;
+
 }

@@ -1,13 +1,17 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-
-import jakarta.transaction.Transactional;
-
-import jakarta.validation.constraints.Null;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +20,21 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
+import es.udc.fi.dc.fd.model.entities.FollowRequest;
+import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
+import jakarta.transaction.Transactional;
 
 /**
  * The Class UserServiceTest.
@@ -33,14 +49,33 @@ public class UserServiceTest {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private AvatarDao avatarDao;
+
+
+	@Autowired
+	private BlockUserDao blockUserDao;
+
+	@Autowired
+	private FollowRequestDao followRequestDao;
+
+	private static final String PASSWORD = "12345";
+
 	/**
 	 * Creates the user.
 	 *
 	 * @param userName the user name
 	 * @return the user
 	 */
-	private Users createUser(String userName) {
-		return new Users(userName, "password", "firstName", "lastName", userName + "@" + userName + ".com");
+	private Users createUser(String userName, RoleType role, Gender gender) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user =  new Users(userName, PASSWORD, "firstName", "lastName", userName + "@" + userName + ".com", avatar.orElse(null));
+        user.setRole(role);
+        user.setGender(gender);
+        user.setHeight(190);
+        user.setWeight(80);
+        user.setBirthDate(LocalDate.now());
+		return user;
 	}
 
 	/**
@@ -52,7 +87,7 @@ public class UserServiceTest {
 	@Test
 	public void testSignUpAndLoginFromId() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -72,7 +107,7 @@ public class UserServiceTest {
 	@Test
 	public void testUpdateProfile() throws DuplicateInstanceException, InstanceNotFoundException {
 
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 
 		userService.signUp(user, Users.RoleType.USER);
 
@@ -80,29 +115,43 @@ public class UserServiceTest {
 		assertEquals( "lastName",user.getLastName());
 		assertEquals("user@user.com",user.getEmail());
 
-		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com");
+		userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456",
+		 180, 75.5f, "MALE","10-02-1990");
 
 		assertEquals("prueba",user.getFirstName());
 		assertEquals( "pruebez",user.getLastName());
 		assertEquals("prueba@pruebez.com",user.getEmail());
+		assertEquals("messy",user.getAvatar().getName());
 
-		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com"));
+		assertThrows(InstanceNotFoundException.class, () -> userService.updateProfile(user.getId()+1, "fallo","fallez","fallo@fallez.com", "messy987", "1234567890123456",
+		 180, 75, "MALE","1990-05-15"));
+	}
+
+	public void testUpdateProfileChangePremium() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user, Users.RoleType.USER);
+
+		user = userService.updateProfile(user.getId(),"prueba", "pruebez","prueba@pruebez.com", "messy", "1234567890123456",
+		 180, 75.5f, "MALE","1990-05-15");
+
+		assertTrue(user.getPremium());
+
 	}
 
     @Test
-    public void testChangePassword() throws DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
+    public void testChangePassword() throws LoginUserBlockedException ,DuplicateInstanceException, InstanceNotFoundException, IncorrectPasswordException, IncorrectLoginException {
 
-        Users user = createUser("userChange");
+        Users user = createUser("userChange", Users.RoleType.USER, Gender.OTHER);
         userService.signUp(user, Users.RoleType.USER);
 
         Users loggedInUser = userService.loginFromId(user.getId());
         assertEquals(user, loggedInUser);
 
         String newPassword = "Changed";
-        userService.changePassword(user.getId(), "password", newPassword);
+        userService.changePassword(user.getId(), PASSWORD, newPassword);
 
         Assertions.assertThrows(IncorrectLoginException.class, () -> {
-            userService.login(user.getUserName(), "password");
+            userService.login(user.getUserName(), PASSWORD);
         });
 
         Users loggedInWithNew = userService.login(user.getUserName(), newPassword);
@@ -110,7 +159,7 @@ public class UserServiceTest {
     }
 	@Test
 	public void testGetUserbyId() throws DuplicateInstanceException, InstanceNotFoundException {
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 		assertEquals(user.getUserName(), userService.getUserById(user.getId()).getUserName());
 
@@ -118,9 +167,403 @@ public class UserServiceTest {
 
 	@Test
 	public void FailedTestGetUserbyId() throws DuplicateInstanceException, InstanceNotFoundException {
-		Users user = createUser("user");
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
 		userService.signUp(user, Users.RoleType.USER);
 		assertThrows(InstanceNotFoundException.class, () -> {userService.getUserById(user.getId()+1);});
+
+	}
+
+	@Test
+
+	public void testBanUser() throws SelfBlockException ,AlreadyBlockException, InstanceNotFoundException, PermissionException, DuplicateInstanceException{
+		Users user = createUser("user", Users.RoleType.ADMIN, Gender.OTHER);
+
+		userService.signUp(user, Users.RoleType.ADMIN);
+
+		Users userTest = createUser("userTest", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(userTest, Users.RoleType.USER);
+
+		userService.banUser(user.getId(), userTest.getId());
+		assertTrue(userTest.getBanned());
+	}
+
+	@Test
+	public void testBanUserBlocked() throws SelfBlockException, AlreadyBlockException, InstanceNotFoundException, PermissionException,DuplicateInstanceException{
+		Users user = createUser("user", Users.RoleType.ADMIN, Gender.OTHER);
+		userService.signUp(user, Users.RoleType.ADMIN);
+
+		userService.banUser(user.getId(), 1L);
+		assertThrows(AlreadyBlockException.class, () -> {
+			userService.banUser(user.getId(), 1L);
+		});
+	}
+
+	@Test 
+	public void testBanByUser() throws InstanceNotFoundException, DuplicateInstanceException{
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user, Users.RoleType.USER);
+
+		Users userTest = createUser("userTest", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(userTest, Users.RoleType.USER);
+
+
+		assertThrows(PermissionException.class, () -> {
+			userService.banUser(user.getId(), userTest.getId());
+		});
+	}
+
+	@Test 
+	public void testBanNullUser() throws InstanceNotFoundException, DuplicateInstanceException{
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user, Users.RoleType.USER);
+
+
+		assertThrows(InstanceNotFoundException.class, () -> {
+			userService.banUser(user.getId(), 500L);
+		});
+	}
+
+	@Test
+	public void testGetAllUser() {
+
+		Avatar avatar = new Avatar();
+
+        Users admin = new Users("admin1", "pass", "Admin", "User", "admin1@admin.com", avatar);
+        admin.setId(1L);
+        admin.setRole(RoleType.ADMIN);
+
+        Users trainer = new Users("trainer1", "pass", "Trainer", "User", "trainer1@trainer.com", avatar);
+        trainer.setId(2L);
+        trainer.setRole(RoleType.TRAINER);
+
+        Users user = new Users("user1", "pass", "User", "User", "User1@user.com", avatar);
+        user.setId(3L);
+        user.setRole(RoleType.USER);
+
+		Block<Users> result = userService.getAllUser(0, 5);
+
+		assertNotNull(result);
+        assertEquals(4, result.getItems().size());
+        assertEquals("admin1", result.getItems().get(0).getUserName());
+        assertEquals(RoleType.ADMIN, result.getItems().get(0).getRole());
+        assertEquals("trainer1", result.getItems().get(1).getUserName());
+        assertEquals(RoleType.TRAINER, result.getItems().get(1).getRole());
+        assertEquals("user1", result.getItems().get(2).getUserName());
+        assertEquals(RoleType.USER, result.getItems().get(2).getRole());
+	}
+
+	@Test
+	public void testFollowUser() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+
+		assertEquals(1, user2.getFollowers().size());
+		assertEquals(user2.getFollowers().get(0), user1);
+		assertEquals(1, user1.getFollowing().size());
+		assertEquals(user1.getFollowing().get(0), user2);
+
+	}
+
+	@Test
+	public void testUnfollowUser() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertEquals(1, user2.getFollowers().size());
+		assertEquals(user2.getFollowers().get(0), user1);
+		assertEquals(1, user1.getFollowing().size());
+		assertEquals(user1.getFollowing().get(0), user2);
+
+		assertTrue(userService.unfollowUser(user1.getId(), user2.getId()));
+
+		assertEquals(0, user2.getFollowers().size());
+		assertEquals(0, user1.getFollowing().size());
+	}
+
+	@Test
+	public void testFollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertFalse(userService.followUser(user1.getId(), user2.getId()));
+
+	}
+
+	@Test
+	public void testUnfollowAlreadyFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+
+		assertTrue(userService.unfollowUser(user1.getId(), user2.getId()));
+		assertFalse(userService.unfollowUser(user1.getId(), user2.getId()));
+
+	}
+
+	@Test
+	public void testGetFollowers() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertFalse(userService.followUser(user1.getId(), user2.getId()));
+
+		Block<Users> followers = userService.getFollowers(user2.getId(), 0,5);
+
+		assertEquals(user1, followers.getItems().get(0));
+
+	}
+
+	@Test
+	public void testGetFollowing() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertFalse(userService.followUser(user1.getId(), user2.getId()));
+
+		Block<Users> following = userService.getFollowing(user1.getId(), 0,5);
+
+		assertEquals(user2, following.getItems().get(0));
+	}
+
+
+	@Test 
+	public void testBlockUser() throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		userService.blockUser(2L, 3L);
+		assertTrue(blockUserDao.existsByIdBlockerAndIdBlocked(2L, 3L));
+	}
+
+	@Test
+	public void testCheckFollowesAfterBlock() throws DuplicateInstanceException, AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+		Users user1 = createUser("manolo", RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", RoleType.USER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+		if(userService.followUser(user1.getId(), user2.getId())){
+			userService.blockUser(user1.getId(), user2.getId());
+			assertEquals(0, user2.getFollowers().size());
+			assertEquals(0, user1.getFollowing().size());
+		}else{
+            fail();
+		}
+}
+
+	@Test
+	public void testGetFollowersCount() throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+
+		Users user1 = createUser("manolo", Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("entrenadoh", Users.RoleType.TRAINER, Gender.OTHER);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.TRAINER);
+
+		// Sin seguidores
+		assertEquals(0, userService.getFollowersCount(user2.getId()));
+
+		// Agregar seguidores
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertEquals(1, userService.getFollowersCount(user2.getId()));
+
+		// Agregar otro seguidor
+		Users user3 = createUser("user3", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user3, Users.RoleType.USER);
+		assertTrue(userService.followUser(user3.getId(), user2.getId()));
+		assertEquals(2, userService.getFollowersCount(user2.getId()));
+
+	}
+
+	@Test
+	public void testGetFollowersCountNoUser() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user, Users.RoleType.USER);
+
+		assertThrows(InstanceNotFoundException.class, () -> {
+			userService.getFollowersCount(user.getId() + 999);
+		});
+	}
+
+	@Test
+	public void testFollowAdminAsNonAdmin() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users admin = createUser("admin", Users.RoleType.ADMIN, Gender.OTHER);
+		Users user = createUser("user", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(admin, Users.RoleType.ADMIN);
+		userService.signUp(user, Users.RoleType.USER);
+
+		assertThrows(PermissionException.class, () -> {
+			userService.followUser(user.getId(), admin.getId());
+		});
+	}
+
+	@Test
+	public void testFollowAdminAsAdmin() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users admin1 = createUser("admin1Follow" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		Users admin2 = createUser("admin2Follow" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		userService.signUp(admin1, Users.RoleType.ADMIN);
+		userService.signUp(admin2, Users.RoleType.ADMIN);
+
+		// Admin puede seguir a otro admin
+		assertTrue(userService.followUser(admin1.getId(), admin2.getId()));
+		assertEquals(1, admin2.getFollowers().size());
+		assertEquals(admin1, admin2.getFollowers().get(0));
+	}
+
+	@Test
+	public void testFollowBlockedUser() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException, AlreadyBlockException, SelfBlockException {
+		Users admin = createUser("adminBlock" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		Users user1 = createUser("user1Block" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users user2 = createUser("user2Block" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(admin, Users.RoleType.ADMIN);
+		userService.signUp(user1, Users.RoleType.USER);
+		userService.signUp(user2, Users.RoleType.USER);
+
+		// user1 sigue a user2
+		assertTrue(userService.followUser(user1.getId(), user2.getId()));
+		assertEquals(1, userService.getFollowersCount(user2.getId()));
+
+		// Admin bloquea a user2
+		userService.banUser(admin.getId(), user2.getId());
+
+		userService.unfollowUser(user1.getId(), user2.getId());
+
+		// Intentar seguir a un usuario bloqueado debe fallar
+		assertThrows(PermissionException.class, () -> {
+			userService.followUser(user1.getId(), user2.getId());
+		});
+	}
+
+	@Test
+	public void testBlockUserRemovesFromFollowers() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException, AlreadyBlockException, SelfBlockException {
+		Users admin = createUser("adminRemove" + System.currentTimeMillis(), Users.RoleType.ADMIN, Gender.OTHER);
+		Users blocker = createUser("blockerRemove" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users follower = createUser("followerRemove" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(admin, Users.RoleType.ADMIN);
+		userService.signUp(blocker, Users.RoleType.USER);
+		userService.signUp(follower, Users.RoleType.USER);
+
+		
+		assertTrue(userService.followUser(follower.getId(), blocker.getId()));
+		
+		blocker = userService.getUserById(blocker.getId());
+		assertEquals(1, userService.getFollowersCount(blocker.getId()));
+		assertTrue(blocker.getFollowers().stream().anyMatch(u -> u.getId().equals(follower.getId())));
+
+		
+		userService.banUser(admin.getId(), follower.getId());
+		
+		
+		blocker = userService.getUserById(blocker.getId());
+		boolean containsFollower = blocker.getFollowers() != null && 
+			blocker.getFollowers().stream().anyMatch(u -> u.getId().equals(follower.getId()));
+		assertFalse(containsFollower);
+		assertEquals(0, userService.getFollowersCount(blocker.getId()));
+	}
+	@Test
+	public void testSendFollowRequestOk() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+
+		FollowRequest followRequest=userService.sendFollowRequest(sender.getId(), receiver.getId());
+		assertEquals(followRequest,followRequestDao.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).get());
+
+	}
+	@Test
+	public void testSendFollowRequestFailed() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+		assertThrows(PermissionException.class, () -> {
+			userService.sendFollowRequest(sender.getId(), sender.getId());
+		});
+	}
+	@Test
+	public void testSendFollowRequestFailedNull() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+		FollowRequest followRequest=userService.sendFollowRequest(sender.getId(), receiver.getId());
+		assertEquals(followRequest,followRequestDao.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).get());
+		FollowRequest followRequest2=userService.sendFollowRequest(sender.getId(), receiver.getId());
+        assertNull(followRequest2);
+	}
+	@Test
+	public void testacceptFollowRequestOk() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException{
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+
+		FollowRequest followRequest=userService.sendFollowRequest(sender.getId(), receiver.getId());
+		assertEquals(followRequest,followRequestDao.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).get());
+		boolean aux=userService.acceptFollowRequest(followRequest.getId());
+		assertTrue(aux);
+	}
+
+	@Test
+	public void testacceptFollowRequestFailed() throws DuplicateInstanceException, InstanceNotFoundException{
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+
+		assertThrows(InstanceNotFoundException.class, () -> {userService.acceptFollowRequest(300L);});
+	}
+	@Test
+	public void  rejectFollowRequestOk() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+
+		FollowRequest followRequest=userService.sendFollowRequest(sender.getId(), receiver.getId());
+		assertEquals(followRequest,followRequestDao.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).get());
+		userService.rejectFollowRequest(followRequest.getId());
+		assertFalse(followRequestDao.existsBySenderIdAndReceiverId(sender.getId(), receiver.getId()));
+	}
+
+	@Test
+	public void  rejectFollowRequestFailed() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+		userService.signUp(sender, Users.RoleType.USER);
+
+		assertThrows(InstanceNotFoundException.class, () -> {userService.rejectFollowRequest(300L);});
+	}
+	@Test
+	public void getFollowRequests_Ok() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users sender = createUser("UserPrueba1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(sender, Users.RoleType.USER);
+		userService.signUp(receiver, Users.RoleType.USER);
+
+		FollowRequest followRequest=userService.sendFollowRequest(sender.getId(), receiver.getId());
+		assertEquals(followRequest,followRequestDao.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).get());
+		assertEquals(followRequest,userService.getFollowRequests(receiver.getId()).get(0));
+	}
+	@Test
+	public void getFollowRequests_FailedTest() {
+		Users receiver = createUser("UserPrueba2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		assertThrows(InstanceNotFoundException.class, () ->{userService.getFollowRequests(receiver.getId());});
 
 	}
 }

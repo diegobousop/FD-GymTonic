@@ -1,12 +1,11 @@
 package es.udc.fi.dc.fd.rest;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import java.time.LocalDate;
+import java.util.Optional;
 
-import es.udc.fi.dc.fd.rest.dtos.UserDto;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,35 +16,52 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.udc.fi.dc.fd.model.entities.Users;
-import es.udc.fi.dc.fd.model.entities.Users.RoleType;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
+import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
+import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
+import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
+import es.udc.fi.dc.fd.rest.dtos.UserDto;
+import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 
 /**
  * The Class UserControllerTest.
  */
+@SuppressWarnings("null")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
 public class UserControllerTest {
+
+	
 	
 	/** The Constant PASSWORD. */
-	private final static String PASSWORD = "password";
+	private static final String PASSWORD = "password";
 
 	/** The mock mvc. */
 	@Autowired
-	private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
 	/** The password encoder. */
 	@Autowired
@@ -55,9 +71,18 @@ public class UserControllerTest {
 	@Autowired
 	private UserDao userDao;
 
+	@Autowired
+	private FollowRequestDao followRequestDao;
+
+	@Autowired
+	private AvatarDao avatarDao;
+
 	/** The user controller. */
 	@Autowired
 	private UserController userController;
+
+
+	
 
 	/**
 	 * Creates the authenticated user.
@@ -68,12 +93,16 @@ public class UserControllerTest {
 	 * @throws IncorrectLoginException the incorrect login exception
 	 */
 	private AuthenticatedUserDto createAuthenticatedUser(String userName, RoleType roleType)
-			throws IncorrectLoginException {
-
-		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com");
+			throws LoginUserBlockedException ,IncorrectLoginException {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRole(roleType);
+		user.setGender(Users.Gender.OTHER);
+		user.setHeight(180);
+		user.setWeight(75.0f);
+		user.setBirthDate(LocalDate.now().minusYears(25));
 
 		userDao.save(user);
 
@@ -84,6 +113,70 @@ public class UserControllerTest {
 		return userController.login(loginParams);
 
 	}
+
+	/*
+	 * Creates a userDto
+	 * 
+	 */
+	private UserDto createUserDto(String userName, RoleType roleType, Gender gender) {
+		Optional<Avatar> avatar = avatarDao.findByName("default");
+		Users user = new Users(userName, PASSWORD, "newUser", "user", "user@test.com", avatar.orElse(null));
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		user.setRole(roleType);
+		user.setHeight(150);
+		user.setWeight(50.0f);
+		user.setGender(gender);
+		user.setBirthDate(LocalDate.of(1990, 1, 1));
+
+		userDao.save(user);
+
+		return toUserDto(user);
+	}
+
+		@Test
+		public void testParseGender_Male() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "MALE");
+			assertEquals(Users.Gender.MALE, result);
+		}
+
+		@Test
+		public void testParseGender_Female() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "FEMALE");
+			assertEquals(Users.Gender.FEMALE, result);
+		}
+
+		@Test
+		public void testParseGender_Other() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "other");
+			assertEquals(Users.Gender.OTHER, result);
+		}
+
+		@Test
+		public void testParseGender_Null() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("parseGender", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, (Object) null);
+			assertNull(result);
+		}
+
+		@Test
+		public void testToLocalDate() throws Exception {
+			UserController controller = new UserController();
+			java.lang.reflect.Method method = UserController.class.getDeclaredMethod("toLocalDate", String.class);
+			method.setAccessible(true);
+			Object result = method.invoke(controller, "22-11-2025");
+			assertEquals(java.time.LocalDate.of(2025, 11, 22), result);
+		}
 
 	/**
 	 * Test post login ok.
@@ -106,6 +199,95 @@ public class UserControllerTest {
 				.andExpect(status().isOk());
 
 	}
+
+	@Test
+	public void testPostSignUp_Ok() throws Exception {
+
+
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("USER");
+		registerParams.setHeight(1.75f);
+		registerParams.setWeight(70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+
+	}
+
+
+	@Test
+	public void testPostSignUp_NegativeHeight() throws Exception {
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("USER");
+		registerParams.setHeight(-1.75f);
+		registerParams.setWeight(70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	public void testPostSignUp_NegativeWeight() throws Exception {
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("USER");
+		registerParams.setHeight(1.75f);
+		registerParams.setWeight(-70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	public void testPostSignUp_Trainer() throws Exception {
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto();
+		registerParams.setUserName("newUser");
+		registerParams.setPassword(PASSWORD);
+		registerParams.setFirstName("Admin");
+		registerParams.setLastName("User");
+		registerParams.setEmail("admin@example.com");
+		registerParams.setRole("TRAINER");
+		registerParams.setHeight(1.75f);
+		registerParams.setWeight(70.5f);
+		registerParams.setGender("M");
+		registerParams.setBirthDate("01-01-2000");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/signUp")
+				.contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(registerParams)))
+				.andExpect(status().isCreated());
+	}
+
 
 	@Test
 	public void testPostChangePassword_Ok() throws Exception {
@@ -146,15 +328,33 @@ public class UserControllerTest {
 	}
 
 	@Test
+	public void testPostChangePassword_WrongUser() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("userChangeCtrl", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		ChangePasswordParamsDto changePasswordParams = new ChangePasswordParamsDto();
+		changePasswordParams.setOldPassword(PASSWORD);
+		changePasswordParams.setNewPassword("NewPass123");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/" + (userId + 1) + "/changePassword")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId+1)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsBytes(changePasswordParams)))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
 	public void testUpdateProfile_Ok() throws Exception {
 		// Crear usuario autenticado
 		AuthenticatedUserDto user = createAuthenticatedUser("admin", RoleType.USER);
 		Long userId = user.getUserDto().getId();
 
-		// Crear DTO de usuario con datos actualizados
-		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
-
+		// Crear DTO de usuario con datos actualizados con tarjeta para ser PREMIUM
+		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -166,7 +366,9 @@ public class UserControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.firstName").value(userDto.getFirstName()))
 				.andExpect(jsonPath("$.lastName").value(userDto.getLastName()))
-				.andExpect(jsonPath("$.email").value(userDto.getEmail()));
+				.andExpect(jsonPath("$.email").value(userDto.getEmail()))
+				.andExpect(jsonPath("$.avatar.name").value(userDto.getAvatar().getName()))
+				.andExpect(jsonPath("$.avatar.avatarBase64").value(userDto.getAvatar().getAvatarBase64()));
 	}
 
 	@Test
@@ -176,8 +378,8 @@ public class UserControllerTest {
 		Long userId = user.getUserDto().getId();
 		Long differentUserId = userId + 1;
 
-		UserDto userDto = new UserDto(differentUserId,user.getUserDto().getUserName(),"NuevoNombre",
-				"NuevoApellido","nuevoemail@test.com",user.getUserDto().getRole());
+		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
+		userDto.setId(differentUserId);
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -193,9 +395,10 @@ public class UserControllerTest {
 	public void testUpdateProfile_ValidationError() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
+		avatarDao.findByName("default");
 
-		UserDto userDto = new UserDto(userId,user.getUserDto().getUserName(),"",
-				"","email-invalido",user.getUserDto().getRole());
+		UserDto userDto = createUserDto("nuevoNombre", RoleType.TRAINER,Gender.FEMALE);
+		userDto.setFirstName(""); // Invalid first name
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -208,10 +411,40 @@ public class UserControllerTest {
 	}
 
 	@Test
+	public void testUpdateProfile_PremiumStatus() throws Exception {
+
+		//Registrar sin cardNumber, no debe ser premium
+		UserRegisterParamsDto registerParams = new UserRegisterParamsDto("paco","12345","Paco",
+		"Gomez","paco@paco.com","USER", 175.0f, 70.0f, "MALE", "15-05-1990");
+		AuthenticatedUserDto user = userController.signUp(registerParams).getBody();
+
+		//Actualizamos el usuario con un cardNumber, debe ser premium
+
+		UserDto userDto = user.getUserDto();
+		userDto.setFirstName("manolo");
+		userDto.setCardNumber("1234567890123456");
+		userDto.setPremium(false);
+
+
+		ObjectMapper mapper = new ObjectMapper();
+		mockMvc.perform(put("/api/users/{id}", userDto.getId())
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userDto.getId())	
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsBytes(userDto)))
+				.andExpect(status().isOk());
+	
+		Users updatedUser = userDao.findById(userDto.getId()).get();
+		assertEquals(true, updatedUser.getPremium());
+
+
+	}
+
+	@Test
 	public void testGetUserbyId() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+		
 		mockMvc.perform(get("/api/users/{id}", userId)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
@@ -222,10 +455,346 @@ public class UserControllerTest {
 	public void failedTestGetUserbyId() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
 		Long userId = user.getUserDto().getId();
-		ObjectMapper mapper = new ObjectMapper();
+
 		mockMvc.perform(get("/api/users/{id}", userId+1)
 				.header("Authorization", "Bearer " + user.getServiceToken()).
 				requestAttr("userId", userId).contentType(MediaType.APPLICATION_JSON)
+		).andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void testBanUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+		Long userId = user.getUserDto().getId();
+		
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isOk());
+	}
+
+	@Test
+	public void testBanUserAlreadyBanned() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+		Long userId = user.getUserDto().getId();
+		
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testBanNullUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+		Long userId = user.getUserDto().getId();
+		
+		mockMvc.perform(post("/api/users/ban/{id}", 500)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
+		).andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void testBanByUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/ban/{id}", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken()).
+				requestAttr("userId", userId)
 		).andExpect(status().isForbidden());
 	}
+
+
+	@Test
+	public void testGetAllUsers() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.ADMIN);
+
+		mockMvc.perform(get("/api/users/getUsers", 1)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+		).andExpect(status().isOk());
+	}
+
+	@Test
+	public void testFollowUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		Long trainer2Id = trainer2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/follow/{id}", trainer2Id)
+            .content("")
+            .contentType(MediaType.APPLICATION_JSON)
+			.header("Authorization", "Bearer " + user.getServiceToken())
+			.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		// Comprobar que la relación de seguimiento se establece
+		Users follower = userDao.findById(userId).get();
+		Users followed = userDao.findById(trainer2Id).get();
+		assertEquals(follower.getFollowing().get(0), followed);
+	}
+
+	@Test
+	public void testUnFollowUser() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		Long trainer2Id = trainer2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/follow/{id}", trainer2Id)
+            .content("")
+            .contentType(MediaType.APPLICATION_JSON)
+			.header("Authorization", "Bearer " + user.getServiceToken())
+			.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/unfollow/{id}", trainer2Id)
+            .content("")
+            .contentType(MediaType.APPLICATION_JSON)
+			.header("Authorization", "Bearer " + user.getServiceToken())
+			.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+	}
+
+	@Test
+	public void testGetFollowersWithNoFollowers() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		Long trainer2Id = trainer2.getUserDto().getId();
+
+		mockMvc.perform(get("/api/users/followers")
+				.header("Authorization", "Bearer " + trainer2.getServiceToken())
+		).andExpect(status().isOk());
+
+		// Comprobar que los followers se devuelven correctamente
+		Users trainer = userDao.findById(trainer2Id).get();
+		assertNull(trainer.getFollowers());
+	}	
+
+	@Test
+	public void testGetFollowersWithFollowers() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		Long trainer2Id = trainer2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/follow/{id}", trainer2Id)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/users/followers")
+				.header("Authorization", "Bearer " + trainer2.getServiceToken())
+		).andExpect(status().isOk());
+
+		// Comprobar que los followers se devuelven correctamente
+		Users trainer = userDao.findById(trainer2Id).get();
+		assertEquals(trainer.getFollowers().get(0), userDao.findById(userId).get());
+	}	
+
+
+	@Test
+	public void testGetFollowingWithNoFollowing() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		trainer2.getUserDto().getId();
+
+		mockMvc.perform(get("/api/users/following")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+		).andExpect(status().isOk());
+
+		//Comprobar que el following se devuelve correctamente
+		assertNull(userDao.findById(userId).get().getFollowing());
+	}
+
+	@Test
+	public void testGetFollowingWithFollowing() throws Exception{
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto trainer2 = createAuthenticatedUser("trainer2", RoleType.TRAINER);
+		Long trainer2Id = trainer2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/follow/{id}", trainer2Id)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+		).andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/users/following")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+		).andExpect(status().isOk());
+
+		//Comprobar que el following se devuelve correctamente
+		assertEquals(userDao.findById(userId).get().getFollowing().get(0), userDao.findById(trainer2Id).get());
+	}
+
+	@Test
+	public void testSendFollowRequest_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto user2 = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long userId2 = user2.getUserDto().getId();
+
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userId2)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.senderId").value(userId))
+				.andExpect(jsonPath("$.receiverId").value(userId2))
+				.andExpect(jsonPath("$.accepted").value(false))
+				.andExpect(jsonPath("$.senderUserName").value("testuser"))
+				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
+	}
+
+	@Test
+	public void testAcceptFollow_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto user2 = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long userId2 = user2.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userId2)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(3L))
+				.andExpect(jsonPath("$.senderId").value(userId))
+				.andExpect(jsonPath("$.receiverId").value(userId2))
+				.andExpect(jsonPath("$.accepted").value(false))
+				.andExpect(jsonPath("$.senderUserName").value("testuser"))
+				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
+
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",3L)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void testRejectFollow_Ok() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("testuser", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto user2 = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long userId2 = user2.getUserDto().getId();
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userId2)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(2L))
+				.andExpect(jsonPath("$.senderId").value(userId))
+				.andExpect(jsonPath("$.receiverId").value(userId2))
+				.andExpect(jsonPath("$.accepted").value(false))
+				.andExpect(jsonPath("$.senderUserName").value("testuser"))
+				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
+
+		mockMvc.perform(delete("/api/users/rejectFollowRequest/{id}",2L)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+        assertFalse(followRequestDao.existsBySenderIdAndReceiverId(userId, userId2));
+
+	}
+	
+	@Test
+	public void testGetFollowRequests_Ok() throws Exception {
+
+
+		AuthenticatedUserDto sender = createAuthenticatedUser("testuser", RoleType.USER);
+		Long senderId = sender.getUserDto().getId();
+
+		AuthenticatedUserDto receiver = createAuthenticatedUser("testuser2", RoleType.USER);
+		Long receiverId = receiver.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", receiverId)
+						.header("Authorization", "Bearer " + sender.getServiceToken())
+						.requestAttr("senderId", senderId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.senderId").value(senderId))
+				.andExpect(jsonPath("$.receiverId").value(receiverId))
+				.andExpect(jsonPath("$.accepted").value(false));
+
+
+		mockMvc.perform(get("/api/users/FollowRequest")
+						.header("Authorization", "Bearer " + receiver.getServiceToken())
+						.requestAttr("userId", receiverId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$[0].senderId").value(senderId))
+				.andExpect(jsonPath("$[0].receiverId").value(receiverId))
+				.andExpect(jsonPath("$[0].accepted").value(false))
+				.andExpect(jsonPath("$[0].senderUserName").value("testuser"))
+				.andExpect(jsonPath("$[0].receiverUserName").value("testuser2"));
+	}
+
+
+	@Test
+	public void testPostBlockUser_SelfBlockException() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("selfblock", RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/block/{id}", userId)
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.requestAttr("userId", userId)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testGetGenders_Ok() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("genderUser", RoleType.USER);
+		mockMvc.perform(get("/api/users/getGenders")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0]").exists());
+	}
+
+	@Test
+	public void testParameterizedFollowingAndBlockEndpoints_Ok() throws Exception {
+	    String[] endpoints = {
+	        "/api/users/followers/count",
+	        "/api/users/following/count",
+	        "/api/users/getBlocked"
+	    };
+	    AuthenticatedUserDto user = createAuthenticatedUser("paramUser", RoleType.USER);
+	    Long userId = user.getUserDto().getId();
+
+	    for (String endpoint : endpoints) {
+	        mockMvc.perform(get(endpoint)
+	                .header("Authorization", "Bearer " + user.getServiceToken())
+	                .requestAttr("userId", userId)
+	                .contentType("application/json"))
+	            .andExpect(status().isOk());
+	    }
+	}
+
+	
 }

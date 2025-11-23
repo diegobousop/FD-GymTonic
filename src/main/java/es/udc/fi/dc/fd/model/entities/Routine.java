@@ -1,43 +1,49 @@
 package es.udc.fi.dc.fd.model.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 
 @Entity
 public class Routine {
     private Long id;
     private String name;
-    private List<Exercise> exercises;
+    private List<RoutineExercise> routineExercises = new ArrayList<>();
     private Users creator;
     private Long duration; // Duration in minutes
     private LocalDateTime modificationDate;
+    private Boolean isPublic; // true = public, false = private
+    private Difficulty difficulty;
+
+     public enum Difficulty {
+        FACIL,       // 0
+        INTERMEDIO,  // 1
+        DIFICIL      // 2
+    }
 
     public Routine() {
     }
 
-    public Routine(String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate) {
-        this.name = name;
-        this.exercises = exercises;
-        this.creator = creator;
-        this.duration = duration;
-        this.modificationDate = modificationDate;
+    public Routine(Long id) {
+        this.id = id;
     }
-
-    public Routine(Long id,String name, List<Exercise> exercises, Users creator, Long duration, LocalDateTime modificationDate) {
+    public Routine(String name, List<RoutineExercise> routineExercises, Users creator, Long duration, LocalDateTime modificationDate, Boolean isPublic) {
         this.name = name;
-        this.exercises = exercises;
+        this.routineExercises = routineExercises;
         this.creator = creator;
         this.duration = duration;
         this.modificationDate = modificationDate;
+        this.isPublic = isPublic;
     }
     
     @Id
@@ -57,17 +63,16 @@ public class Routine {
     public void setName(String name) {
         this.name = name;
     }
-    @ManyToMany
-    @JoinTable(name = "Routine_Exercise",
-    joinColumns = @JoinColumn(name = "routine_id"),
-    inverseJoinColumns = @JoinColumn(name = "exercise_id"))
-    public List<Exercise> getExercises() {
-        return exercises;
+
+    @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderInRoutine ASC")
+    public List<RoutineExercise> getRoutineExercises() {
+        return routineExercises; 
+    }
+    public void setRoutineExercises(List<RoutineExercise> routineExercises) { 
+        this.routineExercises = routineExercises; 
     }
 
-    public void setExercises(List<Exercise> exercises) {
-        this.exercises = exercises;
-    }
     @ManyToOne
     @JoinColumn(name = "creator")
     public Users getCreator() {
@@ -94,4 +99,19 @@ public class Routine {
         this.modificationDate = modificationDate;
     }
 
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
 }

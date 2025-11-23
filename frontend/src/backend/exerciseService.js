@@ -3,20 +3,106 @@ import{
     appFetch,
 }from "./appFetch";
 
-export const addExercise = (name, descripcion, grupoMuscular, onSuccess, onErrors) => {
+export const addExercise = (name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment, onSuccess, onErrors) => {
     appFetch(
-        "/admin/addExercise",
-        fetchConfig("POST", {name, descripcion, grupoMuscular}),
+        "/exercise/addExercise",
+        fetchConfig("POST", {name, descripcion, grupoMuscular, numeroSeries, difficulty, equipment}),
         (addExercise) => onSuccess(addExercise),
         onErrors
     );
 };
 
-export const getAllExercises = (page, onSuccess, onErrors) => {
+export const getValidatedExercises = ({ page, size }, onSuccess, onErrors) => {
     appFetch(
-        `/admin/getExercises?page=${page}`,
+        `/exercise/getValidatedExercises?page=${page}&size=${size}`,
         fetchConfig("GET"),
         (exercises) => onSuccess(exercises),
         onErrors
     );
 };
+
+export const getUnvalidatedExercises = ({ page, size }, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/getUnvalidatedExercises?page=${page}&size=${size}`,
+        fetchConfig("GET"),
+        (exercises) => onSuccess(exercises),
+        onErrors
+    );
+};
+
+
+export const validateExercise = (exerciseId, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/validateExercise/${exerciseId}`,
+        fetchConfig("POST"),
+        (response) => onSuccess(response),
+        onErrors
+    );
+};
+
+export const declineExercise = (exerciseId, onSuccess, onErrors) => {
+    appFetch(
+        `/exercise/declineExercise/${exerciseId}`,
+        fetchConfig("POST"),
+        (response) => onSuccess(response),
+        onErrors
+    );
+    };
+export const getSerie = (serieId,onSuccess,onErrors)=>
+    appFetch(
+        `/exercise/Series?serieId=${serieId}`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
+export const modifySerie = (serieId, repeticiones, peso, onSuccess, onErrors) =>
+    appFetch(
+        `/exercise/Series?serieId=${serieId}&repeticiones=${repeticiones}&peso=${peso}`,
+        fetchConfig("PUT"),
+        onSuccess,
+        onErrors
+    );
+export const createSeries = (exercise, numSeries,routineId, onSuccess, onErrors) =>
+    appFetch(
+        `/exercise/Series?numSeries=${numSeries}&routineId=${routineId}`,
+        fetchConfig("POST", exercise),
+        onSuccess,
+        onErrors
+    );
+export const getSerieByExercise = (exerciseId,routineId, onSuccess, onErrors) =>
+    appFetch(`/exercise/exerciseSeries?exerciseId=${exerciseId}&routineId=${routineId}`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
+
+export const blockExercise = (exerciseId, onSuccess, onErrors) => 
+    appFetch(
+        `/exercise/blockExercise/${exerciseId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+
+export const createSerie = (exerciseId,routineId, onSuccess, onErrors) =>
+    appFetch(
+        `/exercise/Series/create?exerciseId=${exerciseId}&routineId=${routineId}`,
+        fetchConfig("POST"),
+        onSuccess,
+        onErrors
+    );
+
+export const deleteSerie = (serieId, onSuccess, onErrors) =>
+    appFetch(`/exercise/Series/${serieId}`,
+        fetchConfig("DELETE"),
+        onSuccess,
+        onErrors
+    );
+
+export const editRestTime = (exerciseId, routineId, restTime, onSuccess, onErrors) =>
+    appFetch(
+        `/exercise/restTime?routineId=${routineId}&exerciseId=${exerciseId}&restTime=${restTime}`,
+        fetchConfig("PUT"),
+        onSuccess,
+        onErrors
+    );
