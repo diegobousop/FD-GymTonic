@@ -170,7 +170,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
 }
 
 RoutineSelector.propTypes = {
-  selectedRoutine: PropTypes.object.isRequired,
+  selectedRoutine: PropTypes.object,
   setSelectedRoutine: PropTypes.func.isRequired,
   onDeselect: PropTypes.func.isRequired,
 }

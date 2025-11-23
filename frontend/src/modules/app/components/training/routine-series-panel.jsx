@@ -40,7 +40,6 @@ const RoutineSeriesPanel = ({ routine, isLoading, onRoutineChange }) => {
 
       saveTimeoutRef.current = setTimeout(() => {
         localStorage.setItem('selectedRoutineDetails', JSON.stringify(updatedRoutine));
-        console.log('Guardado en localStorage');
       }, 500);
 
       return updatedRoutine;

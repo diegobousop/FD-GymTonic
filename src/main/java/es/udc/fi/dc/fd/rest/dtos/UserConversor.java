@@ -30,15 +30,29 @@ public class UserConversor {
 	 */
 	public static final UserDto toUserDto(Users user) {
 		List<Long> idBlockedList = Optional.ofNullable(user.getBlockedUsers())
-									.orElse(Collections.emptyList())
-									.stream()
-									.map(Users::getId)
-									.toList();
+					.orElse(Collections.emptyList())
+					.stream()
+					.map(Users::getId)
+					.toList();
 
+		ContactDto contact = new ContactDto(
+				user.getEmail(),
+				user.getRole() != null ? user.getRole().toString() : null,
+				user.getBanned(),
+				user.getBankCard(),
+				user.getPremium());
 
-		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(),
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(), user.getBankCard(), user.getPremium(), idBlockedList,
-		user.getHeight(), user.getWeight(), user.getGender().toString(), user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+		String birthDateStr = user.getBirthDate() != null ? user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) : null;
+		float imc = 0f;
+		if (user.getHeight() > 0) {
+			imc = user.getWeight() / ((user.getHeight() / 100f) * (user.getHeight() / 100f));
+		}
+
+		PhysicalDto physical = new PhysicalDto(user.getHeight(), user.getWeight(), user.getGender() != null ? user.getGender().toString() : null, birthDateStr, imc);
+
+		AvatarDto avatarDto = user.getAvatar() != null ? new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()) : null;
+
+		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), avatarDto, contact, idBlockedList, physical);
 
 	}
 

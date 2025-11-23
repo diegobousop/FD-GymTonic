@@ -100,19 +100,19 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
     content = (
       <div className="flex flex-col items-center justify-center">
         <div className="flex flex-row items-center mt-10 ml-10 gap-10">
-          {dayFilterActivated && (
-            <p className="flex flex-row bg-[#262626] text-white p-2 rounded-full px-5 border items-center ">
-              <button onClick={() => {
-                setFilterActivated(false);
-              }}>
-                <svgIcons.CancelIcon className="w-8 h-8 text-white mr-3"/>
-              </button>
-              Entrenos el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}
-            </p>
-          )}
+          <p className="flex flex-row bg-[#262626] text-white p-2 rounded-full px-5 border items-center ">
+            <button onClick={() => {
+              setFilterActivated(false);
+            }}>
+              <svgIcons.CancelIcon className="w-8 h-8 text-white mr-3"/>
+            </button>
+            Entrenos el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}
+          </p>
         </div>
         <svgIcons.CancelIcon className="w-16 h-16 text-white mt-20 ml-10"/>
-        <p className="text-white text-center items-center ml-10">Ningún entrenamiento registrado para el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}.</p>
+        <p className="text-white text-center items-center ml-10">
+          Ningún entrenamiento registrado para el {selectedDay.toLocaleDateString('es-ES', { day: '2-digit' , month: 'long', year: 'numeric' })}.
+        </p>
       </div>
     );
   } else {

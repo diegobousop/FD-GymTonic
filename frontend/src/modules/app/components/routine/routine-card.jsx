@@ -43,7 +43,7 @@ const RoutineCard = ({ routine }) => {
     )}
 
 RoutineCard.propTypes = {
-  routine: PropTypes.object.isRequired,
+  routine: PropTypes.object,
 };
 
 export default RoutineCard;
