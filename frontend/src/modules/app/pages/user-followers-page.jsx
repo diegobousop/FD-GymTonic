@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { UserContext } from '../components/common/user-provider';
 import { getFollowers } from '../../../backend/userService';
 import SendButton from '../components/common/send-button';
@@ -97,7 +97,10 @@ const UserFollowersPage = () => {
                       {follower.userName ? follower.userName.charAt(0).toUpperCase() : 'U'}
                     </div>
                   )}
-                  <span>{follower.userName}</span>
+                  <Link to={`/profile/${follower.id}`}
+                    className="font-semibold text-[16px] text-white mb-1 hover:text-[#CA0D0A]">
+                    {follower.userName}
+                  </Link>
                 </div>
               </li>
             ))}
