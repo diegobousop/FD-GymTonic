@@ -29,8 +29,8 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
         serie.id,
         serie.repeticiones,
         serie.peso,
-        resolve,   // evita funciones inline () => resolve()
-        reject     // evita funciones inline (err) => reject(err)
+        resolve,  
+        reject     
       );
     });
 
@@ -76,7 +76,7 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
           routineId,
           restTimeValue,
           resolve,
-          (err) => reject(err)
+          (err) => reject(new Error(err)) 
         );
       });
 
@@ -193,6 +193,7 @@ const EditSeriesModal = ({ restTime, exerciseId, routineId, onClose, onUpdate })
 };
 
 EditSeriesModal.propTypes = {
+  restTime: PropTypes.number.isRequired,
   exerciseId: PropTypes.number.isRequired,
   routineId: PropTypes.number.isRequired,
   onClose: PropTypes.func.isRequired,

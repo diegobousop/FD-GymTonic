@@ -234,10 +234,10 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
 }
 
 CalendarCard.propTypes = {
-  user:  backend.object,
-  selectedDay:  backend.number,
-  setSelectedDay: backend.func,
-  setDayFilterActivated: backend.func,
+  user:  PropTypes.object.isRequired,
+  selectedDay:  PropTypes.object.isRequired,
+  setSelectedDay: PropTypes.func.isRequired,
+  setDayFilterActivated: PropTypes.func.isRequired,
 }
 
 export default CalendarCard

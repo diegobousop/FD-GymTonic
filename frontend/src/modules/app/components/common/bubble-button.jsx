@@ -30,7 +30,7 @@ const BubbleButton = ({ iconKey, icon: IconProp, ariaLabel, testId, size = 60, o
 
 BubbleButton.propTypes = {
   iconKey: PropTypes.string,
-  icon: PropTypes.func,
+  icon: PropTypes.object,
   ariaLabel: PropTypes.string,
   testId: PropTypes.string,
   size: PropTypes.number,

@@ -133,7 +133,7 @@ public class ExerciseController {
     public ExerciseRoutineDto editRestTime(@RequestAttribute Long userId,
                                 @RequestParam long exerciseId,
                                 @RequestParam long routineId,
-                                @RequestParam int restTime) throws InstanceNotFoundException, PermissionException, DuplicateInstanceException {
+                                @RequestParam int restTime) throws InstanceNotFoundException {
         return ExerciseConversor.toExerciseRoutineDto(
             exerciseService.getExerciseById(exerciseId), 
             exerciseService.getSeriesByExerciseAndRoutine(exerciseId, routineId).getItems(),

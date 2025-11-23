@@ -91,7 +91,7 @@ public class ExerciseConversor {
         return routineExercises.stream()
                 .map(re -> {
                     Exercise exercise = re.getExercise();
-                    ExerciseDto dto = new ExerciseDto(
+                    return new ExerciseDto(
                         exercise.getId(),
                         exercise.getExerciseName(),
                         exercise.getExerciseDescription(),
@@ -100,8 +100,6 @@ public class ExerciseConversor {
                         exercise.getDifficulty(),
                         exercise.getEquipment()
                     );
-
-                    return dto;
                 })
                 .collect(Collectors.toList());
     }

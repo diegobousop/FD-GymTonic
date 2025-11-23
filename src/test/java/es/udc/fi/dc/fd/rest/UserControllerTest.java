@@ -61,7 +61,7 @@ public class UserControllerTest {
 
 	/** The mock mvc. */
 	@Autowired
-	private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
 	/** The password encoder. */
 	@Autowired
@@ -768,42 +768,6 @@ public class UserControllerTest {
 	}
 
 	@Test
-	public void testGetFollowersCount_Ok() throws Exception {
-		AuthenticatedUserDto user = createAuthenticatedUser("followerCount", RoleType.USER);
-		Long userId = user.getUserDto().getId();
-
-		mockMvc.perform(get("/api/users/followers/count")
-				.header("Authorization", "Bearer " + user.getServiceToken())
-				.requestAttr("userId", userId)
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk());
-	}
-
-	@Test
-	public void testGetBlocked_Ok() throws Exception {
-		AuthenticatedUserDto user = createAuthenticatedUser("blocklist", RoleType.USER);
-		Long userId = user.getUserDto().getId();
-
-		mockMvc.perform(get("/api/users/getBlocked")
-				.header("Authorization", "Bearer " + user.getServiceToken())
-				.requestAttr("userId", userId)
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk());
-	}
-
-	@Test
-	public void testGetFollowingCount_Ok() throws Exception {
-		AuthenticatedUserDto user = createAuthenticatedUser("followingCount", RoleType.USER);
-		Long userId = user.getUserDto().getId();
-
-		mockMvc.perform(get("/api/users/following/count")
-				.header("Authorization", "Bearer " + user.getServiceToken())
-				.requestAttr("userId", userId)
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk());
-	}
-
-	@Test
 	public void testGetGenders_Ok() throws Exception {
 		AuthenticatedUserDto user = createAuthenticatedUser("genderUser", RoleType.USER);
 		mockMvc.perform(get("/api/users/getGenders")
@@ -812,4 +776,25 @@ public class UserControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[0]").exists());
 	}
+
+	@Test
+	public void testParameterizedFollowingAndBlockEndpoints_Ok() throws Exception {
+	    String[] endpoints = {
+	        "/api/users/followers/count",
+	        "/api/users/following/count",
+	        "/api/users/getBlocked"
+	    };
+	    AuthenticatedUserDto user = createAuthenticatedUser("paramUser", RoleType.USER);
+	    Long userId = user.getUserDto().getId();
+
+	    for (String endpoint : endpoints) {
+	        mockMvc.perform(get(endpoint)
+	                .header("Authorization", "Bearer " + user.getServiceToken())
+	                .requestAttr("userId", userId)
+	                .contentType("application/json"))
+	            .andExpect(status().isOk());
+	    }
+	}
+
+	
 }

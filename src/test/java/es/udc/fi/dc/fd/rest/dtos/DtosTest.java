@@ -12,11 +12,7 @@ import org.junit.Test;
 
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.Routine;
-import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
 import es.udc.fi.dc.fd.model.entities.Users;
-
-import static org.junit.Assert.*;
-import java.util.*;
 
 
 public class DtosTest {
@@ -547,15 +543,6 @@ public class DtosTest {
     }
 
     @Test
-    public void testLoginParamsDto() {
-        LoginParamsDto dto = new LoginParamsDto();
-        dto.setUserName("user");
-        dto.setPassword("pass");
-        assertEquals("user", dto.getUserName());
-        assertEquals("pass", dto.getPassword());
-    }
-
-    @Test
     public void testNotificationDto() {
         Long id = 1L;
         Long routineId = 2L;
@@ -617,5 +604,4 @@ public class DtosTest {
         assertEquals(Long.valueOf(3L), dtos.get(0).getId());
     }
 
-    // Puedes añadir tests similares para toTrainingDetailsDto, toCalendarStatDto y toCalendarStatsDto
 }

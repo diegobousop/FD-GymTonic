@@ -53,7 +53,6 @@ const CreateExercise = () => {
                     }
                 );
             } catch (ex){
-                console.log(ex.message);
                 setSuccess(false);
                 setBackendErrors(ex.message || "Error inesperado");
             }

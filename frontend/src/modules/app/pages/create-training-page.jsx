@@ -127,7 +127,6 @@ const CreateTraining = () => {
           },
           {
             onSuccess: (createdTraining) => {
-              console.log("Training created successfully:", createdTraining);
               setValidationErrors({});
               showToast('Entrenamiento creado con éxito', 'success');
               setLoading(false);
@@ -159,7 +158,7 @@ const CreateTraining = () => {
                 }
               );
         }
-      console.log("Selected Routine Details:", selectedRoutineDetails);
+      
     }, [selectedRoutine]);
 
     if (loading){      

@@ -1,4 +1,3 @@
-import React from 'react'
 import { useState, useEffect } from 'react';
 import backend from "../../../../backend";
 import MiniPager from '../common/mini-pager';
@@ -13,7 +12,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
     const [error, setError] = useState(null);
     const [page, setPage] = useState(0);
     const [existMoreItems, setExistMoreItems] = useState(false);
-    const [loading, setLoading] = useState(false); // Gestionar aquí
+    const [loading, setLoading] = useState(false); 
 
     //Paginacion
     const size = 2;
@@ -76,7 +75,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
                   className="h-[48px] w-[55px] bg-[#262626] text-white mb-2"
                   onClick={() => onSearch(query)}
                 >
-                  {svgIcons.SearchIcon({ className: 'w-[30px] text-white' })}
+                  {svgIcons.SearchIcon({ className: ' ml-3 w-[30px] text-white' })}
                 </button>
                 <input
                   type="text"
@@ -99,64 +98,71 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
                 </button>
                 }
                 
-              </div>              {/* Mostrar rutina seleccionada, sugerencias o rutinas recientes */}
-              {selectedRoutine ? (
-                <>
-                  <div className="flex flex-row items-center mb-3">
-                    <p className="text-xs">Rutina seleccionada</p>
-                    <button className="ml-auto " onClick={() => {
-                      onDeselect();
-                      setSelectedRoutine(null);
-                    }}>
-                      <svgIcons.CancelIcon className={`w-[25px] h-auto text-white`} />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-row p-2 bg-[#ff0000] bg-opacity-20 border border-[#ff0000]">
-                    <img src={selectedRoutine.creatorAvatarBase64} alt={selectedRoutine.creator} className="w-12 h-12 mr-4" />
-                    <div className="flex flex-col">
-                      <p className="text-white text-lg font-semibold">{selectedRoutine.name}</p>
-                      <p className="text-white">{selectedRoutine.creator}</p>
-                    </div>
-                  </div>
-                </>
-              ) : showSuggestions ? (
-                <>
-                  <p className=" text-xs mt-3">Resultados de búsqueda</p>
-                  {suggestions.length > 0 ? (
-                    suggestions.map((s) => (
-                      <button key={s.id} className="flex flex-row p-2 hover:bg-[#262626]" onClick={() => setSelectedRoutine(s)}>
-                        <img src={s.creatorAvatarBase64} alt={s.creator} className="w-12 h-12 mr-4" />
-                        <div className="flex flex-col">
-                          <p className="text-white text-lg font-semibold">{s.name}</p>
-                          <p className="text-white">{s.creator}</p>
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 text-xs pt-5 text-center">No se encontraron rutinas con ese nombre</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-row justify-between items-center mb-2">
-                    <p className="text-xs">Rutinas recientes</p>
-                    <MiniPager back={{ enabled: page > 0, onClick: () => viewRoutines(page - 1) }} next={{ enabled: existMoreItems, onClick: () => viewRoutines(page + 1) }}/>
-                  </div>  
-                  
-                  {routines.map((routine) => (
-                    <button key={routine.id} className="flex flex-row p-2 hover:bg-[#262626] items-center" onClick={() => setSelectedRoutine(routine)}>
-                      <img src={routine.creatorAvatarBase64} alt={routine.creator} className="w-12 h-12 mr-4" />
-                      <div className="flex flex-col text-left w-[40%]">
-                        <p className="text-white text-m font-semibold">{routine.name}</p>
-                        <p className="text-white text-s">{routine.creator}</p>
+              </div>              {/* Mostrar rutina seleccionada, sugerencias o rutinas recientes sin ternarios anidados */}
+              {(() => {
+                if (selectedRoutine) {
+                  return (
+                    <>
+                      <div className="flex flex-row items-center mb-3">
+                        <p className="text-xs">Rutina seleccionada</p>
+                        <button className="ml-auto " onClick={() => {
+                          onDeselect();
+                          setSelectedRoutine(null);
+                        }}>
+                          <svgIcons.CancelIcon className={`w-[25px] h-auto text-white`} />
+                        </button>
                       </div>
+                      <div className="flex flex-row p-2 bg-[#ff0000] bg-opacity-20 border border-[#ff0000]">
+                        <img src={selectedRoutine.creatorAvatarBase64} alt={selectedRoutine.creator} className="w-12 h-12 mr-4" />
+                        <div className="flex flex-col">
+                          <p className="text-white text-lg font-semibold">{selectedRoutine.name}</p>
+                          <p className="text-white">{selectedRoutine.creator}</p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                } else if (showSuggestions) {
+                  return (
+                    <>
+                      <p className=" text-xs mt-3">Resultados de búsqueda</p>
+                      {suggestions.length > 0 ? (
+                        suggestions.map((s) => (
+                          <button key={s.id} className="flex flex-row p-2 hover:bg-[#262626]" onClick={() => setSelectedRoutine(s)}>
+                            <img src={s.creatorAvatarBase64} alt={s.creator} className="w-12 h-12 mr-4" />
+                            <div className="flex flex-col">
+                              <p className="text-white text-lg font-semibold">{s.name}</p>
+                              <p className="text-white">{s.creator}</p>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <p className="text-gray-400 text-xs pt-5 text-center">No se encontraron rutinas con ese nombre</p>
+                      )}
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      <div className="flex flex-row justify-between items-center mb-2">
+                        <p className="text-xs">Rutinas recientes</p>
+                        <MiniPager back={{ enabled: page > 0, onClick: () => viewRoutines(page - 1) }} next={{ enabled: existMoreItems, onClick: () => viewRoutines(page + 1) }}/>
+                      </div>  
+                      
+                      {routines.map((routine) => (
+                        <button key={routine.id} className="flex flex-row p-2 hover:bg-[#262626] items-center" onClick={() => setSelectedRoutine(routine)}>
+                          <img src={routine.creatorAvatarBase64} alt={routine.creator} className="w-12 h-12 mr-4" />
+                          <div className="flex flex-col text-left w-[40%]">
+                            <p className="text-white text-m font-semibold">{routine.name}</p>
+                            <p className="text-white text-s">{routine.creator}</p>
+                          </div>
 
-                     <p className="text-white ml-20 text-xs w-[30%]">{routine.duration} minutos</p>
-                    </button>
-                  ))}
-                </>
-              )}
+                         <p className="text-white ml-20 text-xs w-[30%]">{routine.duration} minutos</p>
+                        </button>
+                      ))}
+                    </>
+                  );
+                }
+              })()}
 
             </div>
         </div>
@@ -164,7 +170,7 @@ const RoutineSelector = ({ selectedRoutine, setSelectedRoutine, onDeselect }) =>
 }
 
 RoutineSelector.propTypes = {
-  selectedRoutine: PropTypes.object.isRequired,
+  selectedRoutine: PropTypes.object,
   setSelectedRoutine: PropTypes.func.isRequired,
   onDeselect: PropTypes.func.isRequired,
 }
