@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS FollowRequest;
 
 DROP TABLE IF EXISTS Serie;
 DROP TABLE IF EXISTS Notification;
+DROP TABLE IF EXISTS Comment;
 DROP TABLE IF EXISTS Training;
 DROP TABLE IF EXISTS Routine;
 DROP TABLE IF EXISTS Exercise;
@@ -122,6 +123,16 @@ CREATE TABLE Serie (
     FOREIGN KEY (trainingId) REFERENCES Training(id)
 );
 
+CREATE TABLE Comment (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    mensaje VARCHAR(500) NOT NULL,
+    fecha TIMESTAMP NOT NULL,
+    trainingId BIGINT NOT NULL,
+    userId BIGINT NOT NULL,
+
+    FOREIGN KEY (trainingId) REFERENCES Training(id),
+    FOREIGN KEY (userId) REFERENCES Users(id)
+);
 
 
 CREATE TABLE Images(
