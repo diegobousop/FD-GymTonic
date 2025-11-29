@@ -495,6 +495,12 @@ public class UserServiceImpl implements UserService {
 
 		Users sender = permissionChecker.checkUser(senderId);
 		Users receiver = permissionChecker.checkUser(receiverId);
+		
+		//si hemos bloqueado a alguien no lo podemos
+		if(sender.getBlockedUsers() != null){
+			if(sender.getBlockedUsers().contains(receiver))
+				throw new PermissionException("project.entities.followRequest", senderId);
+		}
 
 		if (receiver.getFollowers()==null){
 			receiver.setFollowers(new ArrayList<>());
