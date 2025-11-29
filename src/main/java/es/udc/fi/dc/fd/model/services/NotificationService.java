@@ -73,4 +73,12 @@ public interface NotificationService {
      */
     public void notifyFollowRequest(Long senderId, Long receiverId) throws InstanceNotFoundException;
 
+    /**
+     * Get the count of unread notifications for a user.
+     * @param userId
+     * @return
+     * @throws InstanceNotFoundException
+    */
+    public int getUnreadCount(Long userId) throws InstanceNotFoundException;
+
 }

@@ -422,6 +422,17 @@ public class RoutineServiceImpl implements RoutineService {
         return true;
     }
 
+    @Override 
+    public boolean isLikedRoutine(Long userId, Long routineId) throws InstanceNotFoundException {
+        permissionChecker.checkUser(userId);
+
+        if (!routineDao.existsById(routineId)) {
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
+        }
+
+        return routineLikeDao.existsByUserIdAndRoutineId(userId, routineId);
+    }   
+
     @Override
     public long getLikesCount(Long routineId) throws InstanceNotFoundException {
         if (!routineDao.existsById(routineId)) {

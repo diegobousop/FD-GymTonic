@@ -281,6 +281,11 @@ public class NotificationServiceTest {
 
         routine = routineService.createRoutine(trainer1.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), routine.getIsPublic());
         routineService.likeRoutine(user1.getId(), routine.getId());
+
+        PageRequest pageable = PageRequest.of(0, 10);
+        Block<Notification> notificationsTrainer1 = notificationService.getAllNotifications(trainer1.getId(),  pageable);
+        assertEquals(1, notificationsTrainer1.getItems().size());
+        assertEquals("manolo le dio like a tu rutina: Rutina Test", notificationsTrainer1.getItems().get(0).getMessage());
     }
 
     @Test

@@ -44,7 +44,7 @@ INSERT INTO Serie (repeticiones, peso, numeroSerie, exerciseId, routineId) VALUE
 (8,40,1,7,2),
 (8,40,2,7,2),
 (8,48,3,7,2),
-(8,48,1,7,2),
+(8,48,4,7,2),
 (10,35,1,1,2),
 (10,35,2,1,2),
 (10,40,3,1,2),
@@ -162,4 +162,19 @@ INSERT INTO Routine_Exercise (routine_id,exercise_id,order_in_routine,rest_time)
 (2,7,1,110),
 (2,1,2,100),
 (2,8,3,80);
+
+INSERT INTO Routine_Follow (user_id, routine_id, followDate) VALUES
+(2,2,TIMESTAMP '2025-11-02 10:00:00'),
+(3,2,TIMESTAMP '2025-10-01 10:00:00');
+
+
+INSERT INTO Routine_Like (user_id, routine_id, likeDate) VALUES
+(2,2,TIMESTAMP '2025-11-02 10:00:00'),
+(3,2,TIMESTAMP '2025-10-01 10:00:00');
+
+INSERT INTO Notification (receiverId,senderId,routineId,message, isRead, date) VALUES 
+(1,2,2,'trainer1 empezó a seguir tu rutina: Rutina de empuje básica', false, TIMESTAMP '2025-11-02 10:00:00'),
+(1,3,2,'user1 empezó a seguir tu rutina: Rutina de empuje básica', false, TIMESTAMP '2025-11-02 10:00:00'),
+(1,3,2,'trainer1 le dio like a tu rutina: Rutina de empuje básica', false, TIMESTAMP '2025-11-02 10:00:00'),
+(1,3,2,'user1 le dio like tu rutina: Rutina de empuje básica', false, TIMESTAMP '2025-11-02 10:00:00');
 

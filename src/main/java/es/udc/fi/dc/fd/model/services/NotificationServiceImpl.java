@@ -130,4 +130,10 @@ public class NotificationServiceImpl implements NotificationService {
         notificationDao.save(notification);
     }
 
+    @Override
+    public int getUnreadCount(Long userId) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+        return notificationDao.countByReceiverAndIsReadFalse(user);
+    }
+
 }
