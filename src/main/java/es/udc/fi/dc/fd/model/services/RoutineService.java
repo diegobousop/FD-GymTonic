@@ -44,6 +44,12 @@ public interface RoutineService {
 
     boolean unfollowRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
 
+    boolean likeRoutine(Long userId, Long routineId) throws InstanceNotFoundException, PermissionException;
+
+    boolean unlikeRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
+
+    long getLikesCount(Long routineId) throws InstanceNotFoundException;
+
     Block<Users> getFollowersByRoutine(Long routineId, Long trainerId, Pageable pageable) throws InstanceNotFoundException, PermissionException;
 
     Page<Training> findTrainings(Long userId, Long id, Pageable pageable) throws InstanceNotFoundException, PermissionException;

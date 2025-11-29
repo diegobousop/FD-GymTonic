@@ -55,6 +55,9 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private FollowRequestDao followRequestDao;
 
+	@Autowired
+	private NotificationService notificationService;
+
 	/**
 	 * Sign up.
 	 *
@@ -383,6 +386,10 @@ public class UserServiceImpl implements UserService {
 		followed.getFollowers().add(newFollower);
 		newFollower.getFollowing().add(followed);
 		userDao.save(followed);
+		
+		// Notificar al usuario seguido sobre el nuevo seguidor
+		notificationService.notifyNewFollower(followerId, followedId);
+		
 		return true;
 	}
 
@@ -509,7 +516,12 @@ public class UserServiceImpl implements UserService {
 		}
 
 		FollowRequest request = new FollowRequest(sender, receiver);
-		return followRequestDao.save(request);
+		FollowRequest savedRequest = followRequestDao.save(request);
+		
+		// Notificar al receptor sobre la nueva solicitud de seguimiento
+		notificationService.notifyFollowRequest(senderId, receiverId);
+		
+		return savedRequest;
 	}
 
 
