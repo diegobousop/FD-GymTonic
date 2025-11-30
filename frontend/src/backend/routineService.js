@@ -87,6 +87,24 @@ export const unfollowRoutine = (routineId, onSuccess, onErrors) => {
   );
 };
 
+export const likeRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/like`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const unlikeRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/unlike`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+};
+
 export const getFollowersByRoutine = (routineId, { page, size }, onSuccess, onErrors) => {
   appFetch(
     `/routines/${routineId}/followers?page=${page}&size=${size}`,
@@ -99,6 +117,15 @@ export const getFollowersByRoutine = (routineId, { page, size }, onSuccess, onEr
 export const isFollowingRoutine = (routineId, onSuccess, onErrors) => {
   appFetch(
     `/routines/${routineId}/is-following`,
+  );
+};
+
+export const isLikedRoutine = (routineId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/${routineId}/isLiked`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
   );
 };
 

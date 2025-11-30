@@ -15,6 +15,7 @@ jest.mock("../../backend", () => ({
       getImageByName: jest.fn(),
     },
     notificationService: {
+      getUnreadCount: jest.fn(),
       getNotifications: jest.fn(),
       readNotification: jest.fn(),
       unreadNotification: jest.fn(),
@@ -35,9 +36,9 @@ describe("Navbar - Notifications", () => {
 
   const mockNotifications = {
     items: [
-      { id: 1, message: "New notification 1", read: false },
-      { id: 2, message: "New notification 2", read: false },
-      { id: 3, message: "Read notification", read: true },
+      { id: 1, message: "New notification 1", read: false, date: "2024-11-29T10:00:00" },
+      { id: 2, message: "New notification 2", read: false, date: "2024-11-29T11:00:00" },
+      { id: 3, message: "Read notification", read: true, date: "2024-11-28T09:00:00" },
     ],
   };
 
@@ -45,6 +46,10 @@ describe("Navbar - Notifications", () => {
     // Set up mocks before executing each test
     backend.imageService.getImageByName.mockImplementation((name, onSuccess) => {
       onSuccess({ base64: "data:image/png;base64,mocklogo" });
+    });
+
+    backend.notificationService.getUnreadCount.mockImplementation((onSuccess) => {
+      onSuccess(2);
     });
 
     backend.notificationService.getNotifications.mockImplementation((params, onSuccess) => {
@@ -95,7 +100,7 @@ describe("Navbar - Notifications", () => {
 
     // Wait for notifications to load
     await waitFor(() => {
-      expect(backend.notificationService.getNotifications).toHaveBeenCalled();
+      expect(backend.notificationService.getUnreadCount).toHaveBeenCalled();
     });
 
     // Verify that the counter shows 2 unread notifications

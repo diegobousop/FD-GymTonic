@@ -28,3 +28,11 @@ export const unreadNotification = (notificationId, onSuccess, onErrors) =>
     onSuccess,
     onErrors
   );
+
+export const getUnreadCount = (onSuccess, onErrors) =>
+  appFetch(
+    `/notifications/getUnreadCount`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );

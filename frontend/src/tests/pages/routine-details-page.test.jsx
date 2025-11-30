@@ -10,7 +10,10 @@ jest.mock('../../backend', () => ({
   routineService: {
     findRoutineDetails: jest.fn(),
     followRoutine: jest.fn(),
-    unfollowRoutine: jest.fn()
+    unfollowRoutine: jest.fn(),
+    isLikedRoutine: jest.fn(),
+    likeRoutine: jest.fn(),
+    unlikeRoutine: jest.fn()
   }
 }));
 
@@ -87,6 +90,9 @@ describe('RoutineDetailsPage', () => {
     globalThis.alert = jest.fn();
     backend.routineService.findRoutineDetails.mockImplementation((id, onSuccess) => {
       onSuccess(mockRoutine);
+    });
+    backend.routineService.isLikedRoutine.mockImplementation((id, onSuccess) => {
+      onSuccess(false);
     });
   });
 
@@ -395,6 +401,89 @@ describe('RoutineDetailsPage', () => {
     
     // The component should reload when handleExerciseUpdated is called
     // This is tested indirectly through the exercise component callback
+  });
+
+  it('carga el estado de like al montar el componente', async () => {
+    renderWithRouter();
+    
+    await waitFor(() => {
+      expect(backend.routineService.isLikedRoutine).toHaveBeenCalledWith(
+        '1',
+        expect.any(Function),
+        expect.any(Function)
+      );
+    });
+  });
+
+  it('da like a la rutina cuando se hace clic en el botón de like', async () => {
+    backend.routineService.likeRoutine.mockImplementation((id, onSuccess) => {
+      onSuccess();
+    });
+
+    renderWithRouter();
+    
+    await waitFor(() => {
+      expect(screen.getByText('Test Routine')).toBeInTheDocument();
+    });
+
+    const likeButton = screen.getByLabelText('Like Routine');
+    fireEvent.click(likeButton);
+
+    await waitFor(() => {
+      expect(backend.routineService.likeRoutine).toHaveBeenCalledWith(
+        '1',
+        expect.any(Function),
+        expect.any(Function)
+      );
+    });
+  });
+
+  it('quita like a la rutina cuando ya tiene like', async () => {
+    backend.routineService.isLikedRoutine.mockImplementation((id, onSuccess) => {
+      onSuccess(true);
+    });
+    backend.routineService.unlikeRoutine.mockImplementation((id, onSuccess) => {
+      onSuccess();
+    });
+
+    renderWithRouter();
+    
+    await waitFor(() => {
+      expect(screen.getByText('Test Routine')).toBeInTheDocument();
+    });
+
+    const likeButton = screen.getByLabelText('Like Routine');
+    fireEvent.click(likeButton);
+
+    await waitFor(() => {
+      expect(backend.routineService.unlikeRoutine).toHaveBeenCalledWith(
+        '1',
+        expect.any(Function),
+        expect.any(Function)
+      );
+    });
+  });
+
+  it('maneja error al dar like', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    backend.routineService.likeRoutine.mockImplementation((id, onSuccess, onError) => {
+      onError({ globalError: 'Like error' });
+    });
+
+    renderWithRouter();
+    
+    await waitFor(() => {
+      expect(screen.getByText('Test Routine')).toBeInTheDocument();
+    });
+
+    const likeButton = screen.getByLabelText('Like Routine');
+    fireEvent.click(likeButton);
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error al actualizar like', expect.any(Object));
+    });
+
+    consoleErrorSpy.mockRestore();
   });
 });
 
