@@ -13,6 +13,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +53,7 @@ public class CommentServiceTest {
     private static final String PASSWORD = "12345";
     protected Users user;
     protected Training training;
+    private final Pageable pageable = PageRequest.of(0, 5);
 
     @Before
     public void setup() throws DuplicateInstanceException, InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException, LoginUserBlockedException, IncorrectLoginException {
@@ -157,18 +161,18 @@ public class CommentServiceTest {
         commentService.addComment(training.getId(), user.getId(), "Mensaje 1");
         commentService.addComment(training.getId(), user.getId(), "Mensaje 2");
 
-        List<Comment> comments = commentService.getComments(training.getId());
+        Page<Comment> comments = commentService.getComments(training.getId(), pageable);
 
         assertNotNull(comments);
-        assertEquals(2, comments.size());
-        assertEquals(training.getId(), comments.get(0).getTraining().getId());
-        assertEquals(training.getId(), comments.get(1).getTraining().getId());
+        assertEquals(2, comments.getContent().size());
+        assertEquals(training.getId(), comments.getContent().get(0).getTraining().getId());
+        assertEquals(training.getId(), comments.getContent().get(1).getTraining().getId());
     }
 
     @Test(expected = InstanceNotFoundException.class)
     public void testGetCommentsTrainingNotFound() throws Exception {
 
-        commentService.getComments(999999L); // training inexistente
+        commentService.getComments(999999L, pageable); // training inexistente
     }
 
     @Test

@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Comment;
@@ -12,7 +13,7 @@ public interface CommentService {
 
     public Comment getComment(Long commentId) throws InstanceNotFoundException;
 
-    public List<Comment> getComments(Long trainingId) throws InstanceNotFoundException;
+    public Page<Comment> getComments(Long trainingId, Pageable pageable) throws InstanceNotFoundException;
 
     public void deleteComment(Long commentId, Long trainingId, Long userId) throws InstanceNotFoundException, PermissionException;
 }

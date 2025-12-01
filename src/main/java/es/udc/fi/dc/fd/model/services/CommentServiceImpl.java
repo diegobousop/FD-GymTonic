@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
@@ -70,13 +72,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getComments(Long trainingId) throws InstanceNotFoundException {
+    public Page<Comment> getComments(Long trainingId, Pageable pageable) throws InstanceNotFoundException {
         Optional<Training> training = trainingDao.findById(trainingId);
 
         if(training.isEmpty()){
             throw new InstanceNotFoundException("project.entities.training", trainingId);
         }
-        return commentDao.findByTraining(training.get());
+        return commentDao.findByTraining(training.get(), pageable);
     }
 
     @Override
