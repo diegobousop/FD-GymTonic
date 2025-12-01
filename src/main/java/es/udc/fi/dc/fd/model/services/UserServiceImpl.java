@@ -541,11 +541,19 @@ public class UserServiceImpl implements UserService {
 			throw new InstanceNotFoundException("project.entities.followRequest", requestId);
 		followRequestDao.deleteById(requestId);
 	}
+
+
 	@Override
 	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException{
 		if(followRequestDao.findByReceiverIdAndAcceptedFalse(userId).isEmpty()) {
 			throw new InstanceNotFoundException("project.entities.followRequest", userId);
 		}
 		return followRequestDao.findByReceiverIdAndAcceptedFalse(userId);
+	}
+
+	//solicitudes que hemos enviado
+	@Override
+	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException{
+		return followRequestDao.findBySenderIdAndAcceptedFalse(userId);
 	}
 }
