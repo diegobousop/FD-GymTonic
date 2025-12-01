@@ -66,7 +66,6 @@ export const UserProvider = ({children}) => {
         setUser, 
         handleLogout, 
         refreshUser,
-        refreshUser,
         loading, 
         pendingInvites, 
         setPendingInvites 

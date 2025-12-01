@@ -55,7 +55,7 @@ public class SearchServiceImpl implements SearchService {
                     }
                     return true;
                 })
-                .limit(limitPerType + 10)
+                .limit(limitPerType + 10L)
                 .map(r -> new SearchSuggestionDto((Long) r[0], "user", (String) r[1]))
                 .collect(Collectors.toList());
 

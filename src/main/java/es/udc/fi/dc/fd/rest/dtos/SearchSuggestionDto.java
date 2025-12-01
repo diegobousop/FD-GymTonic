@@ -35,13 +35,18 @@ public class SearchSuggestionDto {
     }
 
 
-    @Override
     public boolean equals(Object objeto){
-        SearchSuggestionDto search = (SearchSuggestionDto) objeto;
-        if(this.id == search.getId()){
-            return true;
-        }else{
+        if (!(objeto instanceof SearchSuggestionDto)) {
             return false;
         }
+    
+        SearchSuggestionDto search = (SearchSuggestionDto) objeto;
+    
+        return this.id == search.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }
