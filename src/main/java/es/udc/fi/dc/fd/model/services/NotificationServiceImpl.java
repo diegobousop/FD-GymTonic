@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -64,11 +65,75 @@ public class NotificationServiceImpl implements NotificationService {
         String message = "Nueva rutina: '" + routine.getName() + "', añadida por " + trainer.getUserName();
 
         for (Users follower : trainer.getFollowers()) {
-            Notification notification = new Notification(follower, trainer, routine, message, false, java.time.LocalDateTime.now().withNano(0));
+            Notification notification = new Notification(follower, trainer, routine, message, false, LocalDateTime.now().withNano(0));
             notificationDao.save(notification);
         }
     
     }
 
+    @Override
+    public void notifyRoutineLike(Long userId, Routine routine) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Users trainer = routine.getCreator();
+
+        // No notificar si el usuario le da like a su propia rutina
+        if (user.getId().equals(trainer.getId())) {
+            return;
+        }
+
+        String message = user.getUserName() + " le dio like a tu rutina: " + routine.getName();
+
+        
+        Notification notification = new Notification(trainer, user, routine, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyRoutineFollow(Long userId, Routine routine) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Users trainer = routine.getCreator();
+
+        // No notificar si el usuario sigue su propia rutina
+        if (user.getId().equals(trainer.getId())) {
+            return;
+        }
+
+        String message = user.getUserName() + " empezó a seguir tu rutina: " + routine.getName();
+
+        Notification notification = new Notification(trainer, user, routine, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyNewFollower(Long followerId, Long trainerId) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(followerId);
+
+        Users trainer = permissionChecker.checkUser(trainerId);
+
+        String message = user.getUserName() + " empezó a seguirte";
+
+        Notification notification = new Notification(trainer, user, null, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyFollowRequest(Long senderId, Long receiverId) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(senderId);
+
+        Users receiver = permissionChecker.checkUser(receiverId);
+
+        String message = user.getUserName() + " quiere seguirte";
+
+        Notification notification = new Notification(receiver, user, null, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public int getUnreadCount(Long userId) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+        return notificationDao.countByReceiverAndIsReadFalse(user);
+    }
 
 }

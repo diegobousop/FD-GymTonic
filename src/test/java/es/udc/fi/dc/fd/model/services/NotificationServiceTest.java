@@ -2,6 +2,8 @@ package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.Duration;
+import static org.awaitility.Awaitility.await;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ public class NotificationServiceTest {
     private AvatarDao avatarDao;
 
     private final String PASSWORD = "12345";
+    private final String TRAINER_USERNAME = "trainer1";
 
 	private Users createUser(String userName, RoleType role, Gender gender) {
 		Optional<Avatar> avatar = avatarDao.findByName("default");
@@ -81,7 +84,7 @@ public class NotificationServiceTest {
         Users user3 = createUser("mariloli", RoleType.USER, Gender.FEMALE);
         userService.signUp(user3, RoleType.USER);
 
-        Users trainer1 = userService.login("trainer1", "12345");
+        Users trainer1 = userService.login(TRAINER_USERNAME, PASSWORD);
         Routine routine = createRoutine("Rutina Test", trainer1);
 
         userService.followUser(user1.getId(), trainer1.getId());
@@ -105,7 +108,7 @@ public class NotificationServiceTest {
         Users user1 = createUser("manolo", RoleType.TRAINER, Gender.MALE);
         userService.signUp(user1, RoleType.TRAINER);
 
-        Users trainer1 = userService.login("trainer1", "12345");
+        Users trainer1 = userService.login(TRAINER_USERNAME, PASSWORD);
         Routine routine = createRoutine("Rutina Test", trainer1);
 
         userService.followUser(user1.getId(), trainer1.getId());
@@ -138,7 +141,7 @@ public class NotificationServiceTest {
         Users user3 = createUser("mariloli", RoleType.USER, Gender.FEMALE);
         userService.signUp(user3, RoleType.USER);
 
-        Users trainer1 = userService.login("trainer1", "12345");
+        Users trainer1 = userService.login(TRAINER_USERNAME, PASSWORD);
         Routine routine = createRoutine("Rutina Test", trainer1);
         routine.setIsPublic(false);
 
@@ -165,5 +168,155 @@ public class NotificationServiceTest {
         assertEquals(1, notificationsUser2.getItems().size());
         assertEquals(0, notificationsUser3.getItems().size());
     }  
+
+    @Test
+    public void testNotifyRoutineLike() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Like Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que el usuario da like a la rutina
+        notificationService.notifyRoutineLike(user.getId(), routine);
+
+        // Verificar que el entrenador recibe la notificación
+        Block<Notification> notificationsTrainer = notificationService.getAllNotifications(trainer.getId(), pageable);
+        assertEquals(1, notificationsTrainer.getItems().size());
+        
+        Notification notification = notificationsTrainer.getItems().get(0);
+        assertEquals(trainer.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals(routine.getId(), notification.getRoutine().getId());
+        assertEquals(user.getUserName() + " le dio like a tu rutina: " + routine.getName(), notification.getMessage());
+    }
+
+    @Test
+    public void testNotifyRoutineFollow() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.FEMALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Follow Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que el usuario sigue la rutina
+        notificationService.notifyRoutineFollow(user.getId(), routine);
+
+        // Verificar que el entrenador recibe la notificación
+        Block<Notification> notificationsTrainer = notificationService.getAllNotifications(trainer.getId(), pageable);
+        assertEquals(1, notificationsTrainer.getItems().size());
+        
+        Notification notification = notificationsTrainer.getItems().get(0);
+        assertEquals(trainer.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals(routine.getId(), notification.getRoutine().getId());
+        assertEquals(user.getUserName() + " empezó a seguir tu rutina: " + routine.getName() , notification.getMessage());
+    }
+
+    @Test
+    public void testNotifyNewFollower() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException {
+        Users follower = createUser("follower1", RoleType.USER, Gender.OTHER);
+        userService.signUp(follower, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que el usuario sigue al entrenador
+        notificationService.notifyNewFollower(follower.getId(), trainer.getId());
+
+        // Verificar que el entrenador recibe la notificación
+        Block<Notification> notificationsTrainer = notificationService.getAllNotifications(trainer.getId(), pageable);
+        assertEquals(1, notificationsTrainer.getItems().size());
+        
+        Notification notification = notificationsTrainer.getItems().get(0);
+        assertEquals(trainer.getId(), notification.getReceiver().getId());
+        assertEquals(follower.getId(), notification.getSender().getId());
+        assertEquals(null, notification.getRoutine());
+        assertEquals(follower.getUserName() + " empezó a seguirte", notification.getMessage());
+    }
+
+    @Test
+    public void testNotifyFollowRequest() throws DuplicateInstanceException,
+     InstanceNotFoundException {
+        Users sender = createUser("sender1", RoleType.USER, Gender.MALE);
+        userService.signUp(sender, RoleType.USER);
+
+        Users receiver = createUser("receiver1", RoleType.USER, Gender.FEMALE);
+        userService.signUp(receiver, RoleType.USER);
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que sender envía solicitud a receiver
+        notificationService.notifyFollowRequest(sender.getId(), receiver.getId());
+
+        // Verificar que el receiver recibe la notificación
+        Block<Notification> notificationsReceiver = notificationService.getAllNotifications(receiver.getId(), pageable);
+        assertEquals(1, notificationsReceiver.getItems().size());
+        
+        Notification notification = notificationsReceiver.getItems().get(0);
+        assertEquals(receiver.getId(), notification.getReceiver().getId());
+        assertEquals(sender.getId(), notification.getSender().getId());
+        assertEquals(null, notification.getRoutine());
+        assertEquals(sender.getUserName() + " quiere seguirte", notification.getMessage());
+    }
+
+    @Test 
+    public void testNotifyLikeRoutine() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user1 = createUser("manolo", RoleType.USER, Gender.MALE);
+        userService.signUp(user1, RoleType.USER);
+        
+        Users trainer1 = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer1);
+
+        routine = routineService.createRoutine(trainer1.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), routine.getIsPublic());
+        routineService.likeRoutine(user1.getId(), routine.getId());
+
+        PageRequest pageable = PageRequest.of(0, 10);
+        Block<Notification> notificationsTrainer1 = notificationService.getAllNotifications(trainer1.getId(),  pageable);
+        assertEquals(1, notificationsTrainer1.getItems().size());
+        assertEquals("manolo le dio like a tu rutina: Rutina Test", notificationsTrainer1.getItems().get(0).getMessage());
+    }
+
+    @Test
+    public void testGetDifferentNotifications() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException, InterruptedException {
+        Users user1 = createUser("manolo", RoleType.USER, Gender.MALE);
+        userService.signUp(user1, RoleType.USER);
+     
+        Users trainer1 = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer1);
+
+        userService.followUser(user1.getId(), trainer1.getId());
+        await().pollDelay(Duration.ofSeconds(1)).until(() -> true);
+        routine = routineService.createRoutine(trainer1.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), routine.getIsPublic());
+        await().pollDelay(Duration.ofSeconds(1)).until(() -> true);
+        routineService.likeRoutine(user1.getId(), routine.getId());
+        await().pollDelay(Duration.ofSeconds(1)).until(() -> true);
+        routineService.followRoutine(user1.getId(), routine.getId());
+
+        PageRequest pageable = PageRequest.of(0, 10);
+        Block<Notification> notificationsTrainer1 = notificationService.getAllNotifications(trainer1.getId(),  pageable);
+        assertEquals(3, notificationsTrainer1.getItems().size());
+        assertEquals("manolo empezó a seguir tu rutina: Rutina Test", notificationsTrainer1.getItems().get(0).getMessage());
+        assertEquals("manolo le dio like a tu rutina: Rutina Test", notificationsTrainer1.getItems().get(1).getMessage());
+        assertEquals("manolo empezó a seguirte", notificationsTrainer1.getItems().get(2).getMessage());
+
+        Block<Notification> notificationsUser1 = notificationService.getAllNotifications(user1.getId(),  pageable);
+        assertEquals(1, notificationsUser1.getItems().size());
+        assertEquals("Nueva rutina: 'Rutina Test', añadida por trainer1", notificationsUser1.getItems().get(0).getMessage());
+
+    }
+
 
 }

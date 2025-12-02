@@ -212,7 +212,7 @@ public class RoutineController {
         routineService.createTrainingFromRoutine(userId, params.getName(), params.getDescription(), params.getDuration(), params.getVisibility(), series, params.getRoutineId());
     }
 
-        @PostMapping("/{routineId}/follow")
+    @PostMapping("/{routineId}/follow")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void followRoutine(@RequestAttribute Long userId, @PathVariable Long routineId)
             throws InstanceNotFoundException, PermissionException {
@@ -242,6 +242,29 @@ public class RoutineController {
 
         return UserConversor.toBlockResumeUserDto(followersBlock);
     }
+
+    @PostMapping("/{routineId}/like")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void likeRoutine(@RequestAttribute Long userId, @PathVariable Long routineId)
+            throws InstanceNotFoundException, PermissionException {
+
+        routineService.likeRoutine(userId, routineId);
+    }
+
+    @PostMapping("/{routineId}/unlike")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlikeRoutine(@RequestAttribute Long userId, @PathVariable Long routineId)
+            throws InstanceNotFoundException {
+
+        routineService.unlikeRoutine(userId, routineId);
+    }
+
+    @GetMapping("/{routineId}/isLiked")
+    public boolean isLikedRoutine(@RequestAttribute Long userId, @PathVariable Long routineId)
+            throws InstanceNotFoundException {
+        return routineService.isLikedRoutine(userId, routineId);
+    }
+    
 
     /**
      * Obtener los entrenamientos () de un usuario

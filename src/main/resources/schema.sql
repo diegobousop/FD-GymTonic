@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
+DROP TABLE IF EXISTS Routine_Like;
 DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS FollowRequest;
 
@@ -93,6 +94,16 @@ CREATE TABLE Routine_Exercise (
 CREATE TABLE Routine_Follow (
     user_id BIGINT NOT NULL,
     routine_id BIGINT NOT NULL,
+    followDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, routine_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (routine_id) REFERENCES Routine(id)
+);
+
+CREATE TABLE Routine_Like (
+    user_id BIGINT NOT NULL,
+    routine_id BIGINT NOT NULL,
+    likeDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, routine_id),
     FOREIGN KEY (user_id) REFERENCES Users(id),
     FOREIGN KEY (routine_id) REFERENCES Routine(id)
