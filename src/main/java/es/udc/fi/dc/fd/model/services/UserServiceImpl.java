@@ -80,6 +80,7 @@ public class UserServiceImpl implements UserService {
 		user.setFollowing(new ArrayList<>());
 		user.setBlockedUsers(new ArrayList<>());
 		user.setWhoBlockUs(new ArrayList<>());
+		user.setPremium(false);
 		Optional<Avatar> avatar = avatarDao.findByName("default");
 		if(!avatar.isPresent()) {
 			throw new InstanceNotFoundException("project.entities.avatar", "default");
