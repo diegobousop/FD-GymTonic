@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS Routine_Like;
+DROP TABLE IF EXISTS Training_Like;
 DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS FollowRequest;
 
@@ -119,6 +120,15 @@ CREATE TABLE Training (
     userId BIGINT NOT NULL,
     duration BIGINT NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(id)
+);
+
+CREATE TABLE Training_Like (
+    user_id BIGINT NOT NULL,
+    training_id BIGINT NOT NULL,
+    likeDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, training_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (training_id) REFERENCES Training(id)
 );
 
 CREATE TABLE Serie (
