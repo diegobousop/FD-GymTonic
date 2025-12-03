@@ -392,6 +392,12 @@ public class UserController {
 		return FollowRequestConversor.toFollowRequestDtos(userService.getFollowRequests(userId));
 	}
 
+	@GetMapping("/requestSended")
+	public List<FollowRequestDto> getRequestedSended(@RequestAttribute Long userId) throws InstanceNotFoundException{
+		return FollowRequestConversor.toFollowRequestDtos(userService.getRequestsSended(userId));
+	}
+	
+
 
 	/**
 	 * Generate service token.

@@ -170,6 +170,12 @@ const SearchResultsPage = () => {
     let label = "Seguir";
     let className = "bg-green-600 hover:bg-green-700";
 
+    //si el usuario esta bloqueado no debemos mostrar el boton de seguir
+    const isBlocked = user.idBlocked?.includes(userItem.id);
+    if(isBlocked){
+      return null;
+    }
+
     if (isFollowing) {
       label = "Dejar de seguir";
       className = "bg-gray-600 hover:bg-gray-700";
@@ -217,7 +223,12 @@ const SearchResultsPage = () => {
       <h2 className="font-semibold mb-2">Usuarios</h2>
       <ul className="space-y-2">
         {results.users.map((userItem) => {
+          const isBlocked = user.idBlocked?.includes(userItem.id);
           const isMe = userItem.id === user.id;
+          //comprobamos si hemos bloqueado a este usuario
+          if(isBlocked){
+            return null;
+          }
           return (
             <li
               key={userItem.id}

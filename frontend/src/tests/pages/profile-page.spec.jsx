@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import { UserContext } from '../../modules/app/components/common/user-provider';
+import { ToastProvider } from '../../modules/app/components/common/toast-provider';
+
+
 import '@testing-library/jest-dom';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import ProfilePage from '../../modules/app/pages/profile-page';
@@ -51,16 +55,23 @@ describe('ProfilePage', () => {
     });
   });
 
+  const mockUser = { id: 99, role: "USER" };
+
+  const mockRefreshUser = jest.fn();
+
   const renderProfilePage = (id = '1') => {
     return render(
-      <MemoryRouter initialEntries={[`/profile/${id}`]}>
-        <Routes>
-          <Route path="/profile/:id" element={<ProfilePage />} />
-        </Routes>
-      </MemoryRouter>
+      <UserContext.Provider value={{ user: mockUser, refreshUser: mockRefreshUser }}>
+        <ToastProvider>
+          <MemoryRouter initialEntries={[`/profile/${id}`]}>
+            <Routes>
+              <Route path="/profile/:id" element={<ProfilePage />} />
+              </Routes>
+          </MemoryRouter>
+        </ToastProvider>
+      </UserContext.Provider>
     );
   };
-
   it('renderiza sin fallar', async () => {
     renderProfilePage();
     
@@ -277,15 +288,18 @@ describe('ProfilePage', () => {
 
   it('reinicia estado cuando cambia el parámetro id', async () => {
     render(
-      <MemoryRouter initialEntries={['/profile/1']}
-        >
-        <RouteChangeTester />
-        <Routes>
-          <Route path="/profile/:id" element={<ProfilePage />} />
-        </Routes>
-      </MemoryRouter>
+      <UserContext.Provider value={{ user: mockUser, refreshUser: jest.fn() }}>
+        <ToastProvider>
+          <MemoryRouter initialEntries={['/profile/1']}>
+            <RouteChangeTester />
+            <Routes>
+              <Route path="/profile/:id" element={<ProfilePage />} />
+            </Routes>
+          </MemoryRouter>
+        </ToastProvider>
+      </UserContext.Provider>
     );
-
+  
     await waitFor(() => {
       expect(userService.getProfile).toHaveBeenCalledWith(
         { id: '1' },
@@ -293,7 +307,7 @@ describe('ProfilePage', () => {
         expect.any(Function)
       );
     });
-
+  
     await waitFor(() => {
       expect(userService.getProfile).toHaveBeenCalledWith(
         { id: '2' },
@@ -302,6 +316,8 @@ describe('ProfilePage', () => {
       );
     });
   });
+  
+  
 
   it('renderiza información del perfil correctamente', async () => {
     renderProfilePage();
