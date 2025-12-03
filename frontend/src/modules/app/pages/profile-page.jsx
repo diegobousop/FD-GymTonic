@@ -134,9 +134,6 @@ const ProfilePage = () => {
   };
 
 
-  console.log(user.idBlocked?.includes(Number(id)));
-  console.log(isFollowing);
-  console.log(user);
   const renderBlockButton = (id) => {
     const isBlocked = user.idBlocked?.includes(Number(id));
     const label = isBlocked ? "Bloqueado" : "Bloquear";
