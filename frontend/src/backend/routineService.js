@@ -105,6 +105,24 @@ export const unlikeRoutine = (routineId, onSuccess, onErrors) => {
   );
 };
 
+export const likeTraining = (trainingId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/training/${trainingId}/like`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const unlikeTraining = (trainingId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/training/${trainingId}/unlike`,
+    fetchConfig("POST"),
+    onSuccess,
+    onErrors
+  );
+};
+
 export const getFollowersByRoutine = (routineId, { page, size }, onSuccess, onErrors) => {
   appFetch(
     `/routines/${routineId}/followers?page=${page}&size=${size}`,
@@ -123,6 +141,24 @@ export const isFollowingRoutine = (routineId, onSuccess, onErrors) => {
 export const isLikedRoutine = (routineId, onSuccess, onErrors) => {
   appFetch(
     `/routines/${routineId}/isLiked`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const isLikedTraining = (trainingId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/training/${trainingId}/isLiked`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const getTrainingLikesCount = (trainingId, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/training/${trainingId}/likesCount`,
     fetchConfig("GET"),
     onSuccess,
     onErrors

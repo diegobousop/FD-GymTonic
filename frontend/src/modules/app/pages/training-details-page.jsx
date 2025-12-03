@@ -4,6 +4,8 @@ import backend from "../../../backend";
 import Exercise from "../components/exercise/exercise";
 import CommentSection from "../components/comments/comment-section";
 import { Link } from "react-router-dom";
+import {svgIcons} from "../../../config/constants";
+import BubbleButton from "../components/common/bubble-button";
 
 const TrainingDetailsPage = () => {
   const { id } = useParams();
@@ -11,6 +13,8 @@ const TrainingDetailsPage = () => {
   const [training, setTraining] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likes, setLikes] = useState(null);
 
   const loadTrainingDetails = () => {
     setLoading(true);
@@ -32,9 +36,52 @@ const TrainingDetailsPage = () => {
     );
   };
 
+  const loadIsLikedStatus = () => {
+    backend.routineService.isLikedTraining(
+      id,
+      (data) => {
+        setIsLiked(data);
+      },
+      (err) => {
+        console.error("Error al verificar si el entrenamiento está marcada como me gusta", err);
+      }
+    );
+  }
+
+  const loadLikesCount = () => {
+    backend.routineService.getTrainingLikesCount(
+      id,
+      (data) => {
+        setLikes(data);
+      },
+      (err) => {
+        console.error("Error al ver el numero de likes", err);
+      }
+    );
+  }
+
   useEffect(() => {
     loadTrainingDetails();
+    loadIsLikedStatus();
+    loadLikesCount();
   }, [id]);
+
+  const handleLikeTraining = () => {
+    const action = isLiked
+      ? backend.routineService.unlikeTraining
+      : backend.routineService.likeTraining;
+    
+    action(
+      id,
+      () => {
+        setIsLiked(!isLiked);
+        setLikes((prevLikes) => prevLikes + (isLiked ? -1 : 1));
+      },
+      (err) => {
+        console.error("Error al actualizar like", err);
+      }
+    );
+  };
 
   if (loading) return <p>Cargando entrenamiento...</p>;
   if (error) return <p>{error}</p>;
@@ -70,6 +117,16 @@ const TrainingDetailsPage = () => {
             <p className="mx-3">{new Date(training.creationDate).toLocaleDateString()}</p>
           </>
         )}
+        <span className="text-white mr-3">•</span>
+        <BubbleButton 
+          icon={<svgIcons.LikeIcon
+          className={isLiked ? "text-[#FF0000]" : "text-[#000000]"}
+          />}
+          ariaLabel={isLiked ? "Unlike Training" : "Like Training"}
+          size = {45}
+          onClick={() => handleLikeTraining()}
+          />
+          <p className="mx-3">{likes ? likes : 0} Likes</p>
       </div>
 
       {training.routineName && (
