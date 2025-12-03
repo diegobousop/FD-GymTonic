@@ -13,17 +13,14 @@ const Comment = ({ comment, trainingId, onDelete }) => {
     const { user } = useContext(UserContext);
 
     const handleDelete = () => {
-
-        if (window.confirm(`¿Seguro que quieres eliminar el comentario?`)) {
-            deleteComment(
-                comment.id,
-                trainingId,
-                () => { onDelete(); },
-                (err) => {
-                    setError(err.globalError || "Error al eliminar el comentario");
-                }
-            );
-        }
+        deleteComment(
+            comment.id,
+            trainingId,
+            () => { onDelete(); },
+            (err) => {
+                setError(err.globalError || "Error al eliminar el comentario");
+            }
+        );
     };
 
     useEffect(() => {
@@ -50,7 +47,7 @@ const Comment = ({ comment, trainingId, onDelete }) => {
         <div className="flex flex-row items-center justify-between border border-red-900 text-white w-full">
             
             {/* Contenedor de avatar + texto */}
-            <div className="flex flex-row items-center">
+            <div className="flex flex-row items-center flex-1 min-w-0">
                 <img src={profile.avatar.avatarBase64} className="mx-2 w-[40px] h-[40px]"/>
                 
                 <div className="flex flex-col">
@@ -66,7 +63,7 @@ const Comment = ({ comment, trainingId, onDelete }) => {
                         </span>
                     </p>
 
-                    <p className="text-white mx-3">{comment.mensaje}</p>
+                    <p className="text-white mx-3 whitespace-pre-wrap break-all">{comment.mensaje}</p>
                 </div>
             </div>
 
