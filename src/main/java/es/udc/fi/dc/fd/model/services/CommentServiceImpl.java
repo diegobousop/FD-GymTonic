@@ -34,6 +34,9 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     public TrainingDao trainingDao;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public Comment addComment(Long trainingId, Long userId, String message) throws InstanceNotFoundException {
 
@@ -55,9 +58,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setMensaje(message);
         comment.setFecha(LocalDateTime.now());
 
-        return commentDao.save(comment);
+        notificationService.notifyTrainingComment(userId, training.get());
 
-        // ############ Falta notificar al creador #############3
+        return commentDao.save(comment);
     }
 
     @Override

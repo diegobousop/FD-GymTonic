@@ -387,14 +387,16 @@ public class DtosTest {
 
     @Test
     public void testNotificationDto_GettersSetters() {
-        NotificationDto dto = new NotificationDto(1L, 2L, "msg", true, "date");
+        NotificationDto dto = new NotificationDto(1L, 2L, 2L, "msg", true, "date");
         dto.setId(10L);
         dto.setRoutineId(20L);
+        dto.setTrainingId(25L);
         dto.setMessage("newmsg");
         dto.setRead(false);
         dto.setDate("newdate");
         assertEquals(Long.valueOf(10L), dto.getId());
         assertEquals(Long.valueOf(20L), dto.getRoutineId());
+        assertEquals(Long.valueOf(25L), dto.getTrainingId());
         assertEquals("newmsg", dto.getMessage());
         assertFalse(dto.isRead());
         assertEquals("newdate", dto.getDate());
@@ -546,12 +548,14 @@ public class DtosTest {
     public void testNotificationDto() {
         Long id = 1L;
         Long routineId = 2L;
+        Long trainingId = 3L;
         String message = "msg";
         boolean isRead = true;
         String date = "2025-11-22";
-        NotificationDto dto = new NotificationDto(id, routineId, message, isRead, date);
+        NotificationDto dto = new NotificationDto(id, routineId, trainingId, message, isRead, date);
         assertEquals(id, dto.getId());
         assertEquals(routineId, dto.getRoutineId());
+        assertEquals(trainingId, dto.getTrainingId());
         assertEquals(message, dto.getMessage());
         assertEquals(isRead, dto.isRead());
         assertEquals(date, dto.getDate());

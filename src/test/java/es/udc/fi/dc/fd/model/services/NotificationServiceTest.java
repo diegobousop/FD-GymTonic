@@ -26,6 +26,8 @@ import es.udc.fi.dc.fd.model.entities.AvatarDao;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineExercise;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -193,6 +195,58 @@ public class NotificationServiceTest {
         assertEquals(user.getId(), notification.getSender().getId());
         assertEquals(routine.getId(), notification.getRoutine().getId());
         assertEquals(user.getUserName() + " le dio like a tu rutina: " + routine.getName(), notification.getMessage());
+    }
+
+    @Test
+    public void testNotifyTrainingLike() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(trainer.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que el usuario da like al entrenamiento
+        notificationService.notifyTrainingLike(user.getId(), training);
+
+        // Verificar que el entrenador recibe la notificación
+        Block<Notification> notificationsTrainer = notificationService.getAllNotifications(trainer.getId(), pageable);
+        assertEquals(1, notificationsTrainer.getItems().size());
+        
+        Notification notification = notificationsTrainer.getItems().get(0);
+        assertEquals(trainer.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals(training.getId(), notification.getTraining().getId());
+        assertEquals(user.getUserName() + " le dio like a tu entrenamiento: " + training.getName(), notification.getMessage());
+    }
+
+    @Test
+    public void testNotifyTrainingComment() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(trainer.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que el usuario da like al entrenamiento
+        notificationService.notifyTrainingComment(user.getId(), training);
+
+        // Verificar que el entrenador recibe la notificación
+        Block<Notification> notificationsTrainer = notificationService.getAllNotifications(trainer.getId(), pageable);
+        assertEquals(1, notificationsTrainer.getItems().size());
+        
+        Notification notification = notificationsTrainer.getItems().get(0);
+        assertEquals(trainer.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals(training.getId(), notification.getTraining().getId());
+        assertEquals(user.getUserName() + " ha comentado en tu entrenamiento: " + training.getName(), notification.getMessage());
     }
 
     @Test

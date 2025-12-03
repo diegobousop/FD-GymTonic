@@ -462,8 +462,7 @@ public class RoutineServiceImpl implements RoutineService {
 
         trainingLikeDao.save(new TrainingLike(user, training));
         
-        // Notificar al entrenador sobre el like
-        //notificationService.notifyRoutineLike(userId, routine);
+        notificationService.notifyTrainingLike(userId, training);
         
         return true;
     }

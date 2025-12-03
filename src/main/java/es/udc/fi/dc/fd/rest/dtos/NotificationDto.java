@@ -3,13 +3,15 @@ package es.udc.fi.dc.fd.rest.dtos;
 public class NotificationDto {
     private Long id;
     private Long routineId;
+    private Long trainingId;
     private String message;
     private boolean isRead;
     private String date;
 
-    public NotificationDto(Long id, Long routineId, String message, boolean isRead, String date) {
+    public NotificationDto(Long id, Long routineId, Long trainingId, String message, boolean isRead, String date) {
         this.id = id;
         this.routineId = routineId;
+        this.trainingId = trainingId;
         this.message = message;
         this.isRead = isRead;
         this.date = date;
@@ -30,6 +32,14 @@ public class NotificationDto {
 
     public void setRoutineId(Long routineId) {
         this.routineId = routineId;
+    }
+
+    public Long getTrainingId() {
+        return trainingId;
+    }
+
+    public void setTrainingId(Long trainingId) {
+        this.trainingId = trainingId;
     }
 
     public String getMessage() {

@@ -182,12 +182,14 @@ CREATE TABLE Notification (
     receiverId BIGINT NOT NULL,
     senderId BIGINT,
     routineId BIGINT,
+    trainingId BIGINT,
     message VARCHAR(255) NOT NULL,
     isRead BOOLEAN NOT NULL DEFAULT FALSE,
     date TIMESTAMP NOT NULL,
     FOREIGN KEY (receiverId) REFERENCES Users(id),
     FOREIGN KEY (senderId) REFERENCES Users(id),
-    FOREIGN KEY (routineId) REFERENCES Routine(id)
+    FOREIGN KEY (routineId) REFERENCES Routine(id),
+    FOREIGN KEY (trainingId) REFERENCES Training(id)
 );
 
 CREATE TABLE FollowRequest (

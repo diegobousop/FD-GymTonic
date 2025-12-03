@@ -42,15 +42,17 @@ public class EntitiesTest {
 		Users receiver = new Users();
 		Users sender = new Users();
 		Routine routine = new Routine();
+		Training training = new Training();
 		String message = "Test message";
 		Boolean isRead = false;
 		LocalDateTime date = LocalDateTime.now();
-		Notification notification = new Notification(receiver, sender, routine, message, isRead, date);
+		Notification notification = new Notification(receiver, sender, routine, training, message, isRead, date);
 		notification.setId(100L);
 		assertEquals(Long.valueOf(100L), notification.getId());
 		assertEquals(receiver, notification.getReceiver());
 		assertEquals(sender, notification.getSender());
 		assertEquals(routine, notification.getRoutine());
+		assertEquals(training, notification.getTraining());
 		assertEquals(message, notification.getMessage());
 		assertEquals(isRead, notification.getIsRead());
 		assertEquals(date, notification.getDate());
