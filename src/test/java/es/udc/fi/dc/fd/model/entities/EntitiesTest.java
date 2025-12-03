@@ -121,4 +121,130 @@ public class EntitiesTest {
 		assertEquals(Long.valueOf(200L), blockUser.getIdBlocked());
 		assertNotNull(blockUser.getDateBlock());
 	}
+
+
+	@Test
+	public void testRoutineFollowIdEqualsSameObject() {
+		RoutineFollowId id1 = new RoutineFollowId(1L, 2L);
+		assertEquals(id1, id1);
+	}
+
+	@Test
+	public void testRoutineFollowIdEqualsNull() {
+		RoutineFollowId id1 = new RoutineFollowId(1L, 2L);
+		assertNotEquals(id1, null);
+	}
+
+	@Test
+	public void testRoutineFollowIdEqualsDifferentClass() {
+		RoutineFollowId id1 = new RoutineFollowId(1L, 2L);
+		String notAnId = "not an id";
+		assertNotEquals(id1, notAnId);
+	}
+
+	@Test
+	public void testRoutineFollowIdDefaultConstructor() {
+		RoutineFollowId id = new RoutineFollowId();
+		assertNotNull(id);
+	}
+
+	@Test
+	public void testRoutineLikeIdEqualsAndHashCode() {
+		RoutineLikeId id1 = new RoutineLikeId(1L, 2L);
+		RoutineLikeId id2 = new RoutineLikeId(1L, 2L);
+		RoutineLikeId id3 = new RoutineLikeId(2L, 1L);
+		assertEquals(id1, id2);
+		assertNotEquals(id1, id3);
+		assertEquals(id1.hashCode(), id2.hashCode());
+		assertNotEquals(id1.hashCode(), id3.hashCode());
+	}
+
+	@Test
+	public void testRoutineLikeIdGettersSetters() {
+		RoutineLikeId id = new RoutineLikeId();
+		id.setUserId(10L);
+		id.setRoutineId(20L);
+		assertEquals(Long.valueOf(10L), id.getUserId());
+		assertEquals(Long.valueOf(20L), id.getRoutineId());
+	}
+
+	@Test
+	public void testRoutineLikeIdEqualsSameObject() {
+		RoutineLikeId id1 = new RoutineLikeId(1L, 2L);
+		assertEquals(id1, id1);
+	}
+
+	@Test
+	public void testRoutineLikeIdEqualsNull() {
+		RoutineLikeId id1 = new RoutineLikeId(1L, 2L);
+		assertNotEquals(id1, null);
+	}
+
+	@Test
+	public void testRoutineLikeIdEqualsDifferentClass() {
+		RoutineLikeId id1 = new RoutineLikeId(1L, 2L);
+		String notAnId = "not an id";
+		assertNotEquals(id1, notAnId);
+	}
+
+	@Test
+	public void testRoutineLikeIdEqualsWithNullFields() {
+		RoutineLikeId id1 = new RoutineLikeId(null, null);
+		RoutineLikeId id2 = new RoutineLikeId(null, null);
+		assertEquals(id1, id2);
+		assertEquals(id1.hashCode(), id2.hashCode());
+	}
+
+	@Test
+	public void testRoutineLikeIdDefaultConstructor() {
+		RoutineLikeId id = new RoutineLikeId();
+		assertNotNull(id);
+	}
+
+	@Test
+	public void testRoutineLikeConstructorAndGetters() {
+		Users user = new Users();
+		user.setId(1L);
+		Routine routine = new Routine();
+		routine.setId(2L);
+		LocalDateTime beforeCreation = LocalDateTime.now();
+		RoutineLike like = new RoutineLike(user, routine);
+		LocalDateTime afterCreation = LocalDateTime.now();
+		assertNotNull(like.getId());
+		assertEquals(Long.valueOf(1L), like.getId().getUserId());
+		assertEquals(Long.valueOf(2L), like.getId().getRoutineId());
+		assertEquals(user, like.getUser());
+		assertEquals(routine, like.getRoutine());
+		assertNotNull(like.getLikeDate());
+		assertTrue(like.getLikeDate().isAfter(beforeCreation.minusSeconds(1)));
+		assertTrue(like.getLikeDate().isBefore(afterCreation.plusSeconds(1)));
+	}
+
+	@Test
+	public void testRoutineLikeDefaultConstructor() {
+		RoutineLike like = new RoutineLike();
+		assertNotNull(like);
+		assertNotNull(like.getId());
+	}
+
+	@Test
+	public void testRoutineLikeIdConsistency() {
+		Users user = new Users();
+		user.setId(5L);
+		Routine routine = new Routine();
+		routine.setId(10L);
+		RoutineLike like = new RoutineLike(user, routine);
+		assertEquals(user.getId(), like.getId().getUserId());
+		assertEquals(routine.getId(), like.getId().getRoutineId());
+	}
+
+	@Test
+	public void testRoutineLikeDateNotNull() {
+		Users user = new Users();
+		user.setId(1L);
+		Routine routine = new Routine();
+		routine.setId(2L);
+		RoutineLike like = new RoutineLike(user, routine);
+		assertNotNull(like.getLikeDate());
+	}
 }

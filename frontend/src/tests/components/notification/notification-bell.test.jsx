@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import NotificationBell from '../../../modules/app/components/notification/NotificationBell';
@@ -8,7 +8,7 @@ import backend from '../../../backend';
 
 jest.mock('../../../backend', () => ({
   notificationService: {
-    getNotifications: jest.fn(),
+    getUnreadCount: jest.fn(),
     readNotification: jest.fn(),
     unreadNotification: jest.fn()
   }
@@ -46,14 +46,8 @@ describe('NotificationBell', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    backend.notificationService.getNotifications.mockImplementation((params, onSuccess) => {
-      onSuccess({
-        items: [
-          { id: 1, message: 'Notification 1', read: false },
-          { id: 2, message: 'Notification 2', read: false },
-          { id: 3, message: 'Notification 3', read: true }
-        ]
-      });
+    backend.notificationService.getUnreadCount.mockImplementation((onSuccess) => {
+      onSuccess(2);
     });
   });
 
@@ -94,8 +88,7 @@ describe('NotificationBell', () => {
     );
 
     await waitFor(() => {
-      expect(backend.notificationService.getNotifications).toHaveBeenCalledWith(
-        { page: 0, size: 5 },
+      expect(backend.notificationService.getUnreadCount).toHaveBeenCalledWith(
         expect.any(Function),
         expect.any(Function)
       );
@@ -123,10 +116,8 @@ describe('NotificationBell', () => {
   });
 
   it('muestra 99+ para conteos mayores a 99', async () => {
-    backend.notificationService.getNotifications.mockImplementation((params, onSuccess) => {
-      onSuccess({
-        items: Array(150).fill({ id: 1, message: 'Test', read: false })
-      });
+    backend.notificationService.getUnreadCount.mockImplementation((onSuccess) => {
+      onSuccess(150);
     });
 
     render(
@@ -233,6 +224,7 @@ describe('NotificationBell', () => {
         expect.any(Function),
         expect.any(Function)
       );
+      expect(backend.notificationService.getUnreadCount).toHaveBeenCalled();
     });
   });
 
@@ -338,7 +330,7 @@ describe('NotificationBell', () => {
 
   it('maneja error al cargar notificaciones', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    backend.notificationService.getNotifications.mockImplementation((params, onSuccess, onError) => {
+    backend.notificationService.getUnreadCount.mockImplementation((onSuccess, onError) => {
       onError(new Error('Network error'));
     });
 
@@ -473,7 +465,7 @@ describe('NotificationBell', () => {
     );
 
     await waitFor(() => {
-      expect(backend.notificationService.getNotifications).toHaveBeenCalledTimes(1);
+      expect(backend.notificationService.getUnreadCount).toHaveBeenCalledTimes(1);
     });
 
     const button = screen.getByLabelText('Notificaciones');
@@ -487,7 +479,7 @@ describe('NotificationBell', () => {
     fireEvent.click(markAsReadButton);
 
     await waitFor(() => {
-      expect(backend.notificationService.getNotifications).toHaveBeenCalledTimes(2);
+      expect(backend.notificationService.getUnreadCount).toHaveBeenCalledTimes(2);
     });
   });
 });
