@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import backend from "../../../backend";
 import Exercise from "../components/exercise/exercise";
+import CommentSection from "../components/comments/comment-section";
 import { Link } from "react-router-dom";
 
 const TrainingDetailsPage = () => {
@@ -97,6 +98,8 @@ const TrainingDetailsPage = () => {
           ))}
         </ul>
       )}
+
+      <CommentSection trainingId = {id}/>     
 
       <div className="mt-6">
         <button

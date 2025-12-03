@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,7 +34,6 @@ import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.services.CommentService;
 import es.udc.fi.dc.fd.model.services.RoutineService;
-import es.udc.fi.dc.fd.rest.controllers.CommentController;
 import es.udc.fi.dc.fd.rest.controllers.UserController;
 import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
 import es.udc.fi.dc.fd.rest.dtos.CommentParamsDto;
@@ -52,9 +52,6 @@ public class CommentControllerTest {
 
     @Autowired
     private UserController userController;
-
-    @Autowired
-    private CommentController commentController;
 
     @Autowired
     private ExerciseDao exerciseDao;
@@ -89,7 +86,7 @@ public class CommentControllerTest {
     }
 
     private ObjectMapper createObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
+        mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper;
     }
@@ -265,4 +262,83 @@ public class CommentControllerTest {
                 .andExpect(status().isForbidden());
     }
 
+
+
+    @Test
+    public void testDeleteCommentSuccess() throws Exception {
+
+        Comment comment = addComment("Comentario 1");
+        
+        mockMvc.perform(delete("/api/comment/deleteComment/" + comment.getId())
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("trainingId", String.valueOf(training.getId()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDeleteCommentNotFound() throws Exception {
+        
+        mockMvc.perform(delete("/api/comment/deleteComment/99")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("trainingId", String.valueOf(training.getId()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteCommentTrainingNotFound() throws Exception {
+
+        Comment comment = addComment("Comentario");
+
+        mockMvc.perform(delete("/api/comment/deleteComment/" + comment.getId())
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("trainingId", "9999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteCommentNoPermission() throws Exception {
+
+        Comment comment = addComment("Comentario 1");
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("user1");
+        loginParams.setPassword("12345");
+        AuthenticatedUserDto user1 = userController.login(loginParams);
+
+        mockMvc.perform(delete("/api/comment/deleteComment/" + comment.getId())
+                .header("Authorization", "Bearer " + user1.getServiceToken())
+                .param("trainingId", String.valueOf(training.getId()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void deleteCommentAsAdmin() throws Exception {
+
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("user1");
+        loginParams.setPassword("12345");
+        AuthenticatedUserDto user1 = userController.login(loginParams);
+
+        Comment comment = commentService.addComment(training.getId(), user1.getUserDto().getId(), "comentario");
+
+        mockMvc.perform(delete("/api/comment/deleteComment/" + comment.getId())
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .param("trainingId", String.valueOf(training.getId()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteCommentNoAuth() throws Exception {
+
+        Comment comment = addComment("Comentario 1");
+
+        mockMvc.perform(delete("/api/comment/deleteComment/" + comment.getId())
+                .param("trainingId", String.valueOf(training.getId()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
 }
