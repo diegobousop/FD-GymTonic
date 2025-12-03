@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NotificationDao extends JpaRepository<Notification, Long> {
     Slice<Notification> findByReceiverOrderByDateDesc(Users receiver, Pageable pageable);
+    int countByReceiverAndIsReadFalse(Users receiver);
 }
 

@@ -15,7 +15,7 @@ const NotificationItem = ({ notification, onClick }) => {
         )}
         <div className="flex-1">
           <p className="text-white text-sm break-words">{notification.message}</p>
-          <p className="text-gray-500 text-xs mt-1">{notification.date}</p>
+          <p className="text-gray-500 text-xs mt-1">{notification.date.slice(0, 10)}</p>
         </div>
       </div>
     </button>

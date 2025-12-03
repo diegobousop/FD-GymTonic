@@ -74,5 +74,14 @@ public class NotificationController {
         return NotificationConversor.toNotificationDto(notificationService.markAsUnread(id));
     }
     
-    
+    /**
+     * Get the count of unread notifications for a user.
+     * @param userId
+     * @return
+     * @throws InstanceNotFoundException
+     */
+    @GetMapping("/getUnreadCount")
+    public int getUnreadCount(@RequestAttribute Long userId) throws InstanceNotFoundException {
+        return notificationService.getUnreadCount(userId);
+    }
 }

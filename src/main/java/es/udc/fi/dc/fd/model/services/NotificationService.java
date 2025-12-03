@@ -41,4 +41,44 @@ public interface NotificationService {
      */
     public void notifyFollowers(Long trainerId, Routine routine) throws InstanceNotFoundException;
 
+    /**
+     * Notify trainer when someone likes their routine.
+     * @param userId User who liked the routine
+     * @param routine The routineId that was liked
+     * @throws InstanceNotFoundException
+     */
+    public void notifyRoutineLike(Long userId, Routine routine) throws InstanceNotFoundException;
+
+    /**
+     * Notify trainer when someone starts following their routine.
+     * @param userId User who started following
+     * @param routine The routine being followed
+     * @throws InstanceNotFoundException
+     */
+    public void notifyRoutineFollow(Long userId, Routine routine) throws InstanceNotFoundException;
+
+    /**
+     * Notify trainer when they receive a new follower.
+     * @param followerId User who started following
+     * @param trainerId User being followed
+     * @throws InstanceNotFoundException
+     */
+    public void notifyNewFollower(Long followerId, Long trainerId) throws InstanceNotFoundException;
+
+    /**
+     * Notify user when they receive a new follow request.
+     * @param senderId User who sent the request
+     * @param receiverId User receiving the request
+     * @throws InstanceNotFoundException
+     */
+    public void notifyFollowRequest(Long senderId, Long receiverId) throws InstanceNotFoundException;
+
+    /**
+     * Get the count of unread notifications for a user.
+     * @param userId
+     * @return
+     * @throws InstanceNotFoundException
+    */
+    public int getUnreadCount(Long userId) throws InstanceNotFoundException;
+
 }

@@ -7,11 +7,17 @@ import * as routineService from "../../backend/routineService";
 
 jest.mock("../../backend/routineService", () => ({
   findRoutineDetails: jest.fn(),
+  isLikedRoutine: jest.fn(),
+  likeRoutine: jest.fn(),
+  unlikeRoutine: jest.fn(),
 }));
 
 describe("RoutineDetailsPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    routineService.isLikedRoutine.mockImplementation((id, onSuccess) => {
+      onSuccess(false);
+    });
   });
 
   it("muestra los detalles de una rutina correctamente", async () => {

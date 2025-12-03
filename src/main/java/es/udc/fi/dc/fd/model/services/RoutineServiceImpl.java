@@ -49,6 +49,9 @@ public class RoutineServiceImpl implements RoutineService {
     private RoutineFollowDao routineFollowDao;
 
     @Autowired
+    private RoutineLikeDao routineLikeDao;
+
+    @Autowired
     private NotificationService notificationService;
 
     private static final String TRAINER_STRING = "TRAINER";
@@ -365,6 +368,10 @@ public class RoutineServiceImpl implements RoutineService {
         }
 
         routineFollowDao.save(new RoutineFollow(user, routine));
+        
+        // Notificar al entrenador sobre el nuevo seguidor de la rutina
+        notificationService.notifyRoutineFollow(userId, routine);
+        
         return true;
     }
 
@@ -378,6 +385,60 @@ public class RoutineServiceImpl implements RoutineService {
 
         routineFollowDao.deleteByUserIdAndRoutineId(userId, routineId);
         return true;
+    }
+
+    @Override
+    public boolean likeRoutine(Long userId, Long routineId) throws InstanceNotFoundException, PermissionException {
+
+        Users user = permissionChecker.checkUser(userId);
+        Routine routine = routineDao.findById(routineId)
+            .orElseThrow(() -> new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId));
+
+        if (Boolean.FALSE.equals(routine.getIsPublic())) {
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
+        }
+
+        // Evitar dar like dos veces
+        if (routineLikeDao.existsByUserIdAndRoutineId(userId, routineId)) {
+            return false;
+        }
+
+        routineLikeDao.save(new RoutineLike(user, routine));
+        
+        // Notificar al entrenador sobre el like
+        notificationService.notifyRoutineLike(userId, routine);
+        
+        return true;
+    }
+
+    @Override
+    public boolean unlikeRoutine(Long userId, Long routineId) throws InstanceNotFoundException {
+
+        if (!routineLikeDao.existsByUserIdAndRoutineId(userId, routineId)) {
+            return false;
+        }
+
+        routineLikeDao.deleteByUserIdAndRoutineId(userId, routineId);
+        return true;
+    }
+
+    @Override 
+    public boolean isLikedRoutine(Long userId, Long routineId) throws InstanceNotFoundException {
+        permissionChecker.checkUser(userId);
+
+        if (!routineDao.existsById(routineId)) {
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
+        }
+
+        return routineLikeDao.existsByUserIdAndRoutineId(userId, routineId);
+    }   
+
+    @Override
+    public long getLikesCount(Long routineId) throws InstanceNotFoundException {
+        if (!routineDao.existsById(routineId)) {
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
+        }
+        return routineLikeDao.countByRoutineId(routineId);
     }
 
     @Override
