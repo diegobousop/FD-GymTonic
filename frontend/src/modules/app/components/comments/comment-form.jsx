@@ -35,14 +35,26 @@ const CommentForm = ({ trainingId, onCommentAdded }) => {
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col mt-5 space-y-3">
-            <textarea
-                className="bg-[#262626] text-[#f4f4f4] text-xs w-full px-4  py-4 
-                border-b border-[#3d3d3d] focus:outline-none focus:border-[#ff0000] resize-none"
-                placeholder="Escribe un comentario..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={5}
-            />
+            <div className="w-full">
+                <textarea
+                    className="bg-[#262626] text-[#f4f4f4] text-xs w-full px-4 py-4 
+                    border-b border-[#3d3d3d] focus:outline-none focus:border-[#ff0000] resize-none"
+                    placeholder="Escribe un comentario..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={5}
+                    maxLength={500}
+                />
+
+                <p
+                    className={
+                        "text-right text-xs mt-1 " +
+                        (message.length >= 500 ? "text-red-500" : "text-gray-400")
+                    }
+                >
+                    {message.length}/500
+                </p>
+            </div>
             <SendButton onClick={handleSubmit}>Publicar</SendButton>
             
             {error && <p className="text-red-500">{error}</p>}

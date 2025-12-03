@@ -186,16 +186,6 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testDeleteCommentAsTrainingCreator() throws Exception {
-
-        Comment comment = commentService.addComment(training.getId(), user.getId(), "Hola");
-
-        commentService.deleteComment(comment.getId(), training.getId(), user.getId());
-
-        assertFalse(commentDao.findById(comment.getId()).isPresent());
-    }
-
-    @Test
     public void testDeleteCommentAsCommentOwner() throws Exception {
 
         Users owner = new Users("owner", PASSWORD, "Name", "Surname",

@@ -99,11 +99,9 @@ public class CommentServiceImpl implements CommentService {
         if (optionalTraining.isEmpty()) {
             throw new InstanceNotFoundException("project.entities.training", trainingId);
         }
-        Training training = optionalTraining.get();
 
-        // Comprueba que el usuario es admin, o es el creador del entrenamiento, o es el creador del comentario
+        // Comprueba que el usuario es admin o es el creador del comentario
         if (!creator.getRole().equals(Users.RoleType.ADMIN) && 
-            !training.getUser().getId().equals(creator.getId()) && 
             !comment.getUser().getId().equals(creator.getId())) {
             throw new PermissionException("project.entities.comment", commentId);
         }
