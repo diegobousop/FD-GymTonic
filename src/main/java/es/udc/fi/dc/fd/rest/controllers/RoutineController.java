@@ -264,7 +264,34 @@ public class RoutineController {
             throws InstanceNotFoundException {
         return routineService.isLikedRoutine(userId, routineId);
     }
-    
+
+    @PostMapping("/training/{trainingId}/like")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void likeTraining(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException, PermissionException {
+
+        routineService.likeTraining(userId, trainingId);
+    }
+
+    @PostMapping("/training/{trainingId}/unlike")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlikeTraining(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException {
+
+        routineService.unlikeTraining(userId, trainingId);
+    }
+
+    @GetMapping("/training/{trainingId}/isLiked")
+    public boolean isLikedTraining(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException {
+        return routineService.isLikedTraining(userId, trainingId);
+    }
+
+    @GetMapping("/training/{trainingId}/likesCount")
+    public Long getTrainingLikes(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException {
+        return routineService.getTrainingLikesCount(trainingId);
+    }
 
     /**
      * Obtener los entrenamientos () de un usuario
