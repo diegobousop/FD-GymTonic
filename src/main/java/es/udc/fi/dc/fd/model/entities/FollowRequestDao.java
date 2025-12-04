@@ -9,6 +9,9 @@ public interface FollowRequestDao extends JpaRepository<FollowRequest, Long> {
     Optional<FollowRequest> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
     List<FollowRequest> findByReceiverIdAndAcceptedFalse(Long receiverId);
+    
+    //obtener las solicitudes que hemos enviado
+    List<FollowRequest> findBySenderIdAndAcceptedFalse(Long senderId);
 
     boolean existsBySenderIdAndReceiverId(Long senderId, Long receiverId);
 }

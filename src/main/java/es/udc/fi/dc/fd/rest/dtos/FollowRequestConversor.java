@@ -7,15 +7,19 @@ public class FollowRequestConversor {
     private FollowRequestConversor(){}
 
     public static FollowRequestDto toFollowRequestDto(FollowRequest request) {
-        return new FollowRequestDto(
-                request.getId(),
-                request.getSender().getId(),
-                request.getSender().getUserName(),
-                request.getReceiver().getId(),
-                request.getReceiver().getUserName(),
-                request.getCreatedAt(),
-                request.isAccepted()
-        );
+        if(request != null){
+            return new FollowRequestDto(
+                    request.getId(),
+                    request.getSender().getId(),
+                    request.getSender().getUserName(),
+                    request.getReceiver().getId(),
+                    request.getReceiver().getUserName(),
+                    request.getCreatedAt(),
+                    request.isAccepted()
+            );
+        }else{
+            return null;
+        }
     }
 
     public static List<FollowRequestDto> toFollowRequestDtos(List<FollowRequest> requests) {

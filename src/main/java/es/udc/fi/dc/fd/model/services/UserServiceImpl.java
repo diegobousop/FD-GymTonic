@@ -91,6 +91,7 @@ public class UserServiceImpl implements UserService {
 		user.setFollowing(new ArrayList<>());
 		user.setBlockedUsers(new ArrayList<>());
 		user.setWhoBlockUs(new ArrayList<>());
+		user.setPremium(false);
 		Optional<Avatar> avatar = avatarDao.findByName("default");
 		if(!avatar.isPresent()) {
 			throw new InstanceNotFoundException("project.entities.avatar", "default");
@@ -510,7 +511,12 @@ public class UserServiceImpl implements UserService {
 
 		Users sender = permissionChecker.checkUser(senderId);
 		Users receiver = permissionChecker.checkUser(receiverId);
-
+		
+		//si hemos bloqueado a alguien no lo podemos
+		if (sender.getBlockedUsers() != null && sender.getBlockedUsers().contains(receiver)) {
+			throw new PermissionException("project.entities.followRequest", senderId);
+		}
+		
 		if (receiver.getFollowers()==null){
 			receiver.setFollowers(new ArrayList<>());
 		}
@@ -555,6 +561,8 @@ public class UserServiceImpl implements UserService {
 			throw new InstanceNotFoundException("project.entities.followRequest", requestId);
 		followRequestDao.deleteById(requestId);
 	}
+
+
 	@Override
 	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException{
 		if(followRequestDao.findByReceiverIdAndAcceptedFalse(userId).isEmpty()) {
@@ -563,8 +571,14 @@ public class UserServiceImpl implements UserService {
 		return followRequestDao.findByReceiverIdAndAcceptedFalse(userId);
 	}
 
+	//solicitudes que hemos enviado
 	@Override
-	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException {
+	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException{
+		return followRequestDao.findBySenderIdAndAcceptedFalse(userId);
+	}
+
+	@Override
+	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException{
 		Users user = permissionChecker.checkUser(userId);
 		if (user.getFollowing() == null) {
 			return Collections.emptyList();
@@ -588,5 +602,4 @@ public class UserServiceImpl implements UserService {
 				.filter(id -> !blockedIds.contains(id))
 				.toList();
 	}
-
 }

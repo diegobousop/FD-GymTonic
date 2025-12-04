@@ -174,5 +174,7 @@ public interface UserService {
 
 	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException;
 
+	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException;
+
 	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException;
 }

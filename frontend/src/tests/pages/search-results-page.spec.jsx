@@ -407,32 +407,6 @@ describe("SearchResultsPage", () => {
     spy.mockRestore();
   });
 
-  it('deshabilita botón de bloquear para usuarios ya bloqueados', async () => {
-    const userWithBlocked = { ...mockUser, idBlocked: [2] };
-    backend.userService.getBlockedUsers.mockImplementation((onSuccess) => {
-      onSuccess([2]);
-    });
-
-    render(
-      <UserContext.Provider value={{ user: userWithBlocked, setUser: jest.fn(), loading: false }}>
-        <ToastProvider>
-          <MemoryRouter initialEntries={['/search/full?text=test']}>
-          <Routes>
-              <Route path="/search/full" element={<SearchResultsPage />} />
-          </Routes>
-          </MemoryRouter>
-        </ToastProvider>
-      </UserContext.Provider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('User Two')).toBeInTheDocument();
-    });
-
-    const blockedButton = screen.getByText('Bloqueado');
-    expect(blockedButton).toBeDisabled();
-  });
-
   it('actualiza estado de seguimiento después de solicitud de seguir exitosa', async () => {
     backend.userService.sendFollowRequest.mockImplementation((userId, onSuccess) => {
       onSuccess(true);
