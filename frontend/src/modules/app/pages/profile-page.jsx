@@ -14,17 +14,38 @@ import {
 import { viewUserTrainings } from '../../../backend/routineService';
 import BadgesList from '../components/profile/BadgesList';
 
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import backend from '../../../backend';
+
+const calcularEdad = (fechaNacimiento) => {
+  if (!fechaNacimiento) return 0;
+
+  const [diaStr, mesStr, anoStr] = fechaNacimiento.split('-');
+  const dia = Number.parseInt(diaStr, 10);
+  const mes = Number.parseInt(mesStr, 10) - 1;
+  const ano = Number.parseInt(anoStr, 10);
+
+  const fechaNac = new Date(ano, mes, dia);
+  const hoy = new Date();
+
+  let edadCalc = hoy.getFullYear() - fechaNac.getFullYear();
+  const mesActual = hoy.getMonth();
+  const diaActual = hoy.getDate();
+
+  if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
+    edadCalc--;
+  }
+
+  return edadCalc;
+};
 
 const ProfilePage = () => {
   const { user, refreshUser } = useContext(UserContext);
-  const navigate = useNavigate();
   const { id } = useParams();
   const { showToast } = useToast();
 
   const [isFollowing, setIsFollowing] = useState(false);
-  const [requestIsSended, setRequestedIsSended] = useState(false);
+  const [requestIsSended, setRequestIsSended] = useState(false);
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
   const [followersCount, setFollowersCount] = useState(0);
@@ -149,7 +170,7 @@ const ProfilePage = () => {
 
     getRequestSended(
       (data) => {
-        setRequestedIsSended(checkIsSended(data, id));
+        setRequestIsSended(checkIsSended(data, id));
       },
       (error) => {
         console.error("Error:", error);
@@ -205,28 +226,6 @@ const ProfilePage = () => {
       if (profile?.role === 'TRAINER') return 'Subscriptores';
       return '';
   };
-
-  function calcularEdad(fechaNacimiento) {
-    if (!fechaNacimiento) return 0;
-
-    const [diaStr, mesStr, anoStr] = fechaNacimiento.split('-');
-    const dia = parseInt(diaStr, 10);
-    const mes = parseInt(mesStr, 10) - 1;
-    const ano = parseInt(anoStr, 10);
-
-    const fechaNac = new Date(ano, mes, dia);
-    const hoy = new Date();
-
-    let edadCalc = hoy.getFullYear() - fechaNac.getFullYear();
-    const mesActual = hoy.getMonth();
-    const diaActual = hoy.getDate();
-
-    if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
-      edadCalc--;
-    }
-
-    return edadCalc;
-  }
 
   return (
       <div className="w-full mt-5 py-5 bg-auto ">
@@ -356,8 +355,8 @@ const ProfilePage = () => {
                                       <div className="bg-[#262626] rounded-md p-5 mt-10 w-fit self-start inline-block">
                                           <div className="flex flex-col">
                                               <div className="flex flex-row">
-                                                  {training.exercises.map((exercise, index) => (
-                                                      <div key={index} className="flex flex-row items-center">
+                                                  {training.exercises.map((exercise) => (
+                                                      <div key={exercise.id} className="flex flex-row items-center">
                                                           <div className="flex flex-col justify-center items-center p-2 text-center ">
                                                               <img
                                                                   src={exercise.exerciseImageBase64}

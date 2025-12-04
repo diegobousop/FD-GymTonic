@@ -114,6 +114,11 @@ public class UserDto {
 		this.premium = premium;
 		this.idBlocked = idBlockedList;
 		this.followingList = followingList;
+		this.height = 0;
+		this.weight = 0.0f;
+		this.gender = null;
+		this.birthDate = null;
+		this.imc = 0.0f;
 	} 
 
 	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList, List<Long> followList,
