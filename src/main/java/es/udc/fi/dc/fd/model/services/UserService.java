@@ -7,12 +7,12 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.FollowRequest;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
-import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 
 /**
  * The Interface UserService.
@@ -174,4 +174,5 @@ public interface UserService {
 
 	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException;
 
+	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException;
 }

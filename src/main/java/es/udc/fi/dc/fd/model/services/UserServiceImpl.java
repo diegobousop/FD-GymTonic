@@ -3,21 +3,29 @@ package es.udc.fi.dc.fd.model.services;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Avatar;
+import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
+import es.udc.fi.dc.fd.model.entities.FollowRequest;
+import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
+import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -554,4 +562,31 @@ public class UserServiceImpl implements UserService {
 		}
 		return followRequestDao.findByReceiverIdAndAcceptedFalse(userId);
 	}
+
+	@Override
+	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+		if (user.getFollowing() == null) {
+			return Collections.emptyList();
+		}
+
+		// IDs de usuarios bloqueados
+		List<Long> blockedIds = new ArrayList<>();
+		if (user.getBlockedUsers() != null) {
+			blockedIds.addAll(user.getBlockedUsers().stream()
+					.map(Users::getId)
+					.toList());
+		}
+		if (user.getWhoBlockUs() != null) {
+			blockedIds.addAll(user.getWhoBlockUs().stream()
+					.map(Users::getId)
+					.toList());
+		}
+
+		return user.getFollowing().stream()
+				.map(Users::getId)
+				.filter(id -> !blockedIds.contains(id))
+				.toList();
+	}
+
 }

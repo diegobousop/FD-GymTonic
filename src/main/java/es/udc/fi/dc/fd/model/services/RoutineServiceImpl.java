@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -18,6 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineDao;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExerciseId;
+import es.udc.fi.dc.fd.model.entities.RoutineFollow;
+import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
+import es.udc.fi.dc.fd.model.entities.RoutineLike;
+import es.udc.fi.dc.fd.model.entities.RoutineLikeDao;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.SerieDao;
+import es.udc.fi.dc.fd.model.entities.Training;
+import es.udc.fi.dc.fd.model.entities.TrainingDao;
+import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -53,6 +69,9 @@ public class RoutineServiceImpl implements RoutineService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private UserService userService;
 
     private static final String TRAINER_STRING = "TRAINER";
     private static final String CREATOR_STRING = "creator";
@@ -600,6 +619,21 @@ public class RoutineServiceImpl implements RoutineService {
                 serieDao.save(serie);
             }
         }
+    }
+
+    @Override
+    public Page<Training> findFollowedUsersTrainingsFeed(Long userId, int page, int size) throws InstanceNotFoundException {
+        // Obtener IDs de usuarios seguidos ya filtrados por bloqueos
+        List<Long> followingIds = userService.getFollowingIds(userId);
+
+        if (followingIds.isEmpty()) {
+            return Page.empty();
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Obtener entrenamientos públicos de los usuarios seguidos
+        return trainingDao.findByUserIdInAndIsPublicTrueOrderByCreationDateDesc(followingIds, pageable);
     }
 
 }
