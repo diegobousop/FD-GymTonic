@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -21,6 +22,8 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.AvatarDao;
+import es.udc.fi.dc.fd.model.entities.BlockUser;
+import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.entities.Exercise;
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
 import es.udc.fi.dc.fd.model.entities.ExerciseDao;
@@ -29,10 +32,13 @@ import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
+import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.RoutineExerciseLimitReachedException;
 import es.udc.fi.dc.fd.model.services.exceptions.RoutineLimitReachedException;
+import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 import es.udc.fi.dc.fd.rest.dtos.SearchFullDto;
 import es.udc.fi.dc.fd.rest.dtos.SearchSuggestionDto;
 
@@ -47,6 +53,9 @@ public class SearchServiceTest {
 
     @Autowired
     private RoutineService routineService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UserDao usersDao;
@@ -78,6 +87,10 @@ public class SearchServiceTest {
         user.setHeight(190);
         user.setWeight(80);
         user.setBirthDate(LocalDate.now());
+        user.setFollowers(new ArrayList<>());
+        user.setFollowing(new ArrayList<>());
+        user.setBlockedUsers(new ArrayList<>());
+        user.setWhoBlockUs(new ArrayList<>());
         usersDao.save(user);
 		return user;
 	}
@@ -192,5 +205,22 @@ public class SearchServiceTest {
         Map<String, List<SearchFullDto>> resultsAsAdmin = searchService.findFullResults("admin", null, null, 10, null, null, admin1.getId());
         assertTrue(resultsAsAdmin.get("users").stream()
                 .anyMatch(u -> u.getId().equals(admin2.getId())));
+    }
+
+    @Test 
+    public void testNotFindBlockedUsers() throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
+        Users regulaUser = createUser("regularUser", Users.RoleType.USER);
+        Users user1 = createUser("testXXXXX", Users.RoleType.USER);
+        Users user2 = createUser("testXXXXXX", Users.RoleType.USER);
+
+
+        userService.blockUser(regulaUser.getId(), user1.getId());
+
+        List<SearchSuggestionDto> searchFullDtos = searchService.findSuggestions("testXXX", 2, regulaUser.getId());
+        assertEquals(1L, searchFullDtos.size());
+
+        userService.blockUser(regulaUser.getId(), user2.getId());
+        List<SearchSuggestionDto> searchFullDtos2 = searchService.findSuggestions("testXXX", 2, regulaUser.getId());
+        assertEquals(0L, searchFullDtos2.size());
     }
 }

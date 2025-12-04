@@ -4,6 +4,7 @@ import BubbleButton from '../components/common/bubble-button'
 import CalendarCard from '../components/profile/calendar-card'
 import UserStatsPentagrams from '../components/profile/user-stats-pentagrams'
 import UserStatsPanel from '../components/profile/user-stats-panel'
+import BadgesList from '../components/profile/BadgesList'
 
 import { getProfile, getFollowersCount, getFollowingCount } from "../../../backend/userService"
 import { UserContext } from '../components/common/user-provider';
@@ -18,7 +19,6 @@ const MyProfilePage = () => {
   const { user,  handleLogout } = useContext(UserContext);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
 
   //Historial
@@ -31,7 +31,7 @@ const MyProfilePage = () => {
   React.useEffect(() => {
     if (user) {
       getProfile(user, (data) => {
-        setProfile(data);
+        // setProfile(data); // Profile data redundant with user context for now, and unused
       }, (err) => {
         setError('Error al cargar el perfil');
       });
@@ -66,6 +66,7 @@ const MyProfilePage = () => {
               <Link
                 to="/profile/followers"
                 className="underline hover:text-blue-400 w-fit"
+                style={{ textDecoration: 'underline' }}
               >
                 {followerCount} seguidores
               </Link>
@@ -73,6 +74,7 @@ const MyProfilePage = () => {
               <Link
                 to="/profile/following"
                 className="underline hover:text-blue-400 w-fit"
+                style={{ textDecoration: 'underline' }}
               >
                 {followingCount} seguidos
               </Link>
@@ -114,6 +116,7 @@ const MyProfilePage = () => {
       ) : (
         <div>Cargando datos...</div>
       )}
+      {user && <BadgesList userId={user.id} />}
       <div className="flex flex-row justify-between h-full">
         {activeTab === 'trainingHistory' ? (
             <TrainingHistory 
