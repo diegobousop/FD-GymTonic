@@ -12,6 +12,28 @@ import BadgesList from '../components/profile/BadgesList';
 
 import { Link, useParams } from 'react-router-dom';
 
+const calcularEdad = (fechaNacimiento) => {
+    if (!fechaNacimiento) return 0;
+
+    const [diaStr, mesStr, anoStr] = fechaNacimiento.split('-');
+    const dia = Number.parseInt(diaStr, 10);
+    const mes = Number.parseInt(mesStr, 10) - 1;
+    const ano = Number.parseInt(anoStr, 10);
+
+    const fechaNac = new Date(ano, mes, dia);
+    const hoy = new Date();
+
+    let edadCalc = hoy.getFullYear() - fechaNac.getFullYear();
+    const mesActual = hoy.getMonth();
+    const diaActual = hoy.getDate();
+
+    if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
+        edadCalc--;
+    }
+
+    return edadCalc;
+};
+
 const ProfilePage = () => {
     const { id } = useParams();
 
@@ -199,8 +221,8 @@ const ProfilePage = () => {
                                         <div className="bg-[#262626] rounded-md p-5 mt-10 w-fit self-start inline-block">
                                             <div className="flex flex-col">
                                                 <div className="flex flex-row">
-                                                    {training.exercises.map((exercise, index) => (
-                                                        <div key={index} className="flex flex-row items-center">
+                                                    {training.exercises.map((exercise) => (
+                                                        <div key={exercise.id} className="flex flex-row items-center">
                                                             <div className="flex flex-col justify-center items-center p-2 text-center ">
                                                                 <img
                                                                     src={exercise.exerciseImageBase64}
@@ -227,28 +249,6 @@ const ProfilePage = () => {
             )}
         </div>
     );
-
-  function calcularEdad(fechaNacimiento) {
-    if (!fechaNacimiento) return 0;
-
-    const [diaStr, mesStr, anoStr] = fechaNacimiento.split('-');
-    const dia = parseInt(diaStr, 10);
-    const mes = parseInt(mesStr, 10) - 1;
-    const ano = parseInt(anoStr, 10);
-
-    const fechaNac = new Date(ano, mes, dia);
-    const hoy = new Date();
-
-    let edadCalc = hoy.getFullYear() - fechaNac.getFullYear();
-    const mesActual = hoy.getMonth();
-    const diaActual = hoy.getDate();
-
-    if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
-      edadCalc--;
-    }
-
-    return edadCalc;
-  }
 };
 
 export default ProfilePage;

@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,22 +26,25 @@ import es.udc.fi.dc.fd.model.entities.UserDao;
 @Transactional
 public class BadgeServiceImpl implements BadgeService {
 
-    @Autowired
-    private BadgeDao badgeDao;
+    private static final String USER_ENTITY = "project.entities.user";
+    
+    private final BadgeDao badgeDao;
+    private final UserBadgeDao userBadgeDao;
+    private final TrainingDao trainingDao;
+    private final UserDao userDao;
 
     @Autowired
-    private UserBadgeDao userBadgeDao;
-
-    @Autowired
-    private TrainingDao trainingDao;
-
-    @Autowired
-    private UserDao userDao;
+    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao) {
+        this.badgeDao = badgeDao;
+        this.userBadgeDao = userBadgeDao;
+        this.trainingDao = trainingDao;
+        this.userDao = userDao;
+    }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserBadge> getEarnedBadges(Long userId) throws InstanceNotFoundException {
-        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException("project.entities.user", userId));
+        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException(USER_ENTITY, userId));
         return userBadgeDao.findByUser(user);
     }
 
@@ -50,14 +52,14 @@ public class BadgeServiceImpl implements BadgeService {
     @Transactional(readOnly = true)
     public List<Badge> getMissingBadges(Long userId) throws InstanceNotFoundException {
         if (!userDao.existsById(userId)) {
-            throw new InstanceNotFoundException("project.entities.user", userId);
+            throw new InstanceNotFoundException(USER_ENTITY, userId);
         }
         return badgeDao.findMissingBadgesByUser(userId);
     }
 
     @Override
     public void checkWorkoutsBadges(Long userId) throws InstanceNotFoundException {
-        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException("project.entities.user", userId));
+        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException(USER_ENTITY, userId));
         
         long workoutCount = trainingDao.findAllByUserIdOrderByCreationDateDesc(userId).size();
 
@@ -68,9 +70,11 @@ public class BadgeServiceImpl implements BadgeService {
 
     @Override
     public void checkFollowersBadges(Long userId) throws InstanceNotFoundException {
-        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException("project.entities.user", userId));
+        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException(USER_ENTITY, userId));
         
-        int followerCount = user.getFollowers().size();
+        // Followers list can be null if the user has no followers yet. Handle it defensively
+        // to avoid potential NullPointerExceptions and SonarQube warnings.
+        int followerCount = (user.getFollowers() == null) ? 0 : user.getFollowers().size();
 
         if (followerCount >= 1) assignBadge(user, "FOLLOWER_1");
         if (followerCount >= 10) assignBadge(user, "FOLLOWER_10");
@@ -79,7 +83,7 @@ public class BadgeServiceImpl implements BadgeService {
 
     @Override
     public void checkConsistencyBadges(Long userId) throws InstanceNotFoundException {
-        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException("project.entities.user", userId));
+        Users user = userDao.findById(userId).orElseThrow(() -> new InstanceNotFoundException(USER_ENTITY, userId));
         List<Training> trainings = trainingDao.findAllByUserIdOrderByCreationDateDesc(userId);
 
         if (trainings.isEmpty()) return;
@@ -113,7 +117,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .map(t -> t.getCreationDate().toLocalDate())
                 .distinct()
                 .sorted(Comparator.reverseOrder())
-                .collect(Collectors.toList());
+                .toList();
         
         if (dates.isEmpty()) return 0;
 
@@ -143,7 +147,7 @@ public class BadgeServiceImpl implements BadgeService {
                 .map(t -> t.getCreationDate().toLocalDate().with(weekFields.dayOfWeek(), 1)) 
                 .distinct()
                 .sorted(Comparator.reverseOrder())
-                .collect(Collectors.toList());
+                .toList();
 
         if (weekStarts.isEmpty()) return 0;
 

@@ -19,16 +19,16 @@ import es.udc.fi.dc.fd.rest.dtos.BadgeDto;
 @RequestMapping("/api/badges")
 public class BadgeController {
 
+    private final BadgeService badgeService;
+
     @Autowired
-    private BadgeService badgeService;
+    public BadgeController(BadgeService badgeService) {
+        this.badgeService = badgeService;
+    }
 
     @GetMapping("/earned/{userId}")
     public List<BadgeDto> getEarnedBadges(@PathVariable Long userId) throws InstanceNotFoundException {
-        // Trigger checks to ensure data is up-to-date
-        badgeService.checkWorkoutsBadges(userId);
-        badgeService.checkFollowersBadges(userId);
-        badgeService.checkConsistencyBadges(userId);
-        
+        checkAllBadges(userId);
         return BadgeConversor.toBadgeDtosFromUserBadges(badgeService.getEarnedBadges(userId));
     }
 
@@ -39,9 +39,13 @@ public class BadgeController {
     
     @PostMapping("/check")
     public void checkBadges(@RequestAttribute Long userId) throws InstanceNotFoundException {
-         badgeService.checkWorkoutsBadges(userId);
-         badgeService.checkFollowersBadges(userId);
-         badgeService.checkConsistencyBadges(userId);
+        checkAllBadges(userId);
+    }
+    
+    private void checkAllBadges(Long userId) throws InstanceNotFoundException {
+        badgeService.checkWorkoutsBadges(userId);
+        badgeService.checkFollowersBadges(userId);
+        badgeService.checkConsistencyBadges(userId);
     }
 }
 

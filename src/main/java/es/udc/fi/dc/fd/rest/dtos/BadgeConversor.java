@@ -1,11 +1,15 @@
 package es.udc.fi.dc.fd.rest.dtos;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import es.udc.fi.dc.fd.model.entities.Badge;
 import es.udc.fi.dc.fd.model.entities.UserBadge;
 
-public class BadgeConversor {
+public final class BadgeConversor {
+    
+    private BadgeConversor() {
+        // Utility class, prevent instantiation
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
     
     public static BadgeDto toBadgeDto(Badge badge) {
         return new BadgeDto(badge.getId(), badge.getName(), badge.getDescription(), badge.getIcon(), null);
@@ -16,11 +20,11 @@ public class BadgeConversor {
     }
 
     public static List<BadgeDto> toBadgeDtos(List<Badge> badges) {
-        return badges.stream().map(BadgeConversor::toBadgeDto).collect(Collectors.toList());
+        return badges.stream().map(BadgeConversor::toBadgeDto).toList();
     }
     
     public static List<BadgeDto> toBadgeDtosFromUserBadges(List<UserBadge> userBadges) {
-        return userBadges.stream().map(BadgeConversor::toBadgeDto).collect(Collectors.toList());
+        return userBadges.stream().map(BadgeConversor::toBadgeDto).toList();
     }
 }
 
