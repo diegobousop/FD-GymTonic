@@ -80,7 +80,7 @@ const Comment = ({ comment, trainingId, onDelete }) => {
         </div>
     )}
 
-  CommentSection.propTypes = {
+  Comment.propTypes = {
     comment: PropTypes.shape({
     id: PropTypes.number.isRequired,
     userId: PropTypes.number.isRequired,
