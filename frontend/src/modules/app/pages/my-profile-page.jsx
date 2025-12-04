@@ -2,6 +2,8 @@ import React, {useState, useContext} from 'react'
 import TrainingHistory from '../components/training/training-history'
 import BubbleButton from '../components/common/bubble-button'
 import CalendarCard from '../components/profile/calendar-card'
+import UserStatsPentagrams from '../components/profile/user-stats-pentagrams'
+import UserStatsPanel from '../components/profile/user-stats-panel'
 
 import { getProfile, getFollowersCount, getFollowingCount } from "../../../backend/userService"
 import { UserContext } from '../components/common/user-provider';
@@ -22,6 +24,8 @@ const MyProfilePage = () => {
   //Historial
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [dayFilterActivated, setDayFilterActivated] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('userStats');
 
 
   React.useEffect(() => {
@@ -111,13 +115,19 @@ const MyProfilePage = () => {
         <div>Cargando datos...</div>
       )}
       <div className="flex flex-row justify-between h-full">
-        <TrainingHistory 
-          user={user} 
-          selectedDay={selectedDay}
-          dayFilterActivated={dayFilterActivated}
-          setFilterActivated={setDayFilterActivated}
-          ariaLabel="Historial de entrenamientos"
-        />
+        {activeTab === 'trainingHistory' ? (
+            <TrainingHistory 
+              user={user} 
+              selectedDay={selectedDay}
+              dayFilterActivated={dayFilterActivated}
+              setFilterActivated={setDayFilterActivated}
+              ariaLabel="Historial de entrenamientos"
+            />
+          ) : (
+            <UserStatsPanel/>
+          )
+        }
+        
         <CalendarCard 
           user={user}
           selectedDay={selectedDay}

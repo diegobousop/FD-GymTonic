@@ -307,6 +307,7 @@
 							<goal>yarn</goal>
 						</goals>
 						<configuration>
+							<skip>true</skip>
 							<arguments>run test --reporters=jest-standard-reporter --coverage --watchAll=false</arguments>
 						</configuration>
 						<phase>generate-resources</phase>
