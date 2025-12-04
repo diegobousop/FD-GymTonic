@@ -33,4 +33,20 @@ public class SearchSuggestionDto {
     public void setName(String name) {
         this.name = name;
     }
+
+
+    public boolean equals(Object objeto){
+        if (!(objeto instanceof SearchSuggestionDto)) {
+            return false;
+        }
+    
+        SearchSuggestionDto search = (SearchSuggestionDto) objeto;
+    
+        return this.id == search.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

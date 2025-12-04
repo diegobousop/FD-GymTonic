@@ -208,3 +208,11 @@ export const getFollowRequests = (onSuccess, onErrors) =>
         onErrors
     );
 
+export const getRequestSended = (onSuccess, onErrors) => 
+    appFetch(
+      `/users/requestSended`,
+      fetchConfig("GET"),
+      onSuccess,
+      onErrors
+    );
+

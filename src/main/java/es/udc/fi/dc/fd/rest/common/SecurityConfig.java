@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/static/**")).permitAll()
                 .requestMatchers(antMatcher("/assets/**")).permitAll()
                 .requestMatchers(antMatcher("/api/hello")).permitAll()
+                .requestMatchers(antMatcher("/api/search/**")).permitAll()
                 .requestMatchers(antMatcher("/api/users/**")).permitAll()
                 .requestMatchers(antMatcher("/api/users/signUp")).permitAll()
                 .requestMatchers(antMatcher("/api/users/login")).permitAll()

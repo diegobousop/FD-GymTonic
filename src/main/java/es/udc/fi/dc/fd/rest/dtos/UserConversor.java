@@ -35,9 +35,15 @@ public class UserConversor {
 									.map(Users::getId)
 									.toList();
 
+		List<Long> idListFollowing = Optional.ofNullable(user.getFollowing())
+									.orElse(Collections.emptyList())
+									.stream()
+									.map(Users::getId)
+									.toList();
+
 
 		return new UserDto(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName(), user.getEmail(),
-		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(), user.getBankCard(), user.getPremium(), idBlockedList,
+		user.getRole().toString(), new AvatarDto(user.getAvatar().getName(), user.getAvatar().getAvatarBase64()), user.getBanned(), user.getBankCard(), user.getPremium(), idBlockedList, idListFollowing,
 		user.getHeight(), user.getWeight(), user.getGender().toString(), user.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
 	}
