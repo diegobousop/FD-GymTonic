@@ -3,6 +3,7 @@ import { getComments } from "../../../../backend/commentService"
 import Pager from '../common/pager';
 import Comment from "./comment"
 import CommentForm from "./comment-form"
+import PropTypes from 'prop-types'
 
 const CommentSection = ({ trainingId }) => {
     const [page, setPage] = useState(0);
@@ -12,6 +13,10 @@ const CommentSection = ({ trainingId }) => {
     const [error, setError] = useState(null);
 
     const size = 5;
+
+    const handleDelete = (id) => {
+        setComments(prev => prev.filter(x => x.id !== id));
+    };
 
     const loadComments = (pageNumber) => {
         setLoading(true);
@@ -58,7 +63,7 @@ const CommentSection = ({ trainingId }) => {
                     <Comment key={comment.id} 
                     comment={comment} 
                     trainingId={trainingId} 
-                    onDelete={() => { setComments(prev => prev.filter(x => x.id !== comment.id));}}
+                    onDelete={() => handleDelete(comment.id)}
                     />
                 ))}
             </div>
@@ -78,5 +83,9 @@ const CommentSection = ({ trainingId }) => {
         </div>
     );
 };
+
+CommentSection.propTypes = {
+  trainingId: PropTypes.number.isRequired,
+}
 
 export default CommentSection;

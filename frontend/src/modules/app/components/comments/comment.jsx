@@ -5,6 +5,7 @@ import { deleteComment } from "../../../../backend/commentService"
 import { UserContext } from "../common/user-provider";
 import BubbleButton from '../common/bubble-button'
 import { svgIcons } from '../../../../config/constants'
+import PropTypes from 'prop-types'
 
 // Comment tiene id, mensaje, fecha, trainingId, userId
 const Comment = ({ comment, trainingId, onDelete }) => {
@@ -48,7 +49,7 @@ const Comment = ({ comment, trainingId, onDelete }) => {
             
             {/* Contenedor de avatar + texto */}
             <div className="flex flex-row items-center flex-1 min-w-0">
-                <img src={profile.avatar.avatarBase64} className="mx-2 w-[40px] h-[40px]"/>
+                <img src={profile.avatar.avatarBase64} className="mx-2 w-[40px] h-[40px]" alt="Avatar del usuario"/>
                 
                 <div className="flex flex-col">
                     <p className="mx-3">
@@ -78,5 +79,16 @@ const Comment = ({ comment, trainingId, onDelete }) => {
             )}
         </div>
     )}
+
+  CommentSection.propTypes = {
+    comment: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    userId: PropTypes.number.isRequired,
+    fecha: PropTypes.string.isRequired,
+    mensaje: PropTypes.string.isRequired
+    }).isRequired,
+    trainingId: PropTypes.number,
+    onDelete: PropTypes.func,
+  }  
 
   export default Comment

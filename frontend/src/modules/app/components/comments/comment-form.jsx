@@ -1,6 +1,7 @@
 import { useState } from "react";
 import SendButton from "../common/send-button";
 import { addComment } from "../../../../backend/commentService";
+import PropTypes from 'prop-types'
 
 const CommentForm = ({ trainingId, onCommentAdded }) => {
     const [message, setMessage] = useState("");
@@ -64,5 +65,10 @@ const CommentForm = ({ trainingId, onCommentAdded }) => {
         </form>
     );
 };
+
+CommentForm.propTypes = {
+  trainingId: PropTypes.number.isRequired,
+  onCommentAdded: PropTypes.func,
+}
 
 export default CommentForm;
