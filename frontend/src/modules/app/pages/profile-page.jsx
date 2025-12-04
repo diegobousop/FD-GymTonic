@@ -8,11 +8,11 @@ import {
 } from '../../../backend/userService';
 
 import { viewUserTrainings } from '../../../backend/routineService';
+import BadgesList from '../components/profile/BadgesList';
 
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 const ProfilePage = () => {
-    const navigate = useNavigate();
     const { id } = useParams();
 
     const [profile, setProfile] = useState(null);
@@ -125,6 +125,7 @@ const ProfilePage = () => {
             </div>
         </div>
 
+        {profile && <BadgesList userId={profile.id} />}
 
                     <div className="px-10 mt-5 text-white">
                         <h2 className="text-xl font-bold mb-3">Entrenamientos</h2>
