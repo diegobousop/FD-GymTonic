@@ -178,3 +178,15 @@ INSERT INTO Notification (receiverId,senderId,routineId,message, isRead, date) V
 (1,3,2,'trainer1 le dio like a tu rutina: Rutina de empuje básica', false, TIMESTAMP '2025-11-02 10:00:00'),
 (1,3,2,'user1 le dio like tu rutina: Rutina de empuje básica', false, TIMESTAMP '2025-11-02 10:00:00');
 
+
+INSERT INTO Badge (name, description, icon) VALUES ('WORKOUT_1', 'Completed 1 workout', 'workout_1.png');
+INSERT INTO Badge (name, description, icon) VALUES ('WORKOUT_10', 'Completed 10 workouts', 'workout_10.png');
+INSERT INTO Badge (name, description, icon) VALUES ('WORKOUT_100', 'Completed 100 workouts', 'workout_100.png');
+INSERT INTO Badge (name, description, icon) VALUES ('FOLLOWER_1', '1 Follower', 'follower_1.png');
+INSERT INTO Badge (name, description, icon) VALUES ('FOLLOWER_10', '10 Followers', 'follower_10.png');
+INSERT INTO Badge (name, description, icon) VALUES ('FOLLOWER_100', '100 Followers', 'follower_100.png');
+INSERT INTO Badge (name, description, icon) VALUES ('CONSECUTIVE_DAYS_5', '5 Consecutive Days', 'days_5.png');
+INSERT INTO Badge (name, description, icon) VALUES ('CONSECUTIVE_DAYS_10', '10 Consecutive Days', 'days_10.png');
+INSERT INTO Badge (name, description, icon) VALUES ('CONSECUTIVE_WEEKS_1', '1 Full Week', 'weeks_1.png');
+INSERT INTO Badge (name, description, icon) VALUES ('CONSECUTIVE_WEEKS_10', '10 Consecutive Weeks', 'weeks_10.png');
+INSERT INTO Badge (name, description, icon) VALUES ('CONSECUTIVE_WEEKS_100', '100 Consecutive Weeks', 'weeks_100.png');

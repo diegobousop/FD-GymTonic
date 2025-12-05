@@ -73,6 +73,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/users/ban/*")).hasRole(ADMIN_STRING)
                 .requestMatchers(antMatcher("/api/users/block/*")).hasAnyRole(USER_STRING, TRAINER_STRING, ADMIN_STRING)
                 .requestMatchers(antMatcher("/api/users/getBlocked")).hasAnyRole(USER_STRING, TRAINER_STRING, ADMIN_STRING)
+                .requestMatchers(antMatcher("/api/badges/**")).hasAnyRole(USER_STRING, TRAINER_STRING, ADMIN_STRING)
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
