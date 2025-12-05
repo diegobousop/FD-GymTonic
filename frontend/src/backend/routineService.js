@@ -166,4 +166,11 @@ export const getTrainingCalendarStats = (year, onSuccess, onErrors) => {
   );
 };
 
-
+export const viewFeed = (page, size, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/feed?page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
