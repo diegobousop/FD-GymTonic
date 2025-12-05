@@ -56,8 +56,9 @@ const NotificationBell = () => {
         notification.id,
         () => {
           setUnreadCount(prev => Math.max(prev - 1, 0));
-          //solo navegamos a la rutina si la notificación no estaba leida
-          if(notification.routineId!=null) navigate(`/routines/${notification.routineId}`);
+          //solo navegamos a la rutina o entrenamiento si la notificación no estaba leida
+          if(notification.routineId!=null) navigate(`/routines/${notification.routineId}`)
+          else if(notification.trainingId!=null) navigate(`/trainings/${notification.trainingId}/details`);
         },
         (error) => console.error('Error al marcar notificación:', error)
       );
