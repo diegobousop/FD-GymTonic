@@ -2,13 +2,13 @@ import {useEffect, useState} from 'react'
 import backend from "../../../../backend";
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-
+import MyProfileTabSelector from '../profile/my-profile-tab-selector';
 import Spinner from '../common/spinner';
 import Pager from '../common/pager';
 
 import { svgIcons } from '../../../../config/constants'; 
 
-const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selectedDay}) => {
+const TrainingHistory = ({activeTab, setActiveTab, user, dayFilterActivated, setFilterActivated, selectedDay}) => {
 
     //control
     const [isLoading, setLoading] = useState(true);
@@ -207,6 +207,10 @@ const TrainingHistory = ({user, dayFilterActivated, setFilterActivated, selected
 
   return (
     <div className="w-[65%]">
+      <MyProfileTabSelector 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+        />
       {content}
     </div>
   );

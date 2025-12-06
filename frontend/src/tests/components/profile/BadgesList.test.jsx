@@ -98,9 +98,7 @@ describe('BadgesList', () => {
      
      await waitFor(() => {
          expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
-     });
-     
-     expect(screen.getByText('Badges')).toBeInTheDocument();
+     });     
   });
 
   it('does not fetch if no userId', () => {

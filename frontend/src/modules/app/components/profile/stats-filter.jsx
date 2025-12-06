@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import PropTypes from 'prop-types'
 
 const StatsFilter = ({ selectedReps, setSelectedReps, selectedTime, setSelectedTime }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,13 +13,13 @@ const StatsFilter = ({ selectedReps, setSelectedReps, selectedTime, setSelectedT
   const currentLabel = timeOptions.find(opt => opt.value === selectedTime)?.label || 'Último año';
 
   return (
-    <div className="flex items-center h-[40px] mt-2 rounded-full border bg-[#262626] border-[#990000] gap-2 relative z-18">
+    <div className="flex items-center h-[40px] mt-2 rounded-full border bg-[#262626] border-[#990000] gap-2 relative z-18 ml-5">
         <p className="absolute bottom-12 left-0 ml-2 text-xs">Repeticiones</p>
         <div className="flex flex-row  bg-transparent border rounded-full border-[#990000]">
             {[1, 8, 10].map((reps) => (
                 <button
                     key={reps}
-                    onClick={() => setSelectedReps && setSelectedReps(Number(reps))}
+                    onClick={() => setSelectedReps?.(Number(reps))}
                     className={`px-4 py-2 text-white rounded-full transition-colors ${
                         selectedReps === Number(reps)
                             ? 'bg-[#ff0000]'
@@ -30,7 +31,7 @@ const StatsFilter = ({ selectedReps, setSelectedReps, selectedTime, setSelectedT
             ))}
             {selectedReps !== 0 && (
                 <button
-                    onClick={() => setSelectedReps && setSelectedReps(0)}
+                    onClick={() => setSelectedReps?.(0)}
                     className={`px-4 py-2 text-white rounded-full transition-colors hover:bg-[#990000]/50`}
                     title="Limpiar selección"
                 >
@@ -59,7 +60,7 @@ const StatsFilter = ({ selectedReps, setSelectedReps, selectedTime, setSelectedT
                     <button
                         key={option.value}
                         onClick={() => {
-                            setSelectedTime && setSelectedTime(option.value);
+                            setSelectedTime?.(option.value);
                             setIsOpen(false);
                         }}
                         className={`w-full text-left px-4 py-3 text-sm transition-colors ${
@@ -75,6 +76,13 @@ const StatsFilter = ({ selectedReps, setSelectedReps, selectedTime, setSelectedT
         </div>
     </div>
   )
+}
+
+StatsFilter.propTypes = {
+  selectedReps: PropTypes.number,
+  setSelectedReps: PropTypes.func,
+  selectedTime: PropTypes.string,
+  setSelectedTime: PropTypes.func
 }
 
 export default StatsFilter

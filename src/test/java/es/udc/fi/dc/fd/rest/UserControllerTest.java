@@ -873,5 +873,67 @@ public class UserControllerTest {
                 .content(mapper.writeValueAsString(params)))
                 .andExpect(status().isForbidden());
     }
+
+	@Test
+	public void testGetStats_RichData() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("userStatsRich", RoleType.USER);
+		Users userEntity = userDao.findById(user.getUserDto().getId()).get();
+
+		Exercise squat = new Exercise("Sentadilla", "Pierna", Exercise.grupoMuscular.PIERNA, 3);
+		Exercise bench = new Exercise("Press banca", "Pecho", Exercise.grupoMuscular.PECHO, 3);
+		Exercise row = new Exercise("Remo", "Espalda", Exercise.grupoMuscular.ESPALDA, 3);
+		exerciseDao.save(squat);
+		exerciseDao.save(bench);
+		exerciseDao.save(row);
+
+		Training t1 = new Training("T1", "", LocalDateTime.now().minusDays(3), true, userEntity, 45L);
+		Training t2 = new Training("T2", "", LocalDateTime.now().minusDays(2), true, userEntity, 50L);
+		Training t3 = new Training("T3", "", LocalDateTime.now().minusDays(1), true, userEntity, 60L);
+		trainingDao.save(t1);
+		trainingDao.save(t2);
+		trainingDao.save(t3);
+
+		Serie s1 = new Serie(5, 0, 1); s1.setExercise(squat); s1.setTraining(t1); s1.setPeso(100); // base
+		Serie s2 = new Serie(5, 0, 1); s2.setExercise(bench); s2.setTraining(t1); s2.setPeso(80);
+		Serie s3 = new Serie(5, 0, 1); s3.setExercise(row);   s3.setTraining(t1); s3.setPeso(60);
+
+		Serie s4 = new Serie(5, 0, 1); s4.setExercise(squat); s4.setTraining(t2); s4.setPeso(110); // PR
+		Serie s5 = new Serie(5, 0, 1); s5.setExercise(bench); s5.setTraining(t2); s5.setPeso(75);  // lower
+		Serie s6 = new Serie(5, 0, 1); s6.setExercise(row);   s6.setTraining(t2); s6.setPeso(70);  // PR
+
+		Serie s7 = new Serie(5, 0, 1); s7.setExercise(squat); s7.setTraining(t3); s7.setPeso(105);
+		Serie s8 = new Serie(5, 0, 1); s8.setExercise(bench); s8.setTraining(t3); s8.setPeso(85);  // PR
+
+		serieDao.save(s1); serieDao.save(s2); serieDao.save(s3);
+		serieDao.save(s4); serieDao.save(s5); serieDao.save(s6);
+		serieDao.save(s7); serieDao.save(s8);
+
+		UserStatsParamsDto params = new UserStatsParamsDto(user.getUserDto().getId(), 0, "YEAR");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/stats")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(params)))
+				.andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[0].userId").value(user.getUserDto().getId()))
+				.andExpect(jsonPath("$[0].period").value("YEAR"))
+
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats").isArray())
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[0].exerciseWeightsKg.Sentadilla").exists())
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[1].exerciseWeightsKg.Sentadilla").exists())
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[2].exerciseWeightsKg.Sentadilla").exists())
+
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[1].isPR.Sentadilla").value(true))
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[2].isPR['Press banca']").value(true))
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[1].isPR.Remo").value(true))
+
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats").isArray())
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.PIERNA").exists())
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.PECHO").exists())
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.ESPALDA").exists());
+	}
 	
 }

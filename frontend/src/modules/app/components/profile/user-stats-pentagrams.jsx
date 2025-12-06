@@ -7,7 +7,7 @@ import { svgIcons } from '../../../../config/constants';
 const ThemeColors = {
     background: '#161616',
     primary: '#ff0000',
-    accent: '#ff0000', // Neon green-ish
+    accent: '#ff0000', 
     secondary: '#6b7280',
     text: '#ffffff'
 };
@@ -18,20 +18,14 @@ const DataPoint = ({ position, value, label, isHovered, onHover, delay = 0 }) =>
     const targetPos = useRef(position);
     
     useFrame((state) => {
-        if (active) {
-            // Pulse effect could be added here if needed
-        }
+        if (active) {}
         
-        // Animation: Grow from center to position
         if (meshRef.current) {
             const time = state.clock.getElapsedTime();
-            // Start animation after delay
             const progress = THREE.MathUtils.clamp((time - delay) * 2, 0, 1);
-            // Ease out cubic
             const ease = 1 - Math.pow(1 - progress, 3);
             
             meshRef.current.position.lerp(targetPos.current, 0.1);
-            // Also scale up from 0
             const targetScale = isHovered ? 0.25 : 0.15;
             const currentScale = meshRef.current.scale.x;
             const newScale = THREE.MathUtils.lerp(currentScale, targetScale * ease, 0.1);
@@ -39,15 +33,14 @@ const DataPoint = ({ position, value, label, isHovered, onHover, delay = 0 }) =>
         }
     });
 
-    // Update target position when prop changes
     useMemo(() => {
         targetPos.current = position;
     }, [position]);
 
     return (
-        <group ref={meshRef} position={[0,0,0]}> {/* Start at center */}
+        <group ref={meshRef} position={[0,0,0]}> 
             <Sphere 
-                args={[1, 16, 16]} // Base size 1, scaled down
+                args={[1, 16, 16]} 
                 onPointerOver={(e) => { e.stopPropagation(); onHover(true); setActive(true); }}
                 onPointerOut={(e) => { onHover(false); setActive(false); }}
                 onClick={(e) => { e.stopPropagation(); setActive(!active); }}
@@ -58,73 +51,57 @@ const DataPoint = ({ position, value, label, isHovered, onHover, delay = 0 }) =>
                     emissiveIntensity={isHovered ? 2 : 0}
                 />
             </Sphere>
-            {/* Removed per request: only keep the black badge near vertex */}
         </group>
     );
 };
 
 const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
-    const radius = 2.5; // Reduced radius for smaller chart
+    const radius = 2.5; 
     const [hoveredIndex, setHoveredIndex] = useState(null);
     const groupRef = useRef();
     const tiltRef = useRef({ angle: 0, intensity: 0 });
-    const [badge, setBadge] = useState(null); // { index, value, angle }
+    const [badge, setBadge] = useState(null); 
     const badgeTimeoutRef = useRef(null);
-
-    // Animation for the whole chart (convolution/expansion)
     useFrame((state) => {
         if (groupRef.current) {
             const time = state.clock.getElapsedTime();
             const progress = THREE.MathUtils.clamp(time * 1.5, 0, 1);
-            const ease = 1 - Math.pow(1 - progress, 4); // Ease out quart
+            const ease = 1 - Math.pow(1 - progress, 4); 
 
-            // Scale up
             groupRef.current.scale.setScalar(ease);
-            
-            // Rotate slightly (convolution effect)
-            // Start rotated by -PI/4 and rotate to 0
             groupRef.current.rotation.z = THREE.MathUtils.lerp(-Math.PI / 4, 0, ease);
 
-            // Apply transient tilt (inverse direction from hovered vertex)
             const t = tiltRef.current;
             if (hoveredIndex !== null && t.intensity < 0.12) {
-                // Maintain tilt while hovering
                 t.intensity = THREE.MathUtils.lerp(t.intensity, 0.12, 0.2);
             }
             if (t.intensity > 0.0001) {
                 const dirX = Math.cos(t.angle);
                 const dirY = Math.sin(t.angle);
-                // Inverse: lean away from the data direction
                 groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, dirY * t.intensity, 0.15);
                 groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, -dirX * t.intensity, 0.15);
-                // Decay only when not hovering
                 if (hoveredIndex === null) {
                     t.intensity = THREE.MathUtils.lerp(t.intensity, 0, 0.06);
                 }
             } else {
-                // relax back to flat
                 groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 0.1);
                 groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, 0, 0.1);
             }
 
-            // Movement along Z axis (depth)
             groupRef.current.position.z = THREE.MathUtils.lerp(-5, 0, ease);
         }
     });
 
     const triggerTilt = (angle) => {
         tiltRef.current.angle = angle;
-        // Initial kick; sustained by hover handler/useFrame
         tiltRef.current.intensity = Math.max(tiltRef.current.intensity, 0.1);
     };
 
-    // Calculate max value for normalization
     const maxVal = useMemo(() => {
         const values = data.map(d => (d?.[valueKey] ?? d?.executionCount ?? 0));
         return Math.max(...values, 1);
     }, [data, valueKey]);
 
-    // Find index of max value to add crown
     const maxIndex = useMemo(() => {
         let max = -1;
         let idx = -1;
@@ -138,41 +115,33 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
         return idx;
     }, [data, valueKey]);
 
-    // Calculate vertices for the pentagon (outer shape)
+
     const vertices = useMemo(() => {
         const pts = [];
         for (let i = 0; i < 5; i++) {
-            const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2; // Start from top
+            const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2; 
             pts.push(new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0));
         }
         return pts;
     }, [radius]);
 
-    // Calculate vertices for the data shape (inner shape)
+
     const dataVertices = useMemo(() => {
         return vertices.map((v, i) => {
             const val = data[i]?.[valueKey] ?? data[i]?.executionCount ?? 0;
             const normalized = val / maxVal;
-            // Scale vector by normalized value (min 0.2 to show something)
             return v.clone().multiplyScalar(Math.max(normalized, 0.1)); 
         });
     }, [vertices, data, maxVal, valueKey]);
 
-    // Lines for the outer pentagon (unused but kept for reference logic if needed, or remove)
-    // const outerLines = useMemo(() => [...vertices, vertices[0]], [vertices]);
-    
-    // Lines for the data shape
     const dataLines = useMemo(() => [...dataVertices, dataVertices[0]], [dataVertices]);
 
-    // Lines from center to vertices (spokes)
     const spokes = useMemo(() => {
         return vertices.map(v => [new THREE.Vector3(0,0,0), v]);
     }, [vertices]);
 
-    // Grid levels (25%, 50%, 75%, 100%)
     const levels = [0.25, 0.5, 0.75, 1];
 
-    // Badge position (slightly beyond the clicked data vertex)
     const badgePos = useMemo(() => {
         if (!badge || badge.index == null) return null;
         const base = dataVertices[badge.index];
@@ -182,13 +151,8 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
         return base.clone().add(dir);
     }, [badge, dataVertices]);
 
-    // Unit no longer shown in badge
-
-    // Hover-driven interaction now; click handler removed
-
     return (
         <group ref={groupRef}>
-            {/* Grid Lines (Concentric Pentagons) */}
             {levels.map((level, idx) => (
                 <group key={`grid-${idx}`}>
                     <Line 
@@ -198,7 +162,6 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
                         transparent 
                         opacity={0.15} 
                     />
-                    {/* Axis Labels along the top spoke */}
                     <Html position={new THREE.Vector3(0, radius * level, 0)} center zIndexRange={[0, 0]}>
                         <div className="text-[10px] text-gray-500 font-mono bg-[#161616]/80 px-1 rounded">
                             {Math.round(maxVal * level)}
@@ -207,12 +170,10 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
                 </group>
             ))}
             
-            {/* Spokes */}
             {spokes.map((spoke, i) => (
                 <Line key={`spoke-${i}`} points={spoke} color={ThemeColors.secondary} lineWidth={1} transparent opacity={0.2} />
             ))}
 
-            {/* Exercise Images at Vertices */}
             {vertices.map((pos, i) => (
                 <Html key={`img-${i}`} position={pos} center distanceFactor={10} zIndexRange={[10, 0]}>
                     <div
@@ -239,10 +200,8 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
                 </Html>
             ))}
 
-            {/* Data Shape */}
             <Line points={dataLines} color={ThemeColors.accent} lineWidth={3} />
 
-            {/* Interactive Points */}
             {dataVertices.map((pos, i) => (
                 <DataPoint 
                     key={i} 
@@ -260,17 +219,17 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
                             setBadge({ index: i, value, angle: a });
                             if (badgeTimeoutRef.current) clearTimeout(badgeTimeoutRef.current);
                         } else {
-                            // Stop sustaining tilt when hover ends
+                            
                             tiltRef.current.intensity = 0;
                             if (badgeTimeoutRef.current) clearTimeout(badgeTimeoutRef.current);
                             badgeTimeoutRef.current = setTimeout(() => setBadge(null), 200);
                         }
                     }}
-                    delay={0.5 + i * 0.1} // Staggered animation
+                    delay={0.5 + i * 0.1} 
                 />
             ))}
 
-            {/* Click Badge */}
+          
             {badge && badgePos && (
                 <Html position={badgePos} center distanceFactor={10} zIndexRange={[20, 0]}>
                     <div className="px-2 py-1 rounded-full text-xs font-bold bg-black/80 text-white border border-gray-700 shadow-lg">
@@ -307,10 +266,10 @@ const StatsChartCard = ({ title, subtitle, data, valueKey }) => {
                         minDistance={5} 
                         maxDistance={10} 
                         enablePan={false}
-                        // Restrict rotation significantly
-                        minAzimuthAngle={-Math.PI / 6} // +/- 30 degrees horizontal
+                        
+                        minAzimuthAngle={-Math.PI / 6} 
                         maxAzimuthAngle={Math.PI / 6}
-                        minPolarAngle={Math.PI / 2.5} // Restrict vertical angle
+                        minPolarAngle={Math.PI / 2.5} 
                         maxPolarAngle={Math.PI / 2}
                     />
                 </Canvas>
@@ -332,7 +291,6 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
         const userStats = Array.isArray(stats) ? stats[0] : stats;
         if (!userStats) return;
 
-        // Extract images
         const imagesMap = {};
         if (userStats.muscleGroupImages) {
             userStats.muscleGroupImages.forEach(img => {
@@ -340,8 +298,6 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
             });
         }
 
-        // Process Exercises
-        // Find max weight for each exercise
         const exerciseMaxWeights = {};
         const exerciseToMuscleGroup = {};
 
@@ -367,7 +323,6 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
             });
         }
 
-        // Filter to keep only the best exercise per muscle group
         const bestPerMuscleGroup = {};
         Object.keys(exerciseMaxWeights).forEach(name => {
             const weight = exerciseMaxWeights[name];
@@ -384,7 +339,6 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
             }
         });
 
-        // Convert to array and sort by weight (descending) to get top 5
         const topExercises = Object.values(bestPerMuscleGroup).map((item, index) => ({
             id: index,
             name: item.name,
@@ -392,14 +346,12 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
             image: item.image
         })).sort((a, b) => b.weightKg - a.weightKg).slice(0, 5);
         
-        // Pad with placeholders if less than 5
         while (topExercises.length < 5) {
              topExercises.push({ id: topExercises.length, name: 'N/A', weightKg: 0 });
         }
 
         setExerciseData(topExercises);
 
-        // Process Muscles
         const muscleCounts = {};
         if (userStats.periodMuscularGroupStats) {
             userStats.periodMuscularGroupStats.forEach(period => {

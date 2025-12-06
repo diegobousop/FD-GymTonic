@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LabelList, Brush } from 'recharts';
-import StatsFilter from './stats-filter';
 
 const CustomizedLabel = (props) => {
-  const { x, y, value, index, dataKey, currentData } = props;
+  const { x, y, index, dataKey, currentData } = props;
   const isPR = currentData[index]?.isPR?.[dataKey];
   
   if (!isPR) return null;
@@ -17,7 +16,6 @@ const CustomizedLabel = (props) => {
 
 const CustomCombinedTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
-    // Sort payload by value descending to show leaders first
     const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
     
     return (
@@ -52,7 +50,6 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
   useEffect(() => {
     if (!stats) return;
 
-    // Handle if stats is array or object
     const userStats = Array.isArray(stats) ? stats[0] : stats;
     
     if (!userStats || !userStats.periodExerciseStats) return;
@@ -77,13 +74,11 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
         }
     });
 
-    // Sort by date
     allStats.sort((a, b) => new Date(a.date) - new Date(b.date));
     setCurrentData(allStats);
 
     let exerciseList = Array.from(exerciseSet).map(key => ({ key, label: key }));
     
-    // Sort by frequency and limit to 10
     exerciseList.sort((a, b) => (exerciseCounts[b.key] || 0) - (exerciseCounts[a.key] || 0));
     setExercises(exerciseList.slice(0, 10));
 
@@ -92,7 +87,6 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
         value: exerciseCounts[key]
     }));
 
-    // Sort descending
     newPieData.sort((a, b) => b.value - a.value);
 
     if (newPieData.length > 10) {
@@ -108,8 +102,6 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
 
   }, [stats]);
 
-  
-  // Palette of reds for the PieChart
   const pieColors = ['#EF4444', '#B91C1C', '#991B1B', '#7F1D1D', '#F87171'];
 
   if (!currentData || currentData.length === 0) {
@@ -119,7 +111,6 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
   return (
     <div className="flex flex-col w-full mt-10">
 
-      {/* Gráfico Toggleable (Circular / Lineal Combinado) */}
       <div className="w-full h-[500px] bg-[#1e1e1e] p-4 rounded-xl shadow-lg mb-8 flex flex-col items-center relative">
         <div className="flex justify-between items-center w-full mb-4 px-4">
             <h3 className="text-white  text-lg">

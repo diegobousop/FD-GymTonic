@@ -136,19 +136,30 @@ const MyProfilePage = () => {
       )}
      
       <div className="flex flex-row justify-between h-full">
-        {activeTab === 'trainingHistory' ? (
-            <TrainingHistory 
-              user={user} 
-              selectedDay={selectedDay}
-              dayFilterActivated={dayFilterActivated}
-              setFilterActivated={setDayFilterActivated}
-              ariaLabel="Historial de entrenamientos"
-            />
-          ) : ( activeTab === 'badges' ? (
-            <BadgesList 
-              user={user} 
-            />
-          ) :
+        {(() => {
+          if (activeTab === 'trainingHistory') {
+            return (
+              <TrainingHistory
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                user={user}
+                selectedDay={selectedDay}
+                dayFilterActivated={dayFilterActivated}
+                setFilterActivated={setDayFilterActivated}
+                ariaLabel="Historial de entrenamientos"
+              />
+            );
+          }
+          if (activeTab === 'badges') {
+            return (
+              <BadgesList
+                  userId={user?.id}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+              />
+            );
+          }
+          return (
             <UserStatsPanel
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -158,10 +169,10 @@ const MyProfilePage = () => {
               setSelectedTime={setSelectedTime}
               stats={stats}
             />
-          )
-        }
-        
-        <CalendarCard 
+          );
+        })()}
+
+        <CalendarCard
           user={user}
           selectedDay={selectedDay}
           setSelectedDay={setSelectedDay}

@@ -84,7 +84,6 @@ const MuscleUserGraphs = ({ stats }) => {
   return (
     <div className="flex flex-col w-full mt-10">
       
-      {/* Gráfico Toggleable (Circular / Lineal Combinado) */}
       <div className="w-full h-[500px] bg-[#1e1e1e] p-4 rounded-xl shadow-lg mb-8 flex flex-col items-center relative">
         <div className="flex justify-between items-center w-full mb-4 px-4">
             <h3 className="text-white  text-lg">
@@ -159,7 +158,6 @@ const MuscleUserGraphs = ({ stats }) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Grilla de Gráficos Lineales */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
         {muscleGroups.map((muscle) => (
           <div key={muscle.key} className="bg-[#1e1e1e] p-4 rounded-xl shadow-lg">
