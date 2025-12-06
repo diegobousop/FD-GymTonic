@@ -15,6 +15,7 @@ public class Notification {
     private Users receiver;
     private Users sender;
     private Routine routine;
+    private Training training;
     private String message;
     private Boolean isRead;
     private LocalDateTime date;
@@ -22,10 +23,11 @@ public class Notification {
     public Notification() {
     }
 
-    public Notification(Users receiver, Users sender, Routine routine, String message, Boolean isRead, LocalDateTime date) {
+    public Notification(Users receiver, Users sender, Routine routine, Training training, String message, Boolean isRead, LocalDateTime date) {
         this.receiver = receiver;
         this.sender = sender;
         this.routine = routine;
+        this.training = training;
         this.message = message;
         this.isRead = isRead;
         this.date = date;
@@ -65,6 +67,15 @@ public class Notification {
     }
     public void setRoutine(Routine routine) {
         this.routine = routine;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "trainingId")
+    public Training getTraining() {
+        return training;
+    }
+    public void setTraining(Training training) {
+        this.training = training;
     }
 
     public String getMessage() {

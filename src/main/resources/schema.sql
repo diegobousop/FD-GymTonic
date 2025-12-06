@@ -2,12 +2,14 @@ DROP TABLE IF EXISTS Blockuser;
 DROP TABLE IF EXISTS Routine_Exercise;
 DROP TABLE IF EXISTS Routine_Follow;
 DROP TABLE IF EXISTS Routine_Like;
+DROP TABLE IF EXISTS Training_Like;
 DROP TABLE IF EXISTS User_Follow;
 DROP TABLE IF EXISTS FollowRequest;
 
 
 DROP TABLE IF EXISTS Serie;
 DROP TABLE IF EXISTS Notification;
+DROP TABLE IF EXISTS Comment;
 DROP TABLE IF EXISTS Training;
 DROP TABLE IF EXISTS Routine;
 DROP TABLE IF EXISTS Exercise;
@@ -122,6 +124,15 @@ CREATE TABLE Training (
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
+CREATE TABLE Training_Like (
+    user_id BIGINT NOT NULL,
+    training_id BIGINT NOT NULL,
+    likeDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, training_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (training_id) REFERENCES Training(id)
+);
+
 CREATE TABLE Serie (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     repeticiones INT NOT NULL,
@@ -135,6 +146,16 @@ CREATE TABLE Serie (
     FOREIGN KEY (trainingId) REFERENCES Training(id)
 );
 
+CREATE TABLE Comment (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    mensaje VARCHAR(500) NOT NULL,
+    fecha TIMESTAMP NOT NULL,
+    trainingId BIGINT NOT NULL,
+    userId BIGINT NOT NULL,
+
+    FOREIGN KEY (trainingId) REFERENCES Training(id),
+    FOREIGN KEY (userId) REFERENCES Users(id)
+);
 
 
 CREATE TABLE Images(
@@ -163,12 +184,14 @@ CREATE TABLE Notification (
     receiverId BIGINT NOT NULL,
     senderId BIGINT,
     routineId BIGINT,
+    trainingId BIGINT,
     message VARCHAR(255) NOT NULL,
     isRead BOOLEAN NOT NULL DEFAULT FALSE,
     date TIMESTAMP NOT NULL,
     FOREIGN KEY (receiverId) REFERENCES Users(id),
     FOREIGN KEY (senderId) REFERENCES Users(id),
-    FOREIGN KEY (routineId) REFERENCES Routine(id)
+    FOREIGN KEY (routineId) REFERENCES Routine(id),
+    FOREIGN KEY (trainingId) REFERENCES Training(id)
 );
 
 CREATE TABLE FollowRequest (

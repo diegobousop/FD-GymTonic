@@ -23,6 +23,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,14 +54,14 @@ import es.udc.fi.dc.fd.rest.dtos.SerieParamsDto;
 @Transactional
 public class RoutineControllerTest {
 
-        @Autowired
-        private IconDao iconDao;
+    @Autowired
+    private IconDao iconDao;
 
-        @Autowired
-        private UserService userService;
+    @Autowired
+    private UserService userService;
 
-        @Autowired
-        private RoutineService routineService;
+    @Autowired
+    private RoutineService routineService;
 
     @Autowired
     private UserController userController;
@@ -786,6 +788,133 @@ public class RoutineControllerTest {
                 .andExpect(jsonPath("$.items[0].userName").value(user.getUserDto().getUserName()))
                 .andExpect(jsonPath("$.existMoreItems").value(false));
     }
+
+    @Test
+    public void testLikeTraining() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+        Users creator = userService.login("admin1", "12345");
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training training = routineService.createTrainingFromRoutine(user.getUserDto().getId(),"Training 1","Description of training",45L,true,series,routine.getId());
+        
+        mockMvc.perform(post("/api/routines/training/" + training.getId() + "/like")
+                .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void testLikeTrainingPrivateTraining() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise = exerciseDao.save(new Exercise("exercise1", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", List.of(exercise.getId()), 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise.getId());
+        Training training = routineService.createTrainingFromRoutine(user.getUserDto().getId(),
+                "Training 1", "Description", 45L, false, series, routine.getId());
+
+        mockMvc.perform(post("/api/routines/training/" + training.getId() + "/like")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isForbidden()); 
+    }
+
+    @Test
+    public void testLikeTrainingNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        mockMvc.perform(post("/api/routines/training/999999/like")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNotFound()); 
+    }
+
+    @Test
+    public void testUnLikeTraining() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise = exerciseDao.save(new Exercise("exercise1", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", List.of(exercise.getId()), 60L, true);
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise.getId());
+        Training training = routineService.createTrainingFromRoutine(user.getUserDto().getId(),
+                "Training 1", "Description", 45L, true, series, routine.getId());
+
+        routineService.likeTraining(user.getUserDto().getId(), training.getId());
+
+        mockMvc.perform(post("/api/routines/training/" + training.getId() + "/unlike")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void testUnLikeTrainingNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        mockMvc.perform(post("/api/routines/training/999999/unlike")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNoContent()); 
+    }
+
+    @Test
+    public void testIsLikedTraining() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Users creator = userService.login("admin1", "12345");
+        Exercise exercise = exerciseDao.save(new Exercise("exercise1", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", List.of(exercise.getId()), 60L, true);
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise.getId());
+        Training training = routineService.createTrainingFromRoutine(user.getUserDto().getId(),
+                "Training 1", "Description", 45L, true, series, routine.getId());
+
+        routineService.likeTraining(user.getUserDto().getId(), training.getId());
+
+        mockMvc.perform(get("/api/routines/training/" + training.getId() + "/isLiked")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+    @Test
+    public void testIsLikedTrainingNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        mockMvc.perform(get("/api/routines/training/999999/isLiked")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetTrainingLikes() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+        Users creator = userService.login("admin1", "12345");
+        Users u2 = userService.login("user2", "12345");
+        Exercise exercise = exerciseDao.save(new Exercise("exercise1", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", List.of(exercise.getId()), 60L, true);
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise.getId());
+        Training training = routineService.createTrainingFromRoutine(user.getUserDto().getId(),
+                "Training 1", "Description", 45L, true, series, routine.getId());
+
+        routineService.likeTraining(user.getUserDto().getId(), training.getId());
+        routineService.likeTraining(u2.getId(), training.getId());
+
+        mockMvc.perform(get("/api/routines/training/" + training.getId() + "/likesCount")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("2"));
+    }
+
+    @Test
+    public void testGetTrainingLikesTrainingNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        mockMvc.perform(get("/api/routines/training/999999/likesCount")
+                        .header("Authorization", "Bearer " + user.getServiceToken()))
+                .andExpect(status().isNotFound());
+    }
+
 
     @Test
     public void testViewUserTrainingsSuccess() throws Exception {
