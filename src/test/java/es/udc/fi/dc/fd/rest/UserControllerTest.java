@@ -42,6 +42,14 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.UserStatsParamsDto;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Training;
+import es.udc.fi.dc.fd.model.entities.TrainingDao;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.SerieDao;
+import java.time.LocalDateTime;
 
 /**
  * The Class UserControllerTest.
@@ -76,6 +84,15 @@ public class UserControllerTest {
 
 	@Autowired
 	private AvatarDao avatarDao;
+
+    @Autowired
+    private ExerciseDao exerciseDao;
+
+    @Autowired
+    private TrainingDao trainingDao;
+
+    @Autowired
+    private SerieDao serieDao;
 
 	/** The user controller. */
 	@Autowired
@@ -796,5 +813,65 @@ public class UserControllerTest {
 	    }
 	}
 
+    @Test
+    public void testGetStats() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("userStats", RoleType.USER);
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("userStats");
+        loginParams.setPassword(PASSWORD);
+        AuthenticatedUserDto authenticatedUser = userController.login(loginParams);
+
+        Users userEntity = userDao.findById(user.getUserDto().getId()).get();
+        
+        Exercise exercise = new Exercise("Push Up", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+        exerciseDao.save(exercise);
+
+        Training training = new Training("Training Stats", "Desc", LocalDateTime.now(), true, userEntity, 60L);
+        trainingDao.save(training);
+
+        Serie serie = new Serie(10, 0, 1);
+        serie.setExercise(exercise);
+        serie.setTraining(training);
+        serieDao.save(serie);
+
+        UserStatsParamsDto params = new UserStatsParamsDto(user.getUserDto().getId(), 0, "YEAR");
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/users/stats")
+                .header("Authorization", "Bearer " + authenticatedUser.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].userId").value(user.getUserDto().getId()));
+    }
+
+    @Test
+    public void testGetStatsInstanceNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("userStatsNotFound", RoleType.USER);
+        UserStatsParamsDto params = new UserStatsParamsDto(user.getUserDto().getId() + 999, 0, "YEAR");
+
+        ObjectMapper mapper = new ObjectMapper();
+        mockMvc.perform(post("/api/users/stats")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(params)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetStatsPermissionException() throws Exception {
+        AuthenticatedUserDto requester = createAuthenticatedUser("requesterStats", RoleType.USER);
+        AuthenticatedUserDto target = createAuthenticatedUser("targetStats", RoleType.USER);
+        UserStatsParamsDto params = new UserStatsParamsDto(target.getUserDto().getId(), 0, "YEAR");
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/users/stats")
+                .header("Authorization", "Bearer " + requester.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(params)))
+                .andExpect(status().isForbidden());
+    }
 	
 }

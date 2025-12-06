@@ -13,6 +13,14 @@ import org.junit.Test;
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.rest.dtos.user.ExercisesStatsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.MuscularGroupsStatsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.PeriodExerciseStatsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.PeriodMuscularGroupStatsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.UserStatsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.UserStatsParamsDto;
+import java.util.Map;
+import java.util.HashMap;
 
 
 public class DtosTest {
@@ -602,6 +610,148 @@ public class DtosTest {
         List<RoutineDto> dtos = RoutineConversor.toRoutineDtos(routines);
         assertEquals(1, dtos.size());
         assertEquals(Long.valueOf(3L), dtos.get(0).getId());
+    }
+
+    @Test
+    public void testExercisesStatsDto() {
+        LocalDate date = LocalDate.now();
+        Map<String, Integer> weights = new HashMap<>();
+        weights.put("ex1", 10);
+        Map<String, String> groups = new HashMap<>();
+        groups.put("ex1", "group1");
+        Map<String, Boolean> isPR = new HashMap<>();
+        isPR.put("ex1", true);
+
+        ExercisesStatsDto dto = new ExercisesStatsDto(date, weights, groups, isPR);
+        assertEquals(date, dto.getDate());
+        assertEquals(weights, dto.getExerciseWeightsKg());
+        assertEquals(groups, dto.getExerciseGroup());
+        assertEquals(isPR, dto.getIsPR());
+
+        dto.setDate(date.plusDays(1));
+        dto.setExerciseWeightsKg(null);
+        dto.setExerciseGroup(null);
+        dto.setIsPR(null);
+
+        assertEquals(date.plusDays(1), dto.getDate());
+        assertNull(dto.getExerciseWeightsKg());
+        assertNull(dto.getExerciseGroup());
+        assertNull(dto.getIsPR());
+        
+        ExercisesStatsDto emptyDto = new ExercisesStatsDto();
+        assertNull(emptyDto.getDate());
+    }
+
+    @Test
+    public void testMuscularGroupsStatsDto() {
+        LocalDate date = LocalDate.now();
+        Map<String, Integer> counts = new HashMap<>();
+        counts.put("group1", 5);
+
+        MuscularGroupsStatsDto dto = new MuscularGroupsStatsDto(date, counts);
+        assertEquals(date, dto.getDate());
+        assertEquals(counts, dto.getExerciseCount());
+
+        dto.setDate(date.plusDays(1));
+        dto.setExerciseCount(null);
+
+        assertEquals(date.plusDays(1), dto.getDate());
+        assertNull(dto.getExerciseCount());
+
+        MuscularGroupsStatsDto emptyDto = new MuscularGroupsStatsDto();
+        assertNull(emptyDto.getDate());
+    }
+
+    @Test
+    public void testPeriodExerciseStatsDto() {
+        LocalDate date = LocalDate.now();
+        List<ExercisesStatsDto> list = new ArrayList<>();
+
+        PeriodExerciseStatsDto dto = new PeriodExerciseStatsDto(date, list);
+        assertEquals(date, dto.getStartDate());
+        assertEquals(list, dto.getExerciseStats());
+
+        dto.setStartDate(date.plusDays(1));
+        dto.setExerciseStats(null);
+
+        assertEquals(date.plusDays(1), dto.getStartDate());
+        assertNull(dto.getExerciseStats());
+
+        PeriodExerciseStatsDto emptyDto = new PeriodExerciseStatsDto();
+        assertNull(emptyDto.getStartDate());
+    }
+
+    @Test
+    public void testPeriodMuscularGroupStatsDto() {
+        LocalDate date = LocalDate.now();
+        List<MuscularGroupsStatsDto> list = new ArrayList<>();
+
+        PeriodMuscularGroupStatsDto dto = new PeriodMuscularGroupStatsDto(date, list);
+        assertEquals(date, dto.getStartDate());
+        assertEquals(list, dto.getMuscularGroupStats());
+
+        dto.setStartDate(date.plusDays(1));
+        dto.setMuscularGroupStats(null);
+
+        assertEquals(date.plusDays(1), dto.getStartDate());
+        assertNull(dto.getMuscularGroupStats());
+
+        PeriodMuscularGroupStatsDto emptyDto = new PeriodMuscularGroupStatsDto();
+        assertNull(emptyDto.getStartDate());
+    }
+
+    @Test
+    public void testUserStatsDto() {
+        Long userId = 1L;
+        String period = "MONTH";
+        List<ImageDto> images = new ArrayList<>();
+        List<PeriodExerciseStatsDto> exStats = new ArrayList<>();
+        List<PeriodMuscularGroupStatsDto> musStats = new ArrayList<>();
+
+        UserStatsDto dto = new UserStatsDto(userId, period, images, exStats, musStats);
+        assertEquals(userId, dto.getUserId());
+        assertEquals(period, dto.getPeriod());
+        assertEquals(images, dto.getMuscleGroupImages());
+        assertEquals(exStats, dto.getPeriodExerciseStats());
+        assertEquals(musStats, dto.getPeriodMuscularGroupStats());
+
+        dto.setUserId(2L);
+        dto.setPeriod("YEAR");
+        dto.setMuscleGroupImages(null);
+        dto.setPeriodExerciseStats(null);
+        dto.setPeriodMuscularGroupStats(null);
+
+        assertEquals(Long.valueOf(2L), dto.getUserId());
+        assertEquals("YEAR", dto.getPeriod());
+        assertNull(dto.getMuscleGroupImages());
+        assertNull(dto.getPeriodExerciseStats());
+        assertNull(dto.getPeriodMuscularGroupStats());
+
+        UserStatsDto emptyDto = new UserStatsDto();
+        assertNull(emptyDto.getUserId());
+    }
+
+    @Test
+    public void testUserStatsParamsDto() {
+        Long profileId = 1L;
+        int reps = 10;
+        String period = "WEEK";
+
+        UserStatsParamsDto dto = new UserStatsParamsDto(profileId, reps, period);
+        assertEquals(profileId, dto.getUserProfileId());
+        assertEquals(reps, dto.getNumReps());
+        assertEquals(period, dto.getPeriod());
+
+        dto.setUserProfileId(2L);
+        dto.setNumReps(5);
+        dto.setPeriod("MONTH");
+
+        assertEquals(Long.valueOf(2L), dto.getUserProfileId());
+        assertEquals(5, dto.getNumReps());
+        assertEquals("MONTH", dto.getPeriod());
+
+        UserStatsParamsDto emptyDto = new UserStatsParamsDto();
+        assertNull(emptyDto.getUserProfileId());
     }
 
 }
