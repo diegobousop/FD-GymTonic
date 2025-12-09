@@ -98,4 +98,12 @@ public interface NotificationService {
      */
     public void notifyTrainingComment(Long userId, Training training) throws InstanceNotFoundException;
 
+    /**
+     * Notify user when their streak is ending.
+     * @param userId User whose streak is ending
+     * @param message The message of the notification
+     * @throws InstanceNotFoundException
+     */
+    public void notifyStreakWarning(Long userId, String message) throws InstanceNotFoundException;
+
 }

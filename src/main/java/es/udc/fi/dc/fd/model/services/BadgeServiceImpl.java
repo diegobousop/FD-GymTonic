@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,13 +33,15 @@ public class BadgeServiceImpl implements BadgeService {
     private final UserBadgeDao userBadgeDao;
     private final TrainingDao trainingDao;
     private final UserDao userDao;
+    private final NotificationService notificationService;
 
     @Autowired
-    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao) {
+    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao, NotificationService notificationService) {
         this.badgeDao = badgeDao;
         this.userBadgeDao = userBadgeDao;
         this.trainingDao = trainingDao;
         this.userDao = userDao;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -98,6 +101,30 @@ public class BadgeServiceImpl implements BadgeService {
         if (maxConsecutiveWeeks >= 1) assignBadge(user, "CONSECUTIVE_WEEKS_1");
         if (maxConsecutiveWeeks >= 10) assignBadge(user, "CONSECUTIVE_WEEKS_10");
         if (maxConsecutiveWeeks >= 100) assignBadge(user, "CONSECUTIVE_WEEKS_100");
+    }
+
+    @Override
+    @Scheduled(cron = "0 0 18 * * *") 
+    public void checkDailyStreaks() throws InstanceNotFoundException {
+        List<Users> users = userDao.findAll();
+        for (Users user : users) {
+            checkConsistencyDailyWarnings(user);
+        }
+    }
+
+    private void checkConsistencyDailyWarnings(Users user) throws InstanceNotFoundException {
+        Training lastTraining = trainingDao.findTopByUserIdOrderByCreationDateDesc(user.getId());
+
+        if (lastTraining == null) return;
+
+        LocalDate today = LocalDate.now();
+
+        if (ChronoUnit.DAYS.between(lastTraining.getCreationDate().toLocalDate(), today) == 1) {
+            notificationService.notifyStreakWarning(
+                user.getId(),
+                "Estás a punto de perder tu racha diaria de entrenamiento. ¡Entrena hoy para mantenerla!"
+            );
+        }
     }
 
     private void assignBadge(Users user, String badgeName) {

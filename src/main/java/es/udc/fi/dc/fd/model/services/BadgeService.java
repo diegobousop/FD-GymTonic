@@ -12,6 +12,7 @@ public interface BadgeService {
     void checkWorkoutsBadges(Long userId) throws InstanceNotFoundException;
     void checkFollowersBadges(Long userId) throws InstanceNotFoundException;
     void checkConsistencyBadges(Long userId) throws InstanceNotFoundException;
+    void checkDailyStreaks() throws InstanceNotFoundException;
 }
 
 

@@ -28,6 +28,7 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineExercise;
 import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Training;
+import es.udc.fi.dc.fd.model.entities.TrainingDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
@@ -52,7 +53,11 @@ public class NotificationServiceTest {
     @Autowired
     private UserService userService;
     @Autowired
+    private BadgeService badgeService;
+    @Autowired
     private AvatarDao avatarDao;
+    @Autowired
+    private TrainingDao trainingDao;
 
     private final String PASSWORD = "12345";
     private final String TRAINER_USERNAME = "trainer1";
@@ -372,5 +377,51 @@ public class NotificationServiceTest {
 
     }
 
+    @Test
+    public void testNotifyStreakWarning() throws DuplicateInstanceException, 
+     InstanceNotFoundException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
 
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que el usuario recibe el aviso
+        notificationService.notifyStreakWarning(user.getId(), "prueba");
+
+        // Verificar que el usuario recibe la notificación
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(1, notificationsUser.getItems().size());
+        
+        Notification notification = notificationsUser.getItems().get(0);
+        assertEquals(user.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals("prueba", notification.getMessage());
+    }
+
+    @Test
+    public void testStreakWarning() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(user.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        training.setCreationDate(LocalDateTime.now().minusDays(1));
+        trainingDao.save(training);
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Simular que se ejecuta la revisión periodica
+        badgeService.checkDailyStreaks();
+
+        // Verificar que el usuario recibe la notificación
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(1, notificationsUser.getItems().size());
+        
+        Notification notification = notificationsUser.getItems().get(0);
+        assertEquals(user.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals("Estás a punto de perder tu racha diaria de entrenamiento. ¡Entrena hoy para mantenerla!", notification.getMessage());
+    }
 }
