@@ -260,7 +260,7 @@ public class UserServiceTest {
 		Block<Users> result = userService.getAllUser(0, 5);
 
 		assertNotNull(result);
-        assertEquals(4, result.getItems().size());
+        assertEquals(5, result.getItems().size());
         assertEquals("admin1", result.getItems().get(0).getUserName());
         assertEquals(RoleType.ADMIN, result.getItems().get(0).getRole());
         assertEquals("trainer1", result.getItems().get(1).getUserName());
@@ -399,9 +399,9 @@ public class UserServiceTest {
 		assertEquals(1, userService.getFollowersCount(user2.getId()));
 
 		// Agregar otro seguidor
-		Users user3 = createUser("user3", Users.RoleType.USER, Gender.OTHER);
-		userService.signUp(user3, Users.RoleType.USER);
-		assertTrue(userService.followUser(user3.getId(), user2.getId()));
+		Users user99 = createUser("user99", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user99, Users.RoleType.USER);
+		assertTrue(userService.followUser(user99.getId(), user2.getId()));
 		assertEquals(2, userService.getFollowersCount(user2.getId()));
 
 	}

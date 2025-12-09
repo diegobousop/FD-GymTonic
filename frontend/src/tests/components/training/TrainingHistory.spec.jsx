@@ -20,14 +20,14 @@ jest.mock('../../../modules/app/components/common/pager', () => ({
 
 // Mock backend.routineService antes de importar el componente
 const mockViewUserTrainings = jest.fn()
-const mockViewDayTrainings = jest.fn()
+const mockViewDayTrainingsForUser = jest.fn()
 
 jest.mock('../../../backend', () => ({
   __esModule: true,
   default: {
     routineService: {
       viewUserTrainings: (...args) => mockViewUserTrainings(...args),
-      viewDayTrainings: (...args) => mockViewDayTrainings(...args)
+      viewDayTrainingsForUser: (...args) => mockViewDayTrainingsForUser(...args)
     }
   }
 }))
@@ -86,7 +86,7 @@ describe('TrainingHistory', () => {
 
   test('modo filtro día: llama a viewDayTrainings y muestra etiqueta de día', async () => {
     const selected = new Date(2025, 10, 10) // 10 Nov 2025
-    mockViewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
+    mockViewDayTrainingsForUser.mockImplementation((userId, page, size, day, month, year, onSuccess) => {
       onSuccess({ items: [makeTraining(2)], existMoreItems: false })
     })
 
@@ -105,7 +105,8 @@ describe('TrainingHistory', () => {
       expect(screen.getByText(/Entrenamiento 2/i)).toBeInTheDocument()
     )
 
-    expect(mockViewDayTrainings).toHaveBeenCalledWith(
+    expect(mockViewDayTrainingsForUser).toHaveBeenCalledWith(
+      undefined,
       0,
       5,
       selected.getDate(),
@@ -155,7 +156,7 @@ describe('TrainingHistory', () => {
 
   test('estado vacío con filtro día muestra mensaje específico', async () => {
     const selected = new Date(2025, 10, 10)
-    mockViewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
+    mockViewDayTrainingsForUser.mockImplementation((userId, page, size, day, month, year, onSuccess) => {
       onSuccess({ items: [], existMoreItems: false })
     })
 

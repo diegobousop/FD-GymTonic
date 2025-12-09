@@ -60,8 +60,6 @@ const MyProfilePage = () => {
         },
         (data) => {
           setStats(data);
-                console.log("Stats cargadas:", data);
-
         },
         (err) => {
           setError('Error al cargar las estadísticas de usuario');

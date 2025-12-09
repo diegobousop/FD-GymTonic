@@ -8,11 +8,10 @@ import Pager from '../common/pager';
 
 import { svgIcons } from '../../../../config/constants'; 
 
-const TrainingHistory = ({activeTab, setActiveTab, user, dayFilterActivated, setFilterActivated, selectedDay}) => {
+const TrainingHistory = ({activeTab, setActiveTab, user, dayFilterActivated, setFilterActivated, selectedDay, forbidden}) => {
 
     //control
-    const [isLoading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     //recientes
     const [page, setPage] = useState(0);
@@ -28,7 +27,7 @@ const TrainingHistory = ({activeTab, setActiveTab, user, dayFilterActivated, set
     const [trainingData, setTrainingData] = useState([]);
 
     const viewLastTrainings = (pageNumber) => {
-        setLoading(true);
+        setIsLoading(true);
         if(user!=null){
         backend.routineService.viewUserTrainings(
             user.id,
@@ -38,34 +37,35 @@ const TrainingHistory = ({activeTab, setActiveTab, user, dayFilterActivated, set
             setTrainingData(data.items);
             setExistMoreItems(data.existMoreItems);
             setPage(pageNumber);
-            setLoading(false);
+            setIsLoading(false);
           },
           (err) => {
-            setError(err || "Error inesperado al cargar entrenamientos");
-            setLoading(false);
+            setIsLoading(false);
           }
         );}
       };
 
     const viewDayTrainings = (pageNumber) => {
-        setLoading(true);
-        backend.routineService.viewDayTrainings(
-          pageNumber,
-          filterSize,
-          selectedDay.getDate(),
-          selectedDay.getMonth() + 1,
-          selectedDay.getFullYear(),
-          (data) => {
-            setTrainingData(data.items);
-            setFilterExistMoreItems(data.existMoreItems);
-            setFilterPage(pageNumber);
-            setLoading(false);
-          },
-          (err) => {
-            setError(err || "Error inesperado al cargar entrenamientos");
-            setLoading(false);
-          }
-        );
+        setIsLoading(true);
+        if (user) {
+          backend.routineService.viewDayTrainingsForUser(
+            user.id,
+            pageNumber,
+            filterSize,
+            selectedDay.getDate(),
+            selectedDay.getMonth() + 1,
+            selectedDay.getFullYear(),
+            (data) => {
+              setTrainingData(data.items);
+              setFilterExistMoreItems(data.existMoreItems);
+              setFilterPage(pageNumber);
+              setIsLoading(false);
+            },
+            (err) => {
+              setIsLoading(false);
+            }
+          );
+        }
       };
     
     useEffect(() => {
@@ -86,7 +86,21 @@ const TrainingHistory = ({activeTab, setActiveTab, user, dayFilterActivated, set
         return `${datePart} a las ${timePart}`
     }
 
-    if (isLoading) return <Spinner />;
+  if (isLoading) return <Spinner />;
+
+  if (forbidden) {
+          return (
+            <div className="flex flex-col w-full px-5">
+                <MyProfileTabSelector 
+                  activeTab={activeTab} 
+                  setActiveTab={setActiveTab}
+                />
+                <div className="flex flex-col items-center justify-center h-full mt-20">
+                    <p className="text-xl text-gray-400">Debes seguir al usuario para ver sus entrenamientos.</p>
+                </div>
+            </div>
+          );
+        }
 
   let content;
   if (trainingData.length === 0 && !dayFilterActivated) {
@@ -221,6 +235,9 @@ TrainingHistory.propTypes = {
   dayFilterActivated: PropTypes.bool.isRequired,
   setFilterActivated: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
+  activeTab: PropTypes.string,
+  setActiveTab: PropTypes.func,
+  forbidden: PropTypes.bool,
 };
 
 export default TrainingHistory

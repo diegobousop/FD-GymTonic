@@ -2,7 +2,13 @@ import React from 'react'
 
 const fmt = (n) => new Intl.NumberFormat('es-ES').format(Number(n ?? 0))
 
-const UserStats = ({ user, last4WeeksCount, yearTrainingsCount }) => {
+const UserStats = ({ user, last4WeeksCount, yearTrainingsCount, forbidden = false }) => {
+
+  if (forbidden) {
+    return null
+  }
+
+
   return (
     <div className="border-t border-t-[#990000] mt-6 pt-4 px-5">
       <p className="text-white text-[25px] mb-3">Mis estadísticas</p>
@@ -28,5 +34,7 @@ const UserStats = ({ user, last4WeeksCount, yearTrainingsCount }) => {
     </div>
   )
 }
+
+
 
 export default UserStats

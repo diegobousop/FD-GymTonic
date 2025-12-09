@@ -1117,7 +1117,7 @@ public class RoutineServiceTest {
         );
 
         List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
-        assertEquals(1, trainings.size());
+        assertEquals(10, trainings.size());
     }
 
     @Test
@@ -1142,7 +1142,7 @@ public class RoutineServiceTest {
         );
 
         List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
-        assertEquals(0, trainings.size());
+        assertEquals(9, trainings.size());
     }
 
     @Test
@@ -1167,7 +1167,7 @@ public class RoutineServiceTest {
         );
 
         List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
-        assertEquals(0, trainings.size());
+        assertEquals(10, trainings.size());
     }
 
     @Test

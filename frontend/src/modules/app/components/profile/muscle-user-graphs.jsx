@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, Brush } from 'recharts';
+import PropTypes from 'prop-types';
+
 
 const CustomCombinedTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
+  if (active && payload?.length) {
     const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
     
     return (
@@ -11,8 +13,8 @@ const CustomCombinedTooltip = ({ active, payload, label }) => {
             {new Date(label).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <div className="flex flex-col gap-2">
-            {sortedPayload.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between gap-4">
+            {sortedPayload.map((entry) => (
+            <div key={entry.name} className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shadow-[0_0_8px]" style={{ backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }}></div>
                     <span className="text-gray-200 text-xs font-medium">{entry.name}</span>
@@ -26,6 +28,42 @@ const CustomCombinedTooltip = ({ active, payload, label }) => {
   }
   return null;
 };
+
+CustomCombinedTooltip.propTypes = {
+  active: PropTypes.bool,
+  payload: PropTypes.array,
+  label: PropTypes.string,
+};
+
+function processMuscleStats(userStats, muscleGroups) {
+  let allStats = [];
+  let muscleCounts = {};
+
+  userStats.periodMuscularGroupStats.forEach(period => {
+    if (period.muscularGroupStats) {
+      period.muscularGroupStats.forEach(stat => {
+        const entry = { date: stat.date };
+        if (stat.exerciseCount) {
+          Object.keys(stat.exerciseCount).forEach(muscle => {
+            entry[muscle] = stat.exerciseCount[muscle];
+            muscleCounts[muscle] = (muscleCounts[muscle] || 0) + stat.exerciseCount[muscle];
+          });
+        }
+        allStats.push(entry);
+      });
+    }
+  });
+
+  allStats.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const newPieData = muscleGroups.map(group => ({
+    name: group.label,
+    value: muscleCounts[group.key] || 0,
+    color: group.color
+  })).filter(item => item.value > 0);
+
+  return { allStats, newPieData };
+}
 
 const MuscleUserGraphs = ({ stats }) => {
   const [currentData, setCurrentData] = useState([]);
@@ -44,37 +82,13 @@ const MuscleUserGraphs = ({ stats }) => {
 
   useEffect(() => {
     if (!stats) return;
-
     const userStats = Array.isArray(stats) ? stats[0] : stats;
-    if (!userStats || !userStats.periodMuscularGroupStats) return;
+    if (!userStats?.periodMuscularGroupStats) return;
 
-    let allStats = [];
-    let muscleCounts = {};
+    const { allStats, newPieData } = processMuscleStats(userStats, muscleGroups);
 
-    userStats.periodMuscularGroupStats.forEach(period => {
-        if (period.muscularGroupStats) {
-            period.muscularGroupStats.forEach(stat => {
-                const entry = { date: stat.date };
-                if (stat.exerciseCount) {
-                    Object.keys(stat.exerciseCount).forEach(muscle => {
-                        entry[muscle] = stat.exerciseCount[muscle];
-                        muscleCounts[muscle] = (muscleCounts[muscle] || 0) + stat.exerciseCount[muscle];
-                    });
-                }
-                allStats.push(entry);
-            });
-        }
-    });
-
-    allStats.sort((a, b) => new Date(a.date) - new Date(b.date));
     setCurrentData(allStats);
-
-    const newPieData = muscleGroups.map(group => {
-        return { name: group.label, value: muscleCounts[group.key] || 0, color: group.color };
-    }).filter(item => item.value > 0);
-
     setPieData(newPieData);
-
   }, [stats]);
 
   if (!currentData || currentData.length === 0) {
@@ -110,8 +124,8 @@ const MuscleUserGraphs = ({ stats }) => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {pieData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} />
@@ -199,5 +213,9 @@ const MuscleUserGraphs = ({ stats }) => {
     </div>
   )
 }
+
+MuscleUserGraphs.propTypes = {
+  stats: PropTypes.object,
+};
 
 export default MuscleUserGraphs

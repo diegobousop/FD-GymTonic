@@ -1,5 +1,37 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LabelList, Brush } from 'recharts';
+
+const buildStatsFromUserStats = (userStats) => {
+  const allStats = [];
+  const exerciseSet = new Set();
+  const exerciseCounts = {};
+
+  const addExerciseEntry = (entry, weights) => {
+    Object.keys(weights).forEach((exName) => {
+      entry[exName] = weights[exName];
+      exerciseSet.add(exName);
+      exerciseCounts[exName] = (exerciseCounts[exName] || 0) + 1;
+    });
+  };
+
+  const processStat = (stat) => {
+    const entry = { date: stat.date, isPR: stat.isPR || {} };
+    if (stat.exerciseWeightsKg) {
+      addExerciseEntry(entry, stat.exerciseWeightsKg);
+    }
+    allStats.push(entry);
+  };
+
+  const processPeriod = (period) => {
+    if (!period.exerciseStats) return;
+    period.exerciseStats.forEach(processStat);
+  };
+
+  userStats.periodExerciseStats.forEach(processPeriod);
+
+  return { allStats, exerciseSet, exerciseCounts };
+};
 
 const CustomizedLabel = (props) => {
   const { x, y, index, dataKey, currentData } = props;
@@ -14,8 +46,21 @@ const CustomizedLabel = (props) => {
   );
 };
 
+CustomizedLabel.propTypes = {
+  x: PropTypes.number,
+  y: PropTypes.number,
+  index: PropTypes.number,
+  dataKey: PropTypes.string.isRequired,
+  currentData: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+      isPR: PropTypes.object,
+    })
+  ).isRequired,
+};
+
 const CustomCombinedTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
+  if (active && payload?.length) {
     const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
     
     return (
@@ -24,8 +69,8 @@ const CustomCombinedTooltip = ({ active, payload, label }) => {
             {new Date(label).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <div className="flex flex-col gap-2">
-            {sortedPayload.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between gap-4">
+            {sortedPayload.map((entry) => (
+            <div key={entry.dataKey || entry.name} className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shadow-[0_0_8px]" style={{ backgroundColor: entry.color, boxShadow: `0 0 8px ${entry.color}` }}></div>
                     <span className="text-gray-200 text-xs font-medium">{entry.name}</span>
@@ -40,6 +85,22 @@ const CustomCombinedTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+CustomCombinedTooltip.propTypes = {
+  active: PropTypes.bool,
+  payload: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number,
+      name: PropTypes.string,
+      color: PropTypes.string,
+    })
+  ),
+  label: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Date),
+  ]),
+};
+
 const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime, setSelectedTime }) => {
   
   const [currentData, setCurrentData] = useState([]);
@@ -52,27 +113,9 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
 
     const userStats = Array.isArray(stats) ? stats[0] : stats;
     
-    if (!userStats || !userStats.periodExerciseStats) return;
+    if (!userStats?.periodExerciseStats) return;
 
-    let allStats = [];
-    let exerciseSet = new Set();
-    let exerciseCounts = {};
-
-    userStats.periodExerciseStats.forEach(period => {
-        if (period.exerciseStats) {
-            period.exerciseStats.forEach(stat => {
-                const entry = { date: stat.date, isPR: stat.isPR || {} };
-                if (stat.exerciseWeightsKg) {
-                    Object.keys(stat.exerciseWeightsKg).forEach(exName => {
-                        entry[exName] = stat.exerciseWeightsKg[exName];
-                        exerciseSet.add(exName);
-                        exerciseCounts[exName] = (exerciseCounts[exName] || 0) + 1;
-                    });
-                }
-                allStats.push(entry);
-            });
-        }
-    });
+    const { allStats, exerciseSet, exerciseCounts } = buildStatsFromUserStats(userStats);
 
     allStats.sort((a, b) => new Date(a.date) - new Date(b.date));
     setCurrentData(allStats);
@@ -138,7 +181,7 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
                 dataKey="value"
                 >
                 {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  <Cell key={`cell-${entry.name}`} fill={pieColors[index % pieColors.length]} />
                 ))}
                 </Pie>
                 <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} />
@@ -229,5 +272,22 @@ const ExerciseUserGraphs = ({ stats, selectedReps, setSelectedReps, selectedTime
     </div>
   )
 }
+
+ExerciseUserGraphs.propTypes = {
+  stats: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array,
+  ]),
+  selectedReps: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string,
+  ]),
+  setSelectedReps: PropTypes.func,
+  selectedTime: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string,
+  ]),
+  setSelectedTime: PropTypes.func,
+};
 
 export default ExerciseUserGraphs

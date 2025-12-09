@@ -4,14 +4,13 @@ import backend from '../../../../backend';
 import Spinner from '../common/spinner';
 import MyProfileTabSelector from './my-profile-tab-selector';
 
-const BadgesList = ({ userId, activeTab, setActiveTab }) => {
+const BadgesList = ({ userId, activeTab, setActiveTab, forbidden }) => {
     const [earnedBadges, setEarnedBadges] = useState(null);
     const [missingBadges, setMissingBadges] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!userId) return;
-        
         setLoading(true);
         // Fetch both in parallel
         Promise.all([
@@ -27,6 +26,20 @@ const BadgesList = ({ userId, activeTab, setActiveTab }) => {
     }, [userId]);
 
     if (loading) return <Spinner />;
+
+    if (forbidden) {
+        return (
+          <div className="flex flex-col w-full px-5">
+              <MyProfileTabSelector 
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab}
+              />
+              <div className="flex flex-col items-center justify-center h-full mt-20">
+                  <p className="text-xl text-gray-400">Debes seguir al usuario para ver sus medallas.</p>
+              </div>
+          </div>
+        );
+      }
 
     return (
         <div className="text-white">
@@ -68,7 +81,8 @@ const BadgesList = ({ userId, activeTab, setActiveTab }) => {
 BadgesList.propTypes = {
     userId: PropTypes.number,
     activeTab: PropTypes.string,
-    setActiveTab: PropTypes.func
+    setActiveTab: PropTypes.func,
+    forbidden: PropTypes.bool,
 };
 
 export default BadgesList;

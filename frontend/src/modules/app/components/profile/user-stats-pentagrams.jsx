@@ -1,8 +1,9 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Line, Html, OrbitControls, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import { svgIcons } from '../../../../config/constants';
+import PropTypes from 'prop-types';
 
 const ThemeColors = {
     background: '#161616',
@@ -12,14 +13,12 @@ const ThemeColors = {
     text: '#ffffff'
 };
 
-const DataPoint = ({ position, value, label, isHovered, onHover, delay = 0 }) => {
+const DataPoint = ({ position, isHovered, onHover, delay = 0 }) => {
     const [active, setActive] = useState(false);
     const meshRef = useRef();
     const targetPos = useRef(position);
     
     useFrame((state) => {
-        if (active) {}
-        
         if (meshRef.current) {
             const time = state.clock.getElapsedTime();
             const progress = THREE.MathUtils.clamp((time - delay) * 2, 0, 1);
@@ -38,7 +37,7 @@ const DataPoint = ({ position, value, label, isHovered, onHover, delay = 0 }) =>
     }, [position]);
 
     return (
-        <group ref={meshRef} position={[0,0,0]}> 
+        <group ref={meshRef}> 
             <Sphere 
                 args={[1, 16, 16]} 
                 onPointerOver={(e) => { e.stopPropagation(); onHover(true); setActive(true); }}
@@ -47,15 +46,22 @@ const DataPoint = ({ position, value, label, isHovered, onHover, delay = 0 }) =>
             >
                 <meshStandardMaterial 
                     color={isHovered ? ThemeColors.accent : ThemeColors.primary} 
-                    emissive={isHovered ? ThemeColors.accent : '#000000'}
-                    emissiveIntensity={isHovered ? 2 : 0}
+                    emissive={isHovered ? ThemeColors.accent : '#000000'} // NOSONAR
+                    emissiveIntensity={isHovered ? 2 : 0} //NOSONAR
                 />
             </Sphere>
         </group>
     );
 };
 
-const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
+DataPoint.propTypes = {
+    position: PropTypes.object.isRequired,
+    isHovered: PropTypes.bool,
+    onHover: PropTypes.func,
+    delay: PropTypes.number
+};
+
+export const PentagramChart = ({ data, valueKey = 'executionCount' }) => {
     const radius = 2.5; 
     const [hoveredIndex, setHoveredIndex] = useState(null);
     const groupRef = useRef();
@@ -143,7 +149,7 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
     const levels = [0.25, 0.5, 0.75, 1];
 
     const badgePos = useMemo(() => {
-        if (!badge || badge.index == null) return null;
+        if (badge?.index == null) return null;
         const base = dataVertices[badge.index];
         if (!base) return null;
         const offset = 0.35;
@@ -153,8 +159,8 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
 
     return (
         <group ref={groupRef}>
-            {levels.map((level, idx) => (
-                <group key={`grid-${idx}`}>
+            {levels.map((level) => (
+                <group key={`grid-${level}`}> 
                     <Line 
                         points={[...vertices.map(v => v.clone().multiplyScalar(level)), vertices[0].clone().multiplyScalar(level)]} 
                         color={ThemeColors.secondary} 
@@ -170,16 +176,18 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
                 </group>
             ))}
             
-            {spokes.map((spoke, i) => (
-                <Line key={`spoke-${i}`} points={spoke} color={ThemeColors.secondary} lineWidth={1} transparent opacity={0.2} />
-            ))}
+            {spokes.map((spoke) => {
+                const v = spoke[1];
+                const key = `spoke-${v.x.toFixed(3)}-${v.y.toFixed(3)}`;
+                return <Line key={key} points={spoke} color={ThemeColors.secondary} lineWidth={1} transparent opacity={0.2} />
+            })}
 
             {vertices.map((pos, i) => (
-                <Html key={`img-${i}`} position={pos} center distanceFactor={10} zIndexRange={[10, 0]}>
+                <Html key={data?.[i]?.id ?? `img-${pos.x.toFixed(3)}-${pos.y.toFixed(3)}`} position={pos} center distanceFactor={10} zIndexRange={[10, 0]}>
                     <div
                         className="flex flex-col items-center justify-center transform translate-y-[-50%] relative cursor-pointer"
-                        onPointerEnter={(e) => { e.stopPropagation(); setHoveredIndex(i); const v = vertices[i]; const a = Math.atan2(v.y, v.x); triggerTilt(a); const value = data[i]?.[valueKey] ?? data[i]?.executionCount ?? 0; setBadge({ index: i, value, angle: a }); if (badgeTimeoutRef.current) clearTimeout(badgeTimeoutRef.current); }}
-                        onPointerLeave={(e) => { setHoveredIndex(null); if (badgeTimeoutRef.current) clearTimeout(badgeTimeoutRef.current); badgeTimeoutRef.current = setTimeout(() => setBadge(null), 200); }}
+                        onPointerEnter={(e) => { e.stopPropagation(); setHoveredIndex(i); const v = vertices[i]; const a = Math.atan2(v.y, v.x); triggerTilt(a); const value = data[i]?.[valueKey] ?? data[i]?.executionCount ?? 0; setBadge({ index: i, value, angle: a }); if (badgeTimeoutRef.current) { clearTimeout(badgeTimeoutRef.current); } }}
+                        onPointerLeave={(e) => { setHoveredIndex(null); if (badgeTimeoutRef.current) { clearTimeout(badgeTimeoutRef.current); } badgeTimeoutRef.current = setTimeout(() => setBadge(null), 200); }}
                     >
                         {i === maxIndex && (
                             <div className="absolute -top-6 text-xl animate-bounce drop-shadow-lg filter" style={{ textShadow: '0 0 10px gold' }}>
@@ -204,7 +212,7 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
 
             {dataVertices.map((pos, i) => (
                 <DataPoint 
-                    key={i} 
+                    key={data?.[i]?.id ?? `dp-${i}`} 
                     position={pos} 
                     value={data[i]?.[valueKey] ?? data[i]?.executionCount} 
                     label={data[i]?.name}
@@ -213,15 +221,15 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
                         setHoveredIndex(isHovering ? i : null);
                         const v = vertices[i];
                         const a = Math.atan2(v.y, v.x);
-                        if (isHovering) {
+                            if (isHovering) {
                             triggerTilt(a);
                             const value = data[i]?.[valueKey] ?? data[i]?.executionCount ?? 0;
                             setBadge({ index: i, value, angle: a });
-                            if (badgeTimeoutRef.current) clearTimeout(badgeTimeoutRef.current);
+                            if (badgeTimeoutRef.current) { clearTimeout(badgeTimeoutRef.current); }
                         } else {
                             
                             tiltRef.current.intensity = 0;
-                            if (badgeTimeoutRef.current) clearTimeout(badgeTimeoutRef.current);
+                            if (badgeTimeoutRef.current) { clearTimeout(badgeTimeoutRef.current); }
                             badgeTimeoutRef.current = setTimeout(() => setBadge(null), 200);
                         }
                     }}
@@ -239,6 +247,11 @@ const PentagramChart = ({ data, unit, valueKey = 'executionCount' }) => {
             )}
         </group>
     );
+};
+
+PentagramChart.propTypes = {
+    data: PropTypes.array.isRequired,
+    valueKey: PropTypes.string
 };
 
 const StatsChartCard = ({ title, subtitle, data, valueKey }) => {
@@ -282,9 +295,40 @@ const StatsChartCard = ({ title, subtitle, data, valueKey }) => {
     );
 };
 
+StatsChartCard.propTypes = {
+    title: PropTypes.string.isRequired,
+    subtitle: PropTypes.string.isRequired,
+    data: PropTypes.array.isRequired,
+    valueKey: PropTypes.string.isRequired
+};
+
 const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats }) => {
     const [exerciseData, setExerciseData] = useState([]);
     const [muscleData, setMuscleData] = useState([]);
+
+    // Helper: process exercise weights object and update exerciseMaxWeights
+    const processExerciseWeights = (exerciseWeightsKg, exerciseMaxWeights) => {
+        Object.keys(exerciseWeightsKg).forEach((exName) => {
+            const weight = exerciseWeightsKg[exName];
+            if (!exerciseMaxWeights[exName] || weight > exerciseMaxWeights[exName]) {
+                exerciseMaxWeights[exName] = weight;
+            }
+        });
+    };
+
+    // Helper: process exercise group mapping and update exerciseToMuscleGroup
+    const processExerciseGroup = (exerciseGroup, exerciseToMuscleGroup) => {
+        Object.keys(exerciseGroup).forEach((exName) => {
+            exerciseToMuscleGroup[exName] = exerciseGroup[exName];
+        });
+    };
+
+    // Helper: accumulate muscle counts
+    const accumulateMuscleCounts = (exerciseCount, muscleCounts) => {
+        Object.keys(exerciseCount).forEach((muscle) => {
+            muscleCounts[muscle] = (muscleCounts[muscle] || 0) + exerciseCount[muscle];
+        });
+    };
 
     useEffect(() => {
         if (!stats) return;
@@ -302,24 +346,16 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
         const exerciseToMuscleGroup = {};
 
         if (userStats.periodExerciseStats) {
-            userStats.periodExerciseStats.forEach(period => {
-                if (period.exerciseStats) {
-                    period.exerciseStats.forEach(stat => {
-                        if (stat.exerciseWeightsKg) {
-                            Object.keys(stat.exerciseWeightsKg).forEach(exName => {
-                                const weight = stat.exerciseWeightsKg[exName];
-                                if (!exerciseMaxWeights[exName] || weight > exerciseMaxWeights[exName]) {
-                                    exerciseMaxWeights[exName] = weight;
-                                }
-                            });
-                        }
-                        if (stat.exerciseGroup) {
-                             Object.keys(stat.exerciseGroup).forEach(exName => {
-                                 exerciseToMuscleGroup[exName] = stat.exerciseGroup[exName];
-                             });
-                        }
-                    });
-                }
+            userStats.periodExerciseStats.forEach((period) => {
+                if (!period.exerciseStats) return;
+                period.exerciseStats.forEach((stat) => {
+                    if (stat.exerciseWeightsKg) {
+                        processExerciseWeights(stat.exerciseWeightsKg, exerciseMaxWeights);
+                    }
+                    if (stat.exerciseGroup) {
+                        processExerciseGroup(stat.exerciseGroup, exerciseToMuscleGroup);
+                    }
+                });
             });
         }
 
@@ -354,16 +390,13 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
 
         const muscleCounts = {};
         if (userStats.periodMuscularGroupStats) {
-            userStats.periodMuscularGroupStats.forEach(period => {
-                if (period.muscularGroupStats) {
-                    period.muscularGroupStats.forEach(stat => {
-                        if (stat.exerciseCount) {
-                            Object.keys(stat.exerciseCount).forEach(muscle => {
-                                muscleCounts[muscle] = (muscleCounts[muscle] || 0) + stat.exerciseCount[muscle];
-                            });
-                        }
-                    });
-                }
+            userStats.periodMuscularGroupStats.forEach((period) => {
+                if (!period.muscularGroupStats) return;
+                period.muscularGroupStats.forEach((stat) => {
+                    if (stat.exerciseCount) {
+                        accumulateMuscleCounts(stat.exerciseCount, muscleCounts);
+                    }
+                });
             });
         }
 
@@ -389,5 +422,14 @@ const UserStatsPentagrams = ({ selectedReps = 10, selectedTime = 'all', stats })
         </div>
     );
 }
+
+UserStatsPentagrams.propTypes = {
+    selectedReps: PropTypes.number,
+    selectedTime: PropTypes.string,
+    stats: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.array
+    ])
+};
 
 export default UserStatsPentagrams;

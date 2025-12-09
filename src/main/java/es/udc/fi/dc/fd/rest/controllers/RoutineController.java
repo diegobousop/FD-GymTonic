@@ -353,9 +353,42 @@ public class RoutineController {
         return RoutineConversor.toCalendarStatsDto(routineService.findTrainingsByYear(userId, year));
     }
 
+    @GetMapping("/getTrainingCalendarStats/{userId}")
+    public CalendarStatsDto getTrainingCalendarStatsForUser(@PathVariable Long userId, @RequestParam int year) throws InstanceNotFoundException, PermissionException {
+        return RoutineConversor.toCalendarStatsDto(routineService.findTrainingsByYear(userId, year));
+    }
+
     @GetMapping("/findDayTrainings")
     public BlockDto<TrainingDetailsDto> findDayTrainings(
             @RequestAttribute Long userId,
+            @RequestParam int day,
+            @RequestParam int month,
+            @RequestParam int year,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Training> trainingsPage = routineService.findTrainingsByDay(userId, day, month, year, pageable);
+
+            List<TrainingDetailsDto> items = new ArrayList<>();
+
+        for (Training t : trainingsPage.getContent()) {
+            List<ExerciseRoutineDto> exercises = new ArrayList<>();
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
+                List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
+            }
+            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
+        }
+
+        return new BlockDto<>(items, trainingsPage.hasNext());
+    }
+
+    @GetMapping("/findDayTrainings/{userId}")
+    public BlockDto<TrainingDetailsDto> findDayTrainingsForUser(
+            @PathVariable Long userId,
             @RequestParam int day,
             @RequestParam int month,
             @RequestParam int year,

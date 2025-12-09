@@ -30,10 +30,18 @@ describe('MyProfileTabSelector', () => {
 
     const trainingBtn = screen.getByRole('button', { name: /entrenamientos/i });
     const statsBtn = screen.getByRole('button', { name: /estadísticas/i });
+    const badgesBtn = screen.getByRole('button', { name: /medallas/i });
     expect(trainingBtn).toBeInTheDocument();
     expect(statsBtn).toBeInTheDocument();
+    expect(badgesBtn).toBeInTheDocument();
 
     fireEvent.click(statsBtn);
     expect(setActiveTab).toHaveBeenCalledWith('userStats');
+
+    fireEvent.click(trainingBtn);
+    expect(setActiveTab).toHaveBeenCalledWith('trainingHistory');
+
+    fireEvent.click(badgesBtn);
+    expect(setActiveTab).toHaveBeenCalledWith('badges');
   });
 });
