@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Map;
 
 import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private NotificationService notificationService;
+
+	@Autowired
+	private SerieDao serieDao;
 
 	/**
 	 * Sign up.
@@ -567,5 +571,57 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException{
 		return followRequestDao.findBySenderIdAndAcceptedFalse(userId);
+	}
+
+	@Override
+	public Map<Serie, LocalDate> getExerciseStats(Long userProfileId, Long userId, int numReps, String period)
+			throws InstanceNotFoundException, PermissionException {
+
+		Users requester = permissionChecker.checkUser(userId);
+		Users profileUser = permissionChecker.checkUser(userProfileId);
+
+		if (!userProfileId.equals(userId) && (profileUser.getFollowers() == null
+				|| !profileUser.getFollowers().contains(requester))) {
+			throw new PermissionException("project.entities.user.stats", userId);
+		}
+
+		String p = period == null ? "YEAR" : period.toUpperCase();
+		java.time.LocalDateTime cutoff;
+		switch (p) {
+			case "WEEK":
+				cutoff = java.time.LocalDateTime.now().minusWeeks(1);
+				break;
+			case "MONTH":
+				cutoff = java.time.LocalDateTime.now().minusMonths(1);
+				break;
+			case "YEAR":
+				cutoff = java.time.LocalDateTime.now().minusYears(1);
+				break;
+			case "ALL":
+				cutoff = java.time.LocalDateTime.MIN.plusYears(1);
+				break;
+			default:
+				cutoff = java.time.LocalDateTime.now().minusYears(1);
+		}
+
+		List<Serie> series;
+		if (numReps <= 0) {
+			series = serieDao.findSeriesByYear(profileUser.getId(), cutoff);
+
+		}
+		else{
+			series = serieDao.findSeriesByYearWithReps(profileUser.getId(), numReps, cutoff);
+		}
+		
+		if (series == null || series.isEmpty()) {
+			return java.util.Collections.emptyMap();
+		}
+
+		return series.stream()
+				.filter(s -> s.getTraining() != null && s.getTraining().getCreationDate() != null)
+				.collect(java.util.stream.Collectors.toMap(
+						s -> s,
+						s -> s.getTraining().getCreationDate().toLocalDate()
+				));
 	}
 }

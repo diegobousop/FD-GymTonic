@@ -5,8 +5,13 @@ import '@testing-library/jest-dom/extend-expect';
 import { HashRouter as Router } from 'react-router-dom';
 import MyProfilePage from "../../modules/app/pages/my-profile-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
-import { getProfile, getFollowersCount, getFollowingCount } from "../../backend/userService";
+import { getProfile, getFollowersCount, getFollowingCount, getStats } from "../../backend/userService";
 
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 jest.mock('react-calendar', () => ({
   __esModule: true,
@@ -23,6 +28,7 @@ jest.mock("../../backend/userService", () => ({
     getProfile: jest.fn(),
     getFollowersCount: jest.fn(),
     getFollowingCount: jest.fn(),
+    getStats: jest.fn(),
 }));
 
 
@@ -74,6 +80,11 @@ describe("ProfilePage", () => {
         );
         getFollowersCount.mockImplementation((onSuccess) => onSuccess(5));
         getFollowingCount.mockImplementation((onSuccess) => onSuccess(3));
+        getStats.mockImplementation((_, onSuccess) => onSuccess({
+            periodExerciseStats: [],
+            periodMuscularGroupStats: [],
+            muscleGroupImages: []
+        }));
 
         renderWithContext({ ...mockUser, role: 'USER' });
 
@@ -87,6 +98,11 @@ describe("ProfilePage", () => {
         getProfile.mockImplementation((_, __, onError) => onError("error"));
         getFollowersCount.mockImplementation((onSuccess) => onSuccess(0));
         getFollowingCount.mockImplementation((onSuccess) => onSuccess(0));
+        getStats.mockImplementation((_, onSuccess) => onSuccess({
+            periodExerciseStats: [],
+            periodMuscularGroupStats: [],
+            muscleGroupImages: []
+        }));
 
         renderWithContext({ ...mockUser, role: 'USER' });
 
@@ -99,6 +115,11 @@ describe("ProfilePage", () => {
 
     it("llama a handleLogout cuando se hace click en el botón", () => {
         getProfile.mockImplementation((_, onSuccess) => onSuccess({}));
+        getStats.mockImplementation((_, onSuccess) => onSuccess({
+            periodExerciseStats: [],
+            periodMuscularGroupStats: [],
+            muscleGroupImages: []
+        }));
         const mockHandleLogout = jest.fn();
 
         renderWithContext(undefined, { handleLogout: mockHandleLogout });

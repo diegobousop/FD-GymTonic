@@ -4,6 +4,8 @@
   "homepage": "/gym-tonic/",
   "private": true,
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^8.18.0",
     "jest-standard-reporter": "^2.0.0",
     "react": "^18.2.0",
     "react-calendar": "^6.0.0",
@@ -11,6 +13,8 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-test-renderer": "^18.2.0",
+    "recharts": "^3.5.1",
+    "three": "^0.181.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

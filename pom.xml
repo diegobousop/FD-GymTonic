@@ -7,13 +7,13 @@
 	<!-- **************** PROJECT INFO **************** -->
 	<!-- ********************************************** -->
 	<groupId>es.udc.fi.dc.fd</groupId>
-	<artifactId>gym-tonic</artifactId>
+	<artifactId>gymtonic</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
-	<name>FD Spring MVC Gym-Tonic App</name>
+	<name>FD Spring MVC Gym Tonic App</name>
 	<description>Test project for FD 2025</description>
-	<url>https://gitlab.fic.udc.es/ferramentas.2025/gym-tonic</url>
+	<url>https://gitlab.fic.udc.es/ferramentas.2025/gymtonic</url>
 	<inceptionYear>2025</inceptionYear>
 
 	<parent>
@@ -71,12 +71,12 @@
 
 	<issueManagement>
 		<system>Redmine</system>
-		<url>https://redmine.fic.udc.es/project/gym-tonic/issues</url>
+		<url>https://redmine.fic.udc.es/projects/gymtonic/issues</url>
 	</issueManagement>
 
 	<ciManagement>
 		<system>jenkins</system>
-		<url>https://jenkins.fic.udc.es/job/gym-tonic</url>
+		<url>https://jenkins.fic.udc.es/job/2025/job/gymtonic</url>
 	</ciManagement>
 
 	<!-- ********************************************** -->
@@ -227,7 +227,7 @@
 				<configuration>
 					<images>
 						<image>
-							<name>gitlab.fic.udc.es:5050/ferramentas.2025/gym-tonic</name>
+							<name>gitlab.fic.udc.es:5050/ferramentas.2025/gymtonic</name>
 							<build>
 								<dockerFile>Dockerfile</dockerFile>
 							</build>

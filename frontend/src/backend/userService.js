@@ -216,3 +216,13 @@ export const getRequestSended = (onSuccess, onErrors) =>
       onErrors
     );
 
+export const getStats = ({ userProfileId, numReps, period }, onSuccess, onErrors) => {
+
+  return appFetch(
+    `/users/stats`,
+    fetchConfig("POST", { userProfileId, numReps, period }),
+    onSuccess,
+    onErrors
+  );
+};
+

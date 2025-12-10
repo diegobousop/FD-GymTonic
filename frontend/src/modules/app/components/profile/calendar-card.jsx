@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import backend from "../../../../backend";
@@ -6,7 +6,32 @@ import { svgIcons } from '../../../../config/constants';
 import UserStats from './user-stats';
 import PropTypes from 'prop-types';
 
-const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated }) => {
+const ymd = (date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const isSameDay = (a, b) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate()
+
+const parseYmd = (s) => {
+  if (!s) return null
+  if (s instanceof Date) {
+    const d = new Date(s)
+    d.setHours(0,0,0,0)
+    return d
+  }
+  const str = typeof s === 'string' ? s.slice(0,10) : ''
+  const [y, m, d] = str.split('-').map(Number)
+  if (!y || !m || !d) return null
+  return new Date(y, m - 1, d)
+}
+
+const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated, forbidden = false }) => {
   
   const [activeStartDate, setActiveStartDate] = useState(new Date())
   const [trainingData, setTrainingData] = useState([])
@@ -14,7 +39,11 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
   const [eventDates, setEventDates] = useState(new Set())
 
   useEffect(() => {
-    backend.routineService.getTrainingCalendarStats(
+    if (!user) return;
+    if (forbidden) return;
+
+    backend.routineService.getTrainingCalendarStatsForUser(
+      user.id,
       activeStartDate.getFullYear(),
       (data) => {
         const items = Array.isArray(data) ? data : (data?.trainings || [])
@@ -22,7 +51,7 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
       },
       (err) => console.error(err)
     )
-  }, [activeStartDate])
+  }, [activeStartDate, user])
 
   // Reagrupar cada vez que cambien los datos del backend
   useEffect(() => {
@@ -35,31 +64,6 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
     setRoutinesByDate(map)
     setEventDates(new Set(Object.keys(map)))
   }, [trainingData])
-
-  const ymd = (date) => {
-    const y = date.getFullYear()
-    const m = String(date.getMonth() + 1).padStart(2, '0')
-    const d = String(date.getDate()).padStart(2, '0')
-    return `${y}-${m}-${d}`
-  }
-
-  const isSameDay = (a, b) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-
-  const parseYmd = (s) => {
-    if (!s) return null
-    if (s instanceof Date) {
-      const d = new Date(s)
-      d.setHours(0,0,0,0)
-      return d
-    }
-    const str = typeof s === 'string' ? s.slice(0,10) : ''
-    const [y, m, d] = str.split('-').map(Number)
-    if (!y || !m || !d) return null
-    return new Date(y, m - 1, d)
-  }
 
   const today = new Date()
   today.setHours(0,0,0,0)
@@ -84,6 +88,20 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
     const d = parseYmd(t.date)
     return d && d.getFullYear() === today.getFullYear()
   }).length
+
+  const renderTileContent = useCallback(({ date, view }) => {
+    if (view !== 'month') return null
+    const key = ymd(date)
+    const routines = routinesByDate[key] || []
+    if (!routines.length) return null
+    return (
+      <div className="rc-dots" aria-hidden>
+        {routines.slice(0, 5).map((routine) => (
+          <span key={routine.id} className="rc-dot" />
+        ))}
+      </div>
+    )
+  }, [routinesByDate])
 
   return (
     <div className="flex flex-col h-full border-l-[1px] border-l-[#990000] w-[30%] p-4 ">
@@ -132,30 +150,14 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
           if (isSameDay(date, new Date())) classes.push('rc-today')
           return classes.join(' ')
         }}
-        tileContent={({ date, view }) => {
-          if (view !== 'month') return null
-          const key = ymd(date)
-          const routines = routinesByDate[key] || []
-          if (!routines.length) return null
-          return (
-            <div className="rc-dots" aria-hidden>
-              {routines.slice(0, 5).map((_, i) => (
-                <span key={i} className="rc-dot" />
-              ))}
-            </div>
-          )
-        }}
+        tileContent={renderTileContent}
         className="react-calendar-custom mt-2"
       />
 
       {(() => {
         const key = ymd(selectedDay)
         const routines = routinesByDate[key] || []
-        const tituloFecha = selectedDay.toLocaleDateString('es-ES', {
-          weekday: 'long',
-          day: '2-digit',
-          month: 'long',
-        })
+
         return (
           <div className="w-full mt-4 text-white">
             {routines.length === 0 ? (
@@ -228,7 +230,7 @@ const CalendarCard = ({ user, selectedDay, setSelectedDay, setDayFilterActivated
         }
       `}</style>
 
-      <UserStats user={user} last4WeeksCount={last4WeeksCount} yearTrainingsCount={yearTrainingsCount} />
+      <UserStats user={user} last4WeeksCount={last4WeeksCount} yearTrainingsCount={yearTrainingsCount}  forbidden={forbidden} />
     </div>
   )
 }
@@ -238,6 +240,7 @@ CalendarCard.propTypes = {
   selectedDay:  PropTypes.object.isRequired,
   setSelectedDay: PropTypes.func.isRequired,
   setDayFilterActivated: PropTypes.func.isRequired,
+  forbidden: PropTypes.bool,
 }
 
 export default CalendarCard

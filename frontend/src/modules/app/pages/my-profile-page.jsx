@@ -2,9 +2,10 @@ import React, {useState, useContext} from 'react'
 import TrainingHistory from '../components/training/training-history'
 import BubbleButton from '../components/common/bubble-button'
 import CalendarCard from '../components/profile/calendar-card'
+import UserStatsPanel from '../components/profile/user-stats-panel'
 import BadgesList from '../components/profile/BadgesList'
 
-import { getProfile, getFollowersCount, getFollowingCount } from "../../../backend/userService"
+import { getProfile, getFollowersCount, getFollowingCount, getStats } from "../../../backend/userService"
 import { UserContext } from '../components/common/user-provider';
 import { useNavigate, Link } from 'react-router-dom'
 
@@ -22,7 +23,12 @@ const MyProfilePage = () => {
   //Historial
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [dayFilterActivated, setDayFilterActivated] = useState(false);
+  const [activeTab, setActiveTab] = useState('userStats');
 
+  //Stats
+  const [selectedReps, setSelectedReps] = useState(0);
+  const [selectedTime, setSelectedTime] = useState('YEAR');
+  const [stats , setStats] = useState(null);
 
   React.useEffect(() => {
     if (user) {
@@ -45,8 +51,22 @@ const MyProfilePage = () => {
         }, (err) => {
           setError('Error al cargar el número de seguidos');
         });
+      
+      getStats(
+        {
+          userProfileId: user.id,
+          numReps: selectedReps,
+          period: selectedTime
+        },
+        (data) => {
+          setStats(data);
+        },
+        (err) => {
+          setError('Error al cargar las estadísticas de usuario');
+        }
+      );
     }
-  }, [user]);
+  }, [user, selectedReps, selectedTime]);
 
   return (
     <div className="flex flex-col w-full mx-auto mt-10  bg-auto h-full">
@@ -112,16 +132,45 @@ const MyProfilePage = () => {
       ) : (
         <div>Cargando datos...</div>
       )}
-      {user && <BadgesList userId={user.id} />}
+     
       <div className="flex flex-row justify-between h-full">
-        <TrainingHistory 
-          user={user} 
-          selectedDay={selectedDay}
-          dayFilterActivated={dayFilterActivated}
-          setFilterActivated={setDayFilterActivated}
-          ariaLabel="Historial de entrenamientos"
-        />
-        <CalendarCard 
+        {(() => {
+          if (activeTab === 'trainingHistory') {
+            return (
+              <TrainingHistory
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                user={user}
+                selectedDay={selectedDay}
+                dayFilterActivated={dayFilterActivated}
+                setFilterActivated={setDayFilterActivated}
+                ariaLabel="Historial de entrenamientos"
+              />
+            );
+          }
+          if (activeTab === 'badges') {
+            return (
+              <BadgesList
+                  userId={user?.id}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+              />
+            );
+          }
+          return (
+            <UserStatsPanel
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              selectedReps={selectedReps}
+              setSelectedReps={setSelectedReps}
+              selectedTime={selectedTime}
+              setSelectedTime={setSelectedTime}
+              stats={stats}
+            />
+          );
+        })()}
+
+        <CalendarCard
           user={user}
           selectedDay={selectedDay}
           setSelectedDay={setSelectedDay}
