@@ -98,4 +98,12 @@ public interface NotificationService {
      */
     public void notifyTrainingComment(Long userId, Training training) throws InstanceNotFoundException;
 
+    /**
+     * Notify user when they earn a badge.
+     * @param userId User who earned the badge
+     * @param badgeName The name of the badge earned
+     * @throws InstanceNotFoundException
+     */
+    public void notifyBadgeEarned(Long userId, String badgeName) throws InstanceNotFoundException;
+
 }

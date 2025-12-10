@@ -170,4 +170,14 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = new Notification(trainer, user, null, training, message, false, LocalDateTime.now().withNano(0));
         notificationDao.save(notification);
     }
+
+    @Override
+    public void notifyBadgeEarned(Long userId, String badgeName) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        String message = "Has conseguido el logro '" + badgeName + "'";
+
+        Notification notification = new Notification(user, null, null, null, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
 }

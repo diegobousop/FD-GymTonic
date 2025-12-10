@@ -32,13 +32,15 @@ public class BadgeServiceImpl implements BadgeService {
     private final UserBadgeDao userBadgeDao;
     private final TrainingDao trainingDao;
     private final UserDao userDao;
+    private final NotificationService notificationService;
 
     @Autowired
-    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao) {
+    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao, NotificationService notificationService) {
         this.badgeDao = badgeDao;
         this.userBadgeDao = userBadgeDao;
         this.trainingDao = trainingDao;
         this.userDao = userDao;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -100,12 +102,13 @@ public class BadgeServiceImpl implements BadgeService {
         if (maxConsecutiveWeeks >= 100) assignBadge(user, "CONSECUTIVE_WEEKS_100");
     }
 
-    private void assignBadge(Users user, String badgeName) {
+    private void assignBadge(Users user, String badgeName) throws InstanceNotFoundException {
         Optional<Badge> badgeOpt = badgeDao.findByName(badgeName);
         if (badgeOpt.isPresent()) {
             Badge badge = badgeOpt.get();
             if (!userBadgeDao.existsByUserAndBadge(user, badge)) {
                 userBadgeDao.save(new UserBadge(user, badge));
+                notificationService.notifyBadgeEarned(user.getId(), badgeName);
             }
         }
     }

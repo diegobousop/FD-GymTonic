@@ -53,6 +53,8 @@ public class NotificationServiceTest {
     private UserService userService;
     @Autowired
     private AvatarDao avatarDao;
+    @Autowired 
+    private BadgeService badgeService;
 
     private final String PASSWORD = "12345";
     private final String TRAINER_USERNAME = "trainer1";
@@ -344,7 +346,7 @@ public class NotificationServiceTest {
 
     @Test
     public void testGetDifferentNotifications() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
-     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException, InterruptedException {
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, PermissionException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users user1 = createUser("manolo", RoleType.USER, Gender.MALE);
         userService.signUp(user1, RoleType.USER);
      
@@ -370,6 +372,34 @@ public class NotificationServiceTest {
         assertEquals(1, notificationsUser1.getItems().size());
         assertEquals("Nueva rutina: 'Rutina Test', añadida por trainer1", notificationsUser1.getItems().get(0).getMessage());
 
+    }
+
+    @Test
+    public void testNotifyBadgeEarned() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+        // Crear usuario que recibirá la medalla
+        Users user1 = createUser("manolo", RoleType.TRAINER, Gender.MALE);
+        userService.signUp(user1, RoleType.TRAINER);
+
+        // Crear seguidor para activar la medalla FOLLOWER_1
+        Users follower = createUser("pepe", RoleType.USER, Gender.MALE);
+        userService.signUp(follower, RoleType.USER);
+
+        // Seguir al usuario1 para que tenga 1 follower
+        userService.followUser(follower.getId(), user1.getId());
+
+        // Comprobar y asignar medallas por seguidores
+        badgeService.checkFollowersBadges(user1.getId());
+
+        // Verificar que el usuario recibió la notificación de medalla
+        PageRequest pageable = PageRequest.of(0, 10);
+        Block<Notification> notifications = notificationService.getAllNotifications(user1.getId(), pageable);
+
+        assertEquals(2, notifications.getItems().size());
+        Notification notif = notifications.getItems().get(0);
+        assertEquals(user1.getId(), notif.getReceiver().getId());
+        assertEquals("pepe empezó a seguirte", notif.getMessage());
+        notif = notifications.getItems().get(1);
+        assertEquals("Has conseguido el logro 'FOLLOWER_1'", notif.getMessage());
     }
 
 
