@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.model.services;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import static org.awaitility.Awaitility.await;
 import java.time.LocalDate;
@@ -378,28 +379,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testNotifyStreakWarning() throws DuplicateInstanceException, 
-     InstanceNotFoundException {
-        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
-        userService.signUp(user, RoleType.USER);
-
-        PageRequest pageable = PageRequest.of(0, 10);
-
-        // Simular que el usuario recibe el aviso
-        notificationService.notifyStreakWarning(user.getId(), "prueba");
-
-        // Verificar que el usuario recibe la notificación
-        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
-        assertEquals(1, notificationsUser.getItems().size());
-        
-        Notification notification = notificationsUser.getItems().get(0);
-        assertEquals(user.getId(), notification.getReceiver().getId());
-        assertEquals(user.getId(), notification.getSender().getId());
-        assertEquals("prueba", notification.getMessage());
-    }
-
-    @Test
-    public void testStreakWarning() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+    public void testNotifyDailyStreakWarning() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
      InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
         userService.signUp(user, RoleType.USER);
@@ -412,7 +392,7 @@ public class NotificationServiceTest {
         trainingDao.save(training);
         PageRequest pageable = PageRequest.of(0, 10);
 
-        // Simular que se ejecuta la revisión periodica
+        // Ejecutar la revisión periodica
         badgeService.checkDailyStreaks();
 
         // Verificar que el usuario recibe la notificación
@@ -423,5 +403,149 @@ public class NotificationServiceTest {
         assertEquals(user.getId(), notification.getReceiver().getId());
         assertEquals(user.getId(), notification.getSender().getId());
         assertEquals("Estás a punto de perder tu racha diaria de entrenamiento. ¡Entrena hoy para mantenerla!", notification.getMessage());
+    }
+
+    @Test
+    public void testNotNotifyDailyStreakLastTrainingToday() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(user.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        trainingDao.save(training);
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkDailyStreaks();
+
+        // Verificar que el usuario no tiene notificaciones
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(0, notificationsUser.getItems().size());
+    }
+
+    @Test
+    public void testNotNotifyDailyStreakLastTraining2DaysAgo() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(user.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        training.setCreationDate(LocalDateTime.now().minusDays(2));
+        trainingDao.save(training);
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkDailyStreaks();
+
+        // Verificar que el usuario no tiene notificaciones
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(0, notificationsUser.getItems().size());
+    }
+
+    @Test
+    public void testNotNotifyDailyStreakNeverTraining() throws DuplicateInstanceException, InstanceNotFoundException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkDailyStreaks();
+
+        // Verificar que el usuario no tiene notificaciones
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(0, notificationsUser.getItems().size());
+    }
+
+    @Test
+    public void testNotifyWeeklyStreakWarning() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(user.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        training.setCreationDate(LocalDateTime.now().with(DayOfWeek.WEDNESDAY).minusWeeks(1));
+        trainingDao.save(training);
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkWeeklyStreaks();
+
+        // Verificar que el usuario recibe la notificación
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(1, notificationsUser.getItems().size());
+        
+        Notification notification = notificationsUser.getItems().get(0);
+        assertEquals(user.getId(), notification.getReceiver().getId());
+        assertEquals(user.getId(), notification.getSender().getId());
+        assertEquals("Estás a punto de perder tu racha semanal de entrenamiento. ¡Entrena hoy para mantenerla!", notification.getMessage());
+    }
+
+    @Test
+    public void testNotNotifyWeeklyStreakLastTrainingThisWeek() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(user.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        training.setCreationDate(LocalDateTime.now().with(DayOfWeek.WEDNESDAY));
+        trainingDao.save(training);
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkWeeklyStreaks();
+
+        // Verificar que el usuario no tiene notificaciones
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(0, notificationsUser.getItems().size());
+    }
+
+    @Test
+    public void testNotNotifyWeeklyStreakLastTraining2WeeksAgo() throws LoginUserBlockedException, DuplicateInstanceException, IncorrectLoginException,
+     InstanceNotFoundException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        Users trainer = userService.login(TRAINER_USERNAME, PASSWORD);
+        Routine routine = createRoutine("Rutina Test", trainer);
+        routine = routineService.createRoutine(trainer.getId(), routine.getName(), new ArrayList<Long>(), routine.getDuration(), true);
+        Training training = routineService.createTrainingFromRoutine(user.getId(), "entrenamiento", "descripcion", 60L, true, new ArrayList<Serie>(), routine.getId());
+        training.setCreationDate(LocalDateTime.now().with(DayOfWeek.WEDNESDAY).minusWeeks(2));
+        trainingDao.save(training);
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkWeeklyStreaks();
+
+        // Verificar que el usuario no tiene notificaciones
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(0, notificationsUser.getItems().size());
+    }
+
+    @Test
+    public void testNotNotifyWeeklyStreakNeverTraining() throws DuplicateInstanceException, InstanceNotFoundException {
+        Users user = createUser("testUser1", RoleType.USER, Gender.MALE);
+        userService.signUp(user, RoleType.USER);
+
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        // Ejecutar la revisión periodica
+        badgeService.checkWeeklyStreaks();
+
+        // Verificar que el usuario no tiene notificaciones
+        Block<Notification> notificationsUser = notificationService.getAllNotifications(user.getId(), pageable);
+        assertEquals(0, notificationsUser.getItems().size());
     }
 }

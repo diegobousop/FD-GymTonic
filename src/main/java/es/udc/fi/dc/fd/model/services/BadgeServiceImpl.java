@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
@@ -112,6 +113,15 @@ public class BadgeServiceImpl implements BadgeService {
         }
     }
 
+    @Override
+    @Scheduled(cron = "0 0 18 * * SUN") 
+    public void checkWeeklyStreaks() throws InstanceNotFoundException {
+        List<Users> users = userDao.findAll();
+        for (Users user : users) {
+            checkConsistencyWeeklyWarnings(user);
+        }
+    }
+
     private void checkConsistencyDailyWarnings(Users user) throws InstanceNotFoundException {
         Training lastTraining = trainingDao.findTopByUserIdOrderByCreationDateDesc(user.getId());
 
@@ -120,9 +130,32 @@ public class BadgeServiceImpl implements BadgeService {
         LocalDate today = LocalDate.now();
 
         if (ChronoUnit.DAYS.between(lastTraining.getCreationDate().toLocalDate(), today) == 1) {
-            notificationService.notifyStreakWarning(
-                user.getId(),
-                "Estás a punto de perder tu racha diaria de entrenamiento. ¡Entrena hoy para mantenerla!"
+            notificationService.notifyDailyStreakWarning(
+                user.getId()
+            );
+        }
+    }
+
+    private void checkConsistencyWeeklyWarnings(Users user) throws InstanceNotFoundException {
+        Training lastTraining = trainingDao.findTopByUserIdOrderByCreationDateDesc(user.getId());
+
+        if (lastTraining == null) return;
+
+        LocalDate startOfThisWeek = LocalDate.now().with(DayOfWeek.MONDAY); // Lunes de esta semana
+        LocalDate startOfLastWeek = startOfThisWeek.minusWeeks(1); // Lunes de la semana anterior
+        LocalDate lastTrainingDate = lastTraining.getCreationDate().toLocalDate();
+
+        /*  Si la fecha del ultimo entrenamiento es anterior al lunes de esta 
+            semana significa que no ha entrenado esta semana.
+            Y si la fecha del ultimo entrenamiento es igual o posterior al 
+            lunes de la semana anterior significa que ha entrenado la semana
+            anterior. 
+            Por lo tanto tendría una racha activa que se acabaría si no entrena. */
+
+        if (lastTrainingDate.isBefore(startOfThisWeek) && 
+            ( lastTrainingDate.isAfter(startOfLastWeek) || lastTrainingDate.isEqual(startOfLastWeek) ) ) {
+            notificationService.notifyWeeklyStreakWarning(
+                user.getId()
             );
         }
     }

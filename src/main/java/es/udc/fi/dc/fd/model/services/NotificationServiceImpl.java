@@ -172,11 +172,32 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyStreakWarning(Long userId, String message) throws InstanceNotFoundException{
+    public void notifyDailyStreakWarning(Long userId) throws InstanceNotFoundException{
         Users user = permissionChecker.checkUser(userId);
 
-        Notification notification = new Notification(user, user, null, null, message, false, LocalDateTime.now().withNano(0));
+        Notification notification = 
+        new Notification(
+            user, user, 
+            null, null, 
+            "Estás a punto de perder tu racha diaria de entrenamiento. ¡Entrena hoy para mantenerla!", 
+            false, 
+            LocalDateTime.now().withNano(0));
         notificationDao.save(notification);
     }
+
+    @Override
+    public void notifyWeeklyStreakWarning(Long userId) throws InstanceNotFoundException{
+        Users user = permissionChecker.checkUser(userId);
+
+        Notification notification = 
+        new Notification(
+            user, user, 
+            null, null, 
+            "Estás a punto de perder tu racha semanal de entrenamiento. ¡Entrena hoy para mantenerla!", 
+            false, 
+            LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
 
 }

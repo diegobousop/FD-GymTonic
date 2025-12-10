@@ -104,6 +104,14 @@ public interface NotificationService {
      * @param message The message of the notification
      * @throws InstanceNotFoundException
      */
-    public void notifyStreakWarning(Long userId, String message) throws InstanceNotFoundException;
+    public void notifyDailyStreakWarning(Long userId) throws InstanceNotFoundException;
+
+    /**
+     * Notify user when their streak is ending.
+     * @param userId User whose streak is ending
+     * @param message The message of the notification
+     * @throws InstanceNotFoundException
+     */
+    public void notifyWeeklyStreakWarning(Long userId) throws InstanceNotFoundException;
 
 }
