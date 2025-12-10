@@ -8,7 +8,7 @@ import backend from '../../../backend';
 jest.mock('../../../backend', () => ({
   routineService: {
     viewUserTrainings: jest.fn(),
-    viewDayTrainings: jest.fn()
+    viewDayTrainingsForUser: jest.fn()
   }
 }));
 
@@ -19,14 +19,26 @@ jest.mock('../../../modules/app/components/common/spinner', () => {
 });
 
 jest.mock('../../../modules/app/components/common/pager', () => {
-  return function MockPager({ back, next }) {
+  const PropTypes = require('prop-types');
+  function MockPager({ back, next }) {
     return (
       <div data-testid="pager">
         <button onClick={back.onClick} disabled={!back.enabled}>Back</button>
         <button onClick={next.onClick} disabled={!next.enabled}>Next</button>
       </div>
     );
+  }
+  MockPager.propTypes = {
+    back: PropTypes.shape({
+      onClick: PropTypes.func.isRequired,
+      enabled: PropTypes.bool.isRequired
+    }).isRequired,
+    next: PropTypes.shape({
+      onClick: PropTypes.func.isRequired,
+      enabled: PropTypes.bool.isRequired
+    }).isRequired
   };
+  return MockPager;
 });
 
 describe('TrainingHistory', () => {
@@ -78,7 +90,7 @@ describe('TrainingHistory', () => {
     backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess) => {
       onSuccess({ items: mockTrainings, existMoreItems: false });
     });
-    backend.routineService.viewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
+    backend.routineService.viewDayTrainingsForUser.mockImplementation((userId, page, size, day, month, year, onSuccess) => {
       onSuccess({ items: mockTrainings, existMoreItems: false });
     });
   });
@@ -151,7 +163,7 @@ describe('TrainingHistory', () => {
   });
 
   it('muestra mensaje diferente cuando no hay entrenamientos para el día seleccionado', async () => {
-    backend.routineService.viewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
+    backend.routineService.viewDayTrainingsForUser.mockImplementation((userId, page, size, day, month, year, onSuccess) => {
       onSuccess({ items: [], existMoreItems: false });
     });
 
@@ -172,7 +184,7 @@ describe('TrainingHistory', () => {
   });
 
   it('llama a viewDayTrainings cuando se activa el filtro de día', async () => {
-    backend.routineService.viewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
+    backend.routineService.viewDayTrainingsForUser.mockImplementation((userId, page, size, day, month, year, onSuccess) => {
       onSuccess({ items: mockTrainings, existMoreItems: false });
     });
 
@@ -188,7 +200,8 @@ describe('TrainingHistory', () => {
     );
 
     await waitFor(() => {
-      expect(backend.routineService.viewDayTrainings).toHaveBeenCalledWith(
+      expect(backend.routineService.viewDayTrainingsForUser).toHaveBeenCalledWith(
+        1,
         0,
         5,
         15,
@@ -213,7 +226,7 @@ describe('TrainingHistory', () => {
     );
 
     await waitFor(() => {
-      expect(backend.routineService.viewDayTrainings).toHaveBeenCalledTimes(1);
+      expect(backend.routineService.viewDayTrainingsForUser).toHaveBeenCalledTimes(1);
     });
 
     const newSelectedDay = new Date('2024-01-16');
@@ -230,7 +243,7 @@ describe('TrainingHistory', () => {
     );
 
     await waitFor(() => {
-      expect(backend.routineService.viewDayTrainings).toHaveBeenCalledTimes(2);
+      expect(backend.routineService.viewDayTrainingsForUser).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -307,8 +320,8 @@ describe('TrainingHistory', () => {
   });
 
   it('maneja error al cargar entrenamientos', async () => {
-    backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess, onError) => {
-      onError('Error loading trainings');
+    backend.routineService.viewUserTrainings.mockImplementation((userId,page, size, onSuccess, onErrors) => {
+      onErrors('Error loading trainings');
     });
 
     render(
@@ -364,7 +377,7 @@ describe('TrainingHistory', () => {
       expect(backend.routineService.viewUserTrainings).toHaveBeenCalled();
     });
 
-    backend.routineService.viewDayTrainings.mockImplementation((page, size, day, month, year, onSuccess) => {
+    backend.routineService.viewDayTrainingsForUser.mockImplementation((userId, page, size, day, month, year, onSuccess) => {
       onSuccess({ items: mockTrainings, existMoreItems: false });
     });
 
@@ -380,7 +393,7 @@ describe('TrainingHistory', () => {
     );
 
     await waitFor(() => {
-      expect(backend.routineService.viewDayTrainings).toHaveBeenCalled();
+      expect(backend.routineService.viewDayTrainingsForUser).toHaveBeenCalled();
     });
   });
 });

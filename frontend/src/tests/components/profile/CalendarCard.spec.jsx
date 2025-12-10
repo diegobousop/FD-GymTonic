@@ -20,7 +20,7 @@ jest.mock('../../../backend', () => ({
   __esModule: true,
   default: {
     routineService: {
-      getTrainingCalendarStats: (...args) => mockGetTrainingCalendarStats(...args)
+      getTrainingCalendarStatsForUser: (...args) => mockGetTrainingCalendarStats(...args)
     }
   }
 }))
@@ -63,7 +63,7 @@ const sampleTrainings = [
 
 describe('CalendarCard', () => {
   beforeEach(() => {
-    mockGetTrainingCalendarStats.mockImplementation((year, onSuccess) => {
+    mockGetTrainingCalendarStats.mockImplementation((userId, year, onSuccess) => {
       onSuccess(sampleTrainings)
     })
     capturedCalendarProps = null
@@ -73,7 +73,7 @@ describe('CalendarCard', () => {
   test('calcula correctamente thisWeekCount, last4WeeksCount y yearTrainingsCount', async () => {
     render(
       <CalendarCard
-        user={{ userName: 'tester' }}
+        user={{ id: 1, userName: 'tester' }}
         selectedDay={new Date('2025-11-10')}
         setSelectedDay={jest.fn()}
         setDayFilterActivated={jest.fn()}
@@ -99,6 +99,7 @@ describe('CalendarCard', () => {
 
     // Verifica llamada al backend con el año actual
     expect(mockGetTrainingCalendarStats).toHaveBeenCalledWith(
+      1,
       2025,
       expect.any(Function),
       expect.any(Function)
@@ -108,7 +109,7 @@ describe('CalendarCard', () => {
   test('llama de nuevo al backend al cambiar activeStartDate (año distinto)', async () => {
     render(
       <CalendarCard
-        user={{ userName: 'tester' }}
+        user={{ id: 1, userName: 'tester' }}
         selectedDay={new Date('2025-11-10')}
         setSelectedDay={jest.fn()}
         setDayFilterActivated={jest.fn()}
@@ -123,6 +124,7 @@ describe('CalendarCard', () => {
 
     await waitFor(() => expect(mockGetTrainingCalendarStats).toHaveBeenCalledTimes(2))
     expect(mockGetTrainingCalendarStats).toHaveBeenLastCalledWith(
+      1,
       2026,
       expect.any(Function),
       expect.any(Function)
@@ -132,7 +134,7 @@ describe('CalendarCard', () => {
   test('tileClassName marca rc-has-event, rc-today y rc-weekend correctamente', async () => {
     render(
       <CalendarCard
-        user={{ userName: 'tester' }}
+        user={{ id: 1, userName: 'tester' }}
         selectedDay={new Date('2025-11-10')}
         setSelectedDay={jest.fn()}
         setDayFilterActivated={jest.fn()}
@@ -162,7 +164,7 @@ describe('CalendarCard', () => {
   test('tileContent genera puntos cuando hay entrenamientos', async () => {
     render(
       <CalendarCard
-        user={{ userName: 'tester' }}
+        user={{ id: 1, userName: 'tester' }}
         selectedDay={new Date('2025-11-10')}
         setSelectedDay={jest.fn()}
         setDayFilterActivated={jest.fn()}
