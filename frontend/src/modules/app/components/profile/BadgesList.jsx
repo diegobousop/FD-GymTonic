@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import backend from '../../../../backend';
 import Spinner from '../common/spinner';
+import MyProfileTabSelector from './my-profile-tab-selector';
 
-const BadgesList = ({ userId }) => {
+const BadgesList = ({ userId, activeTab, setActiveTab, forbidden }) => {
     const [earnedBadges, setEarnedBadges] = useState(null);
     const [missingBadges, setMissingBadges] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!userId) return;
-        
         setLoading(true);
         // Fetch both in parallel
         Promise.all([
@@ -27,10 +27,29 @@ const BadgesList = ({ userId }) => {
 
     if (loading) return <Spinner />;
 
+    if (forbidden) {
+        return (
+          <div className="flex flex-col w-full px-5">
+              <MyProfileTabSelector 
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab}
+              />
+              <div className="flex flex-col items-center justify-center h-full mt-20">
+                  <p className="text-xl text-gray-400">Debes seguir al usuario para ver sus medallas.</p>
+              </div>
+          </div>
+        );
+      }
+
     return (
-        <div className="mt-5 px-10 text-white">
-            <h3 className="text-xl font-bold mb-4">Badges</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="text-white">
+            <MyProfileTabSelector 
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab} 
+                />
+
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 px-10">
                 {earnedBadges?.map(badge => (
                     <div key={badge.id} className="bg-[#262626] p-3 rounded-lg flex flex-col items-center text-center border border-[#990000]">
                          <div className="w-16 h-16 bg-[#990000] rounded-full mb-2 flex items-center justify-center text-white text-xs font-bold overflow-hidden">
@@ -60,7 +79,10 @@ const BadgesList = ({ userId }) => {
 };
 
 BadgesList.propTypes = {
-    userId: PropTypes.number
+    userId: PropTypes.number,
+    activeTab: PropTypes.string,
+    setActiveTab: PropTypes.func,
+    forbidden: PropTypes.bool,
 };
 
 export default BadgesList;

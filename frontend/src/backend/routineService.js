@@ -192,10 +192,28 @@ export const viewDayTrainings = (page, size, day, month, year, onSuccess, onErro
   );
 };
 
+export const viewDayTrainingsForUser = (userId, page, size, day, month, year, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/findDayTrainings/${userId}?day=${day}&month=${month}&year=${year}&page=${page}&size=${size}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
 
 export const getTrainingCalendarStats = (year, onSuccess, onErrors) => {
   appFetch(
     `/routines/getTrainingCalendarStats?year=${year}`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
+
+export const getTrainingCalendarStatsForUser = (userId, year, onSuccess, onErrors) => {
+  appFetch(
+    `/routines/getTrainingCalendarStats/${userId}?year=${year}`,
     fetchConfig("GET"),
     onSuccess,
     onErrors

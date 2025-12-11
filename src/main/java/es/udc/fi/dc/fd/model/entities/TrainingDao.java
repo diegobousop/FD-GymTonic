@@ -16,4 +16,6 @@ public interface TrainingDao extends JpaRepository<Training, Long> {
     List<Training> findByUserIdAndCreationDateBetween(Long userId, LocalDateTime start, LocalDateTime end);
 
     Page<Training> findByUserIdAndCreationDateBetweenOrderByCreationDateDesc(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    Training findTopByUserIdOrderByCreationDateDesc(Long userId);
 }

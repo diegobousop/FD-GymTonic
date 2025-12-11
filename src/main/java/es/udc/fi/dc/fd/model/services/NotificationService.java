@@ -99,6 +99,22 @@ public interface NotificationService {
     public void notifyTrainingComment(Long userId, Training training) throws InstanceNotFoundException;
 
     /**
+     * Notify user when their streak is ending.
+     * @param userId User whose streak is ending
+     * @param message The message of the notification
+     * @throws InstanceNotFoundException
+     */
+    public void notifyDailyStreakWarning(Long userId) throws InstanceNotFoundException;
+
+    /**
+     * Notify user when their streak is ending.
+     * @param userId User whose streak is ending
+     * @param message The message of the notification
+     * @throws InstanceNotFoundException
+     */
+    public void notifyWeeklyStreakWarning(Long userId) throws InstanceNotFoundException;
+
+    /**
      * Notify user when they earn a badge.
      * @param userId User who earned the badge
      * @param badgeName The name of the badge earned

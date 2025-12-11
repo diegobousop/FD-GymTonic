@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -30,6 +31,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -49,6 +51,7 @@ import es.udc.fi.dc.fd.rest.dtos.FollowRequestConversor;
 import es.udc.fi.dc.fd.rest.dtos.FollowRequestDto;
 import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
+import es.udc.fi.dc.fd.rest.dtos.user.*;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toAuthenticatedUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
@@ -56,6 +59,8 @@ import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUser;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+
+
 
 
 /**
@@ -397,6 +402,11 @@ public class UserController {
 		return FollowRequestConversor.toFollowRequestDtos(userService.getRequestsSended(userId));
 	}
 	
+	@PostMapping("/stats")
+	public List<UserStatsDto> getStats(@RequestAttribute Long userId, @RequestBody UserStatsParamsDto params) throws InstanceNotFoundException, PermissionException {
+		Map<Serie, LocalDate> raw = userService.getExerciseStats(params.getUserProfileId(), userId, params.getNumReps(), params.getPeriod());
+		return StatsConversor.toUserStatsDto(raw, params.getPeriod());
+	}
 
 
 	/**

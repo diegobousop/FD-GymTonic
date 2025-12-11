@@ -9,10 +9,14 @@ import {
     getProfile,
     getFollowersCount,
     getRequestSended,
+    getStats
 } from '../../../backend/userService';
 
-import { viewUserTrainings } from '../../../backend/routineService';
+
 import BadgesList from '../components/profile/BadgesList';
+import TrainingHistory from '../components/training/training-history';
+import UserStatsPanel from '../components/profile/user-stats-panel';
+import CalendarCard from '../components/profile/calendar-card';
 
 import { Link, useParams } from 'react-router-dom';
 import backend from '../../../backend';
@@ -51,8 +55,16 @@ const ProfilePage = () => {
   const [followersCount, setFollowersCount] = useState(0);
   const [loadingCount, setLoadingCount] = useState(false);
   const [edad, setEdad] = useState(0);
-  const [trainings, setTrainings] = useState([]);
-  const [loadingTrainings, setLoadingTrainings] = useState(false);
+
+
+  //stats
+  const [activeTab, setActiveTab] = useState('userStats');
+  const [selectedReps, setSelectedReps] = useState(0);
+  const [selectedTime, setSelectedTime] = useState('YEAR');
+  const [stats , setStats] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(() => new Date());
+  const [dayFilterActivated, setDayFilterActivated] = useState(false);
+  const [statsForbidden, setStatsForbidden] = useState(true);
 
 
   const handleUnfollowUser = (userId) => {
@@ -68,7 +80,7 @@ const ProfilePage = () => {
 
 
   const handleFollowUser = (userId) => {
-    if (profile.role == "TRAINER"){
+    if (profile.role === "TRAINER"){
       backend.userService.followUser(
         userId,
         () => {
@@ -80,7 +92,7 @@ const ProfilePage = () => {
       return;
     }
 
-    if(profile.role == "USER") {
+    if(profile.role === "USER") {
       backend.userService.sendFollowRequest(
         userId, 
         () => {
@@ -199,27 +211,36 @@ const ProfilePage = () => {
                 );
             }
 
-            //  Cargar entrenamientos del usuario
-            setLoadingTrainings(true);
-            viewUserTrainings(
-                id,
-                0,
-                20,
-                (data) => {
-                    setTrainings(data.items);
-                    setLoadingTrainings(false);
-                },
-                () => {
-                    setTrainings([]);
-                    setLoadingTrainings(false);
-                }
-            );
+
         },
         () => {
             setError('Error al cargar el perfil');
         }
     );
   }, [id]);
+
+  useEffect(() => {
+    
+    if (profile) {
+      
+        getStats(
+            {
+                userProfileId: profile.id,
+                numReps: selectedReps,
+                period: selectedTime
+            },
+            (data) => {
+                setStats(data);
+                setStatsForbidden(false);
+                console.log("Stats cargadas:", data);
+            },
+            (err) => {
+                console.error("Error fetching stats", err);
+                setStatsForbidden(true);
+            }
+        );
+    }
+  }, [profile, selectedReps, selectedTime]);
 
   const getFollowersLabel = () => {
       if (profile?.role === 'USER') return 'Seguidores';
@@ -240,6 +261,35 @@ const ProfilePage = () => {
                           className="w-24 h-24 object-cover ml-5"
                       />
                       <h1 className="ml-5">{profile.userName}</h1>
+
+                      <div className="flex flex-row space-y-2 text-white justify-start gap-4 items-center p-10">
+                      <div className="flex flex-row gap-2">
+                        <div>
+                          <strong>Nombre:</strong> {profile.firstName}
+                        </div>
+                        <div>
+                          <strong>Apellido:</strong> {profile.lastName}
+                        </div>
+                        <div>
+                          <strong>Edad:</strong> {edad}
+                        </div>
+                        <div>
+                          <strong>Fecha Nacimiento:</strong> {profile.birthDate}
+                        </div>
+
+                        {profile.role !== 'ADMIN' && (
+                          <div>
+                            <Link
+                              to="/profile/followers"
+                              className="underline cursor-pointer hover:text-blue-400"
+                              style={{ textDecoration: 'underline' }}
+                            >
+                              <strong>{getFollowersLabel()}:</strong> {loadingCount ? '...' : followersCount}
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+      </div>
                       
                       {id != user.id && (
                         <div className="ml-auto flex gap-3">
@@ -249,134 +299,58 @@ const ProfilePage = () => {
                       )}
                   </div>
 
-        <div className="flex flex-row space-y-2 text-white justify-start gap-4 items-center p-10">
-          <div className="flex flex-col">
-            <div>
-              <strong>Email:</strong> {profile.email}
-            </div>
-            <div>
-              <strong>Nombre:</strong> {profile.firstName}
-            </div>
-            <div>
-              <strong>Apellido:</strong> {profile.lastName}
-            </div>
-            <div>
-              <strong>Edad:</strong> {edad}
-            </div>
-            <div>
-              <strong>Fecha Nacimiento:</strong> {profile.birthDate}
-            </div>
+        
 
-            {profile.role !== 'ADMIN' && (
-              <div>
-                <Link
-                  to="/profile/followers"
-                  className="underline cursor-pointer hover:text-blue-400"
-                  style={{ textDecoration: 'underline' }}
-                >
-                  <strong>{getFollowersLabel()}:</strong> {loadingCount ? '...' : followersCount}
-                </Link>
-              </div>
-            )}
-          </div>
+      <div className="flex flex-row justify-between h-full">
+        {(() => {
+          if (activeTab === 'trainingHistory') {
+            return (
+              <TrainingHistory
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                user={profile}
+                selectedDay={selectedDay}
+                dayFilterActivated={dayFilterActivated}
+                setFilterActivated={setDayFilterActivated}
+                ariaLabel="Historial de entrenamientos"
+                forbidden={statsForbidden}
+              />
+            );
+          }
+          if (activeTab === 'badges') {
+            return (
+              <BadgesList
+                  userId={profile?.id}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  forbidden={statsForbidden}
+              />
+            );
+          }
+          return (
+            <UserStatsPanel
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              selectedReps={selectedReps}
+              setSelectedReps={setSelectedReps}
+              selectedTime={selectedTime}
+              setSelectedTime={setSelectedTime}
+              stats={stats}
+              forbidden={statsForbidden}
+            />
+          );
+        })()}
+
+        <CalendarCard
+          user={profile}
+          selectedDay={selectedDay}
+          setSelectedDay={setSelectedDay}
+          setDayFilterActivated={setDayFilterActivated}
+          forbidden={statsForbidden}
+        />
       </div>
 
-      {profile && <BadgesList userId={profile.id} />}
 
-                  <div className="px-10 mt-5 text-white">
-                      <h2 className="text-xl font-bold mb-3">Entrenamientos</h2>
-
-                      {loadingTrainings && <Spinner />}
-
-                      {!loadingTrainings && trainings.length === 0 && (
-                          <p>No hay entrenamientos disponibles o no sigues a este usuario.</p>
-                      )}
-
-                      {!loadingTrainings && trainings.length > 0 && (
-                          <>
-                              <div className="flex flex-row items-center mt-10 ml-10 gap-10">
-                                  <p className="font-semibold text-white text-[18px]">
-                                      Últimos entrenamientos
-                                  </p>
-                              </div>
-
-                              {trainings.map((training) => (
-                                  <div key={training.id} className="flex flex-col mb-4 p-8 pt-4 m-10 shadow-lg rounded-md w-full">
-                                      <div className="flex flex-row gap-5">
-
-                                          <img
-                                              src={profile.avatar.avatarBase64}
-                                              alt={training.name}
-                                              className="w-[40px] h-[40px] my-2"
-                                          />
-
-                                          <div className="flex flex-col w-full">
-                                              <p className="inline-block w-fit text-white hover:text-[#CA0D0A]">
-                                                  {training.creatorUserName}
-                                              </p>
-
-                                              <p className="mb-5">{new Date(training.creationDate).toLocaleDateString()}</p>
-
-                                              <Link
-                                                  to={`/trainings/${training.id}/details`}
-                                                  className="font-semibold text-[25px] text-white mb-3 hover:text-[#CA0D0A]"
-                                              >
-                                                  {training.name}
-                                              </Link>
-
-                                              <p className="mb-3 text-white">{training.description}</p>
-
-                                              <div className="flex flex-row gap-10">
-                                                  <p className="text-[12px] w-[12%]">Duración</p>
-                                                  <p className="text-[12px] w-[10%]">Ejercicios</p>
-                                                  <p className="text-[12px] w-[40%] ml-4">Rutina</p>
-                                              </div>
-
-                                              <div className="flex flex-row gap-10">
-                                                  <p className="text-[25px] w-[12%] text-white">
-                                                      {training.duration} min
-                                                  </p>
-
-                                                  <p className="text-[25px] w-[10%] text-white">
-                                                      {training.exercises.length}
-                                                  </p>
-
-                                                  <Link
-                                                      to={`/routines/${training.routineId}`}
-                                                      className="text-[25px] w-[40%] ml-4 text-white overflow-hidden text-ellipsis whitespace-nowrap hover:text-[#CA0D0A] cursor-pointer"
-                                                  >
-                                                      {training.routineName}
-                                                  </Link>
-                                              </div>
-
-                                          </div>
-                                      </div>
-
-                                      <div className="bg-[#262626] rounded-md p-5 mt-10 w-fit self-start inline-block">
-                                          <div className="flex flex-col">
-                                              <div className="flex flex-row">
-                                                  {training.exercises.map((exercise) => (
-                                                      <div key={exercise.id} className="flex flex-row items-center">
-                                                          <div className="flex flex-col justify-center items-center p-2 text-center ">
-                                                              <img
-                                                                  src={exercise.exerciseImageBase64}
-                                                                  alt={exercise.name}
-                                                                  className="w-[50px] h-auto rounded-md"
-                                                              />
-                                                              <p className="text-white mt-2">{exercise.name}</p>
-                                                          </div>
-
-                                                      </div>
-                                                  ))}
-                                              </div>
-                                          </div>
-                                      </div>
-
-                                  </div>
-                              ))}
-                          </>
-                      )}
-                  </div>
               </div>
           ) : (
               <Spinner/>
