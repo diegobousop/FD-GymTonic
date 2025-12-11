@@ -162,4 +162,9 @@ public class BadgeServiceTest {
         boolean hasBadge = badges.stream().anyMatch(b -> b.getBadge().getName().equals("CONSECUTIVE_WEEKS_1"));
         assertTrue(hasBadge);
     }
+
+    @Test
+    public void testCheckDailyStreaks() throws InstanceNotFoundException {
+        badgeService.checkDailyStreaks();
+    }
 }

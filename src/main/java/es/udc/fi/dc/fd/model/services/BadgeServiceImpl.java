@@ -1,5 +1,6 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
@@ -9,6 +10,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,13 +34,15 @@ public class BadgeServiceImpl implements BadgeService {
     private final UserBadgeDao userBadgeDao;
     private final TrainingDao trainingDao;
     private final UserDao userDao;
+    private final NotificationService notificationService;
 
     @Autowired
-    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao) {
+    public BadgeServiceImpl(BadgeDao badgeDao, UserBadgeDao userBadgeDao, TrainingDao trainingDao, UserDao userDao, NotificationService notificationService) {
         this.badgeDao = badgeDao;
         this.userBadgeDao = userBadgeDao;
         this.trainingDao = trainingDao;
         this.userDao = userDao;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -98,6 +102,62 @@ public class BadgeServiceImpl implements BadgeService {
         if (maxConsecutiveWeeks >= 1) assignBadge(user, "CONSECUTIVE_WEEKS_1");
         if (maxConsecutiveWeeks >= 10) assignBadge(user, "CONSECUTIVE_WEEKS_10");
         if (maxConsecutiveWeeks >= 100) assignBadge(user, "CONSECUTIVE_WEEKS_100");
+    }
+
+    @Override
+    @Scheduled(cron = "0 0 18 * * *") 
+    public void checkDailyStreaks() throws InstanceNotFoundException {
+        List<Users> users = userDao.findAll();
+        for (Users user : users) {
+            checkConsistencyDailyWarnings(user);
+        }
+    }
+
+    @Override
+    @Scheduled(cron = "0 0 18 * * SUN") 
+    public void checkWeeklyStreaks() throws InstanceNotFoundException {
+        List<Users> users = userDao.findAll();
+        for (Users user : users) {
+            checkConsistencyWeeklyWarnings(user);
+        }
+    }
+
+    private void checkConsistencyDailyWarnings(Users user) throws InstanceNotFoundException {
+        Training lastTraining = trainingDao.findTopByUserIdOrderByCreationDateDesc(user.getId());
+
+        if (lastTraining == null) return;
+
+        LocalDate today = LocalDate.now();
+
+        if (ChronoUnit.DAYS.between(lastTraining.getCreationDate().toLocalDate(), today) == 1) {
+            notificationService.notifyDailyStreakWarning(
+                user.getId()
+            );
+        }
+    }
+
+    private void checkConsistencyWeeklyWarnings(Users user) throws InstanceNotFoundException {
+        Training lastTraining = trainingDao.findTopByUserIdOrderByCreationDateDesc(user.getId());
+
+        if (lastTraining == null) return;
+
+        LocalDate startOfThisWeek = LocalDate.now().with(DayOfWeek.MONDAY); // Lunes de esta semana
+        LocalDate startOfLastWeek = startOfThisWeek.minusWeeks(1); // Lunes de la semana anterior
+        LocalDate lastTrainingDate = lastTraining.getCreationDate().toLocalDate();
+
+        /*  Si la fecha del ultimo entrenamiento es anterior al lunes de esta 
+            semana significa que no ha entrenado esta semana.
+            Y si la fecha del ultimo entrenamiento es igual o posterior al 
+            lunes de la semana anterior significa que ha entrenado la semana
+            anterior. 
+            Por lo tanto tendría una racha activa que se acabaría si no entrena. */
+
+        if (lastTrainingDate.isBefore(startOfThisWeek) && 
+            ( lastTrainingDate.isAfter(startOfLastWeek) || lastTrainingDate.isEqual(startOfLastWeek) ) ) {
+            notificationService.notifyWeeklyStreakWarning(
+                user.getId()
+            );
+        }
     }
 
     private void assignBadge(Users user, String badgeName) {
