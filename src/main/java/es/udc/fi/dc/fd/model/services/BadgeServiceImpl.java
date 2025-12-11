@@ -160,12 +160,13 @@ public class BadgeServiceImpl implements BadgeService {
         }
     }
 
-    private void assignBadge(Users user, String badgeName) {
+    private void assignBadge(Users user, String badgeName) throws InstanceNotFoundException {
         Optional<Badge> badgeOpt = badgeDao.findByName(badgeName);
         if (badgeOpt.isPresent()) {
             Badge badge = badgeOpt.get();
             if (!userBadgeDao.existsByUserAndBadge(user, badge)) {
                 userBadgeDao.save(new UserBadge(user, badge));
+                notificationService.notifyBadgeEarned(user.getId(), badgeName);
             }
         }
     }
