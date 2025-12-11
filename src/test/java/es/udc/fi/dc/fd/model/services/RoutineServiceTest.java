@@ -1366,14 +1366,17 @@ public class RoutineServiceTest {
 
 
     @Test
+    @Transactional
     public void testFindFollowedUsersTrainingsFeedEmpty() throws Exception {
 
-        Users user = userService.login("user1", "12345");
+        Users user = createUser("feedUser" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+        userService.signUp(user, Users.RoleType.USER);
 
+        // No sigue a nadie -> feed vacío
         Page<Training> result = routineService.findFollowedUsersTrainingsFeed(
-            user.getId(),
-            0,
-            10
+                user.getId(),
+                0,
+                10
         );
 
         assertEquals(0, result.getContent().size());
