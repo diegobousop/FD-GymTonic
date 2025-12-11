@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -24,6 +25,8 @@ import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.BlockUserDao;
 import es.udc.fi.dc.fd.model.entities.FollowRequest;
 import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.SerieDao;
 import es.udc.fi.dc.fd.model.entities.UserDao;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
@@ -65,6 +68,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private NotificationService notificationService;
+
+	@Autowired
+	private SerieDao serieDao;
 
 	/**
 	 * Sign up.
@@ -578,23 +584,82 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException{
+	public Map<Serie, LocalDate> getExerciseStats(Long userProfileId, Long userId, int numReps, String period)
+			throws InstanceNotFoundException, PermissionException {
+
+		Users requester = permissionChecker.checkUser(userId);
+		Users profileUser = permissionChecker.checkUser(userProfileId);
+
+		if (!userProfileId.equals(userId) && (profileUser.getFollowers() == null
+				|| !profileUser.getFollowers().contains(requester))) {
+			throw new PermissionException("project.entities.user.stats", userId);
+		}
+
+		String p = period == null ? "YEAR" : period.toUpperCase();
+		java.time.LocalDateTime cutoff;
+		switch (p) {
+			case "WEEK":
+				cutoff = java.time.LocalDateTime.now().minusWeeks(1);
+				break;
+			case "MONTH":
+				cutoff = java.time.LocalDateTime.now().minusMonths(1);
+				break;
+			case "YEAR":
+				cutoff = java.time.LocalDateTime.now().minusYears(1);
+				break;
+			case "ALL":
+				cutoff = java.time.LocalDateTime.MIN.plusYears(1);
+				break;
+			default:
+				cutoff = java.time.LocalDateTime.now().minusYears(1);
+		}
+
+		List<Serie> series;
+		if (numReps <= 0) {
+			series = serieDao.findSeriesByYear(profileUser.getId(), cutoff);
+
+		}
+		else{
+			series = serieDao.findSeriesByYearWithReps(profileUser.getId(), numReps, cutoff);
+		}
+		
+		if (series == null || series.isEmpty()) {
+			return java.util.Collections.emptyMap();
+		}
+
+		return series.stream()
+				.filter(s -> s.getTraining() != null && s.getTraining().getCreationDate() != null)
+				.collect(java.util.stream.Collectors.toMap(
+						s -> s,
+						s -> s.getTraining().getCreationDate().toLocalDate()
+				));
+	}
+
+	@Override
+	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException {
 		Users user = permissionChecker.checkUser(userId);
+
 		if (user.getFollowing() == null) {
 			return Collections.emptyList();
 		}
 
 		// IDs de usuarios bloqueados
 		List<Long> blockedIds = new ArrayList<>();
+
 		if (user.getBlockedUsers() != null) {
-			blockedIds.addAll(user.getBlockedUsers().stream()
-					.map(Users::getId)
-					.toList());
+			blockedIds.addAll(
+					user.getBlockedUsers().stream()
+							.map(Users::getId)
+							.toList()
+			);
 		}
+
 		if (user.getWhoBlockUs() != null) {
-			blockedIds.addAll(user.getWhoBlockUs().stream()
-					.map(Users::getId)
-					.toList());
+			blockedIds.addAll(
+					user.getWhoBlockUs().stream()
+							.map(Users::getId)
+							.toList()
+			);
 		}
 
 		return user.getFollowing().stream()
@@ -602,4 +667,5 @@ public class UserServiceImpl implements UserService {
 				.filter(id -> !blockedIds.contains(id))
 				.toList();
 	}
+
 }

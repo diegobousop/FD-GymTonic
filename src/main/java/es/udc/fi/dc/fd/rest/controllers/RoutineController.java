@@ -264,7 +264,34 @@ public class RoutineController {
             throws InstanceNotFoundException {
         return routineService.isLikedRoutine(userId, routineId);
     }
-    
+
+    @PostMapping("/training/{trainingId}/like")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void likeTraining(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException, PermissionException {
+
+        routineService.likeTraining(userId, trainingId);
+    }
+
+    @PostMapping("/training/{trainingId}/unlike")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlikeTraining(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException {
+
+        routineService.unlikeTraining(userId, trainingId);
+    }
+
+    @GetMapping("/training/{trainingId}/isLiked")
+    public boolean isLikedTraining(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException {
+        return routineService.isLikedTraining(userId, trainingId);
+    }
+
+    @GetMapping("/training/{trainingId}/likesCount")
+    public Long getTrainingLikes(@RequestAttribute Long userId, @PathVariable Long trainingId)
+            throws InstanceNotFoundException {
+        return routineService.getTrainingLikesCount(trainingId);
+    }
 
     /**
      * Obtener los entrenamientos () de un usuario
@@ -326,6 +353,11 @@ public class RoutineController {
         return RoutineConversor.toCalendarStatsDto(routineService.findTrainingsByYear(userId, year));
     }
 
+    @GetMapping("/getTrainingCalendarStats/{userId}")
+    public CalendarStatsDto getTrainingCalendarStatsForUser(@PathVariable Long userId, @RequestParam int year) throws InstanceNotFoundException, PermissionException {
+        return RoutineConversor.toCalendarStatsDto(routineService.findTrainingsByYear(userId, year));
+    }
+
     @GetMapping("/findDayTrainings")
     public BlockDto<TrainingDetailsDto> findDayTrainings(
             @RequestAttribute Long userId,
@@ -354,9 +386,38 @@ public class RoutineController {
         return new BlockDto<>(items, trainingsPage.hasNext());
     }
 
+    @GetMapping("/findDayTrainings/{userId}")
+    public BlockDto<TrainingDetailsDto> findDayTrainingsForUser(
+            @PathVariable Long userId,
+            @RequestParam int day,
+            @RequestParam int month,
+            @RequestParam int year,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException, PermissionException {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Training> trainingsPage = routineService.findTrainingsByDay(userId, day, month, year, pageable);
+
+            List<TrainingDetailsDto> items = new ArrayList<>();
+
+        for (Training t : trainingsPage.getContent()) {
+            List<ExerciseRoutineDto> exercises = new ArrayList<>();
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
+                List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
+            }
+            items.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
+        }
+
+        return new BlockDto<>(items, trainingsPage.hasNext());
+    }
+
     /**
-     * Obtener el feed de entrenamientos de los usuarios que sigo
-     * Incluye solo entrenamientos visibles y de usuarios no bloqueados
+     * Obtener el feed de entrenamientos de los usuarios que sigo.
+     * Incluye solo entrenamientos visibles y de usuarios no bloqueados.
+     *
      * @param userId ID del usuario autenticado (obtenido del request attribute)
      * @param page número de página para paginación
      * @param size tamaño de página
@@ -374,16 +435,20 @@ public class RoutineController {
         List<TrainingDetailsDto> feedItems = new ArrayList<>();
 
         for (Training t : trainingsPage.getContent()) {
+
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
+
             Routine routine = routineService.getRoutineByTraining(t.getId());
+
             for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
                 List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
                 exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
             }
+
             feedItems.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
         }
 
         return new BlockDto<>(feedItems, trainingsPage.hasNext());
     }
-    
+
 }

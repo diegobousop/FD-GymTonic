@@ -3,35 +3,35 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    jkube.io/scm-url: https://gitlab.fic.udc.es/ferramentas.2025/gym-tonic
+    jkube.io/scm-url: https://gitlab.fic.udc.es/ferramentas.2025/gymtonic
     jkube.io/issue-system: Redmine
-    jkube.io/issue-tracker-url: https://redmine.fic.udc.es/project/gym-tonic/issues
+    jkube.io/issue-tracker-url: https://redmine.fic.udc.es/projects/gymtonic/issues
     jkube.io/scm-tag: head
   labels:
-    app: gym-tonic
+    app: gymtonic
     provider: jkube
-    version: 0.1-SNAPSHOT
+    version: 1.0.0
     group: es.udc.fi.dc.fd
-  name: gym-tonic
+  name: gymtonic
 spec:
   replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: gym-tonic
+      app: gymtonic
       provider: jkube
       group: es.udc.fi.dc.fd
   template:
     metadata:
       annotations:
-        jkube.io/scm-url: https://gitlab.fic.udc.es/ferramentas.2025/gym-tonic
+        jkube.io/scm-url: https://gitlab.fic.udc.es/ferramentas.2025/gymtonic
         jkube.io/issue-system: Redmine
-        jkube.io/issue-tracker-url: https://redmine.fic.udc.es/project/gym-tonic/issues
+        jkube.io/issue-tracker-url: https://redmine.fic.udc.es/projects/gymtonic/issues
         jkube.io/scm-tag: head
       labels:
-        app: gym-tonic
+        app: gymtonic
         provider: jkube
-        version: 0.1-SNAPSHOT
+        version: 1.0.0
         group: es.udc.fi.dc.fd
     spec:
       containers:
@@ -44,9 +44,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: gitlab.fic.udc.es:5050/ferramentas.2025/gym-tonic:latest
+        image: gitlab.fic.udc.es:5050/ferramentas.2025/gymtonic:latest
         imagePullPolicy: Always
-        name: deploy-gym-tonic
+        name: deploy-gymtonic
         securityContext:
           privileged: false
         ports:

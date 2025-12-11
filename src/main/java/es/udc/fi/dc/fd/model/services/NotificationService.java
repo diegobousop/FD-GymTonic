@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.Training;
 
 public interface NotificationService {
 
@@ -80,5 +81,45 @@ public interface NotificationService {
      * @throws InstanceNotFoundException
     */
     public int getUnreadCount(Long userId) throws InstanceNotFoundException;
+
+    /**
+     * Notify trainer when someone likes their training.
+     * @param userId User who liked the routine
+     * @param training The training that was liked
+     * @throws InstanceNotFoundException
+     */
+    public void notifyTrainingLike(Long userId, Training training) throws InstanceNotFoundException;
+
+    /**
+     * Notify trainer when someone comments their training.
+     * @param userId User who commented the training
+     * @param training The training that was commented
+     * @throws InstanceNotFoundException
+     */
+    public void notifyTrainingComment(Long userId, Training training) throws InstanceNotFoundException;
+
+    /**
+     * Notify user when their streak is ending.
+     * @param userId User whose streak is ending
+     * @param message The message of the notification
+     * @throws InstanceNotFoundException
+     */
+    public void notifyDailyStreakWarning(Long userId) throws InstanceNotFoundException;
+
+    /**
+     * Notify user when their streak is ending.
+     * @param userId User whose streak is ending
+     * @param message The message of the notification
+     * @throws InstanceNotFoundException
+     */
+    public void notifyWeeklyStreakWarning(Long userId) throws InstanceNotFoundException;
+
+    /**
+     * Notify user when they earn a badge.
+     * @param userId User who earned the badge
+     * @param badgeName The name of the badge earned
+     * @throws InstanceNotFoundException
+     */
+    public void notifyBadgeEarned(Long userId, String badgeName) throws InstanceNotFoundException;
 
 }

@@ -13,6 +13,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.Notification;
 import es.udc.fi.dc.fd.model.entities.NotificationDao;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.Users;
 
 
@@ -65,7 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
         String message = "Nueva rutina: '" + routine.getName() + "', añadida por " + trainer.getUserName();
 
         for (Users follower : trainer.getFollowers()) {
-            Notification notification = new Notification(follower, trainer, routine, message, false, LocalDateTime.now().withNano(0));
+            Notification notification = new Notification(follower, trainer, routine, null, message, false, LocalDateTime.now().withNano(0));
             notificationDao.save(notification);
         }
     
@@ -85,7 +86,7 @@ public class NotificationServiceImpl implements NotificationService {
         String message = user.getUserName() + " le dio like a tu rutina: " + routine.getName();
 
         
-        Notification notification = new Notification(trainer, user, routine, message, false, LocalDateTime.now().withNano(0));
+        Notification notification = new Notification(trainer, user, routine, null, message, false, LocalDateTime.now().withNano(0));
         notificationDao.save(notification);
     }
 
@@ -102,7 +103,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String message = user.getUserName() + " empezó a seguir tu rutina: " + routine.getName();
 
-        Notification notification = new Notification(trainer, user, routine, message, false, LocalDateTime.now().withNano(0));
+        Notification notification = new Notification(trainer, user, routine, null, message, false, LocalDateTime.now().withNano(0));
         notificationDao.save(notification);
     }
 
@@ -114,7 +115,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String message = user.getUserName() + " empezó a seguirte";
 
-        Notification notification = new Notification(trainer, user, null, message, false, LocalDateTime.now().withNano(0));
+        Notification notification = new Notification(trainer, user, null, null, message, false, LocalDateTime.now().withNano(0));
         notificationDao.save(notification);
     }
 
@@ -126,7 +127,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String message = user.getUserName() + " quiere seguirte";
 
-        Notification notification = new Notification(receiver, user, null, message, false, LocalDateTime.now().withNano(0));
+        Notification notification = new Notification(receiver, user, null, null, message, false, LocalDateTime.now().withNano(0));
         notificationDao.save(notification);
     }
 
@@ -135,5 +136,78 @@ public class NotificationServiceImpl implements NotificationService {
         Users user = permissionChecker.checkUser(userId);
         return notificationDao.countByReceiverAndIsReadFalse(user);
     }
+
+    @Override
+    public void notifyTrainingLike(Long userId, Training training) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Users trainer = training.getUser();
+
+        // No notificar si el usuario le da like a su propio entrenamiento
+        if (user.getId().equals(trainer.getId())) {
+            return;
+        }
+
+        String message = user.getUserName() + " le dio like a tu entrenamiento: " + training.getName();
+
+        Notification notification = new Notification(trainer, user, null, training, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyTrainingComment(Long userId, Training training) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        Users trainer = training.getUser();
+
+        // No notificar si el usuario comenta en su propio entrenamiento
+        if (user.getId().equals(trainer.getId())) {
+            return;
+        }
+
+        String message = user.getUserName() + " ha comentado en tu entrenamiento: " + training.getName();
+
+        Notification notification = new Notification(trainer, user, null, training, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyBadgeEarned(Long userId, String badgeName) throws InstanceNotFoundException {
+        Users user = permissionChecker.checkUser(userId);
+
+        String message = "Has conseguido el logro '" + badgeName + "'";
+
+        Notification notification = new Notification(user, null, null, null, message, false, LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyDailyStreakWarning(Long userId) throws InstanceNotFoundException{
+        Users user = permissionChecker.checkUser(userId);
+
+        Notification notification = 
+        new Notification(
+            user, user, 
+            null, null, 
+            "Estás a punto de perder tu racha diaria de entrenamiento. ¡Entrena hoy para mantenerla!", 
+            false, 
+            LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
+    @Override
+    public void notifyWeeklyStreakWarning(Long userId) throws InstanceNotFoundException{
+        Users user = permissionChecker.checkUser(userId);
+
+        Notification notification = 
+        new Notification(
+            user, user, 
+            null, null, 
+            "Estás a punto de perder tu racha semanal de entrenamiento. ¡Entrena hoy para mantenerla!", 
+            false, 
+            LocalDateTime.now().withNano(0));
+        notificationDao.save(notification);
+    }
+
 
 }

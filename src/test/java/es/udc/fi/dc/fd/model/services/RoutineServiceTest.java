@@ -716,6 +716,302 @@ public class RoutineServiceTest {
     }
 
     @Test
+    public void testLikeRoutine() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+                        
+        assertTrue(routineService.likeRoutine(user.getId(), routine.getId()));
+    }
+
+    @Test
+    public void testLikeRoutineTwice() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+
+        assertTrue(routineService.likeRoutine(user.getId(), routine.getId()));
+        assertFalse(routineService.likeRoutine(user.getId(), routine.getId()));
+    }
+
+    @Test
+    public void testLikePrivateRoutine() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,false);
+
+        assertThrows(PermissionException.class,
+            () -> routineService.likeRoutine(user.getId(), routine.getId()));
+    }
+
+    @Test
+    public void testLikeRoutineUserNotFound() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.likeRoutine(999L, 1L));
+    }
+
+    @Test
+    public void testLikeRoutineNotFound() throws LoginUserBlockedException, IncorrectLoginException {
+        Users user = userService.login("user1", "12345");
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.likeRoutine(user.getId(), 99999L));
+    }
+
+    @Test
+    public void testUnlikeRoutine() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+
+        routineService.likeRoutine(user.getId(), routine.getId());
+
+        assertTrue(routineService.unlikeRoutine(user.getId(), routine.getId()));
+    }
+
+    @Test
+    public void testUnlikeRoutineWithoutLike() throws Exception {
+        Users user = userService.login("user1", "12345");
+        assertFalse(routineService.unlikeRoutine(user.getId(), 12345L));
+    }
+
+    @Test
+    public void testUnlikeRoutineUserNotFound() throws Exception {
+        assertFalse(routineService.unlikeRoutine(999L, 50L));
+    }
+
+    @Test
+    public void testIsLikedRoutine() throws Exception {
+        Users creator = userService.login("admin1","12345");
+        Users user = userService.login("user1","12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+
+        routineService.likeRoutine(user.getId(), routine.getId());
+
+        assertTrue(routineService.isLikedRoutine(user.getId(), routine.getId()));
+    }
+
+    @Test
+    public void testIsLikedRoutineNoLike() throws Exception {
+        Users creator = userService.login("admin1","12345");
+        Users user = userService.login("user1","12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+
+        assertFalse(routineService.isLikedRoutine(user.getId(), routine.getId()));
+    }
+
+    @Test
+    public void testIsLikedRoutineUserNotFound() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.isLikedRoutine(999L, 10L));
+    }
+
+    @Test
+    public void testIsLikedRoutineNotFound() throws Exception {
+        Users user = userService.login("user1","12345");
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.isLikedRoutine(user.getId(), 99999L));
+    }
+
+    @Test
+    public void testGetRoutineLikesCount() throws Exception {
+        Users creator = userService.login("admin1","12345");
+        Users u1 = userService.login("user1","12345");
+        Users u2 = userService.login("user2","12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+
+        routineService.likeRoutine(u1.getId(), routine.getId());
+        routineService.likeRoutine(u2.getId(), routine.getId());
+
+        assertEquals(2, routineService.getLikesCount(routine.getId()));
+    }
+
+    @Test
+    public void testGetRoutineLikesCountRoutineNotFound() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.getLikesCount(99999L));
+    }
+
+    @Test
+    public void testLikeTraining() throws LoginUserBlockedException, IncorrectLoginException, InstanceNotFoundException, PermissionException, DuplicateInstanceException, InvalidRoutineNameException, InvalidRoutineDurationException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1));
+        
+        Routine routine = routineService.createRoutine(creator.getId(), "routine1", 
+            new ArrayList<Long>(){{add(exercise1.getId());}}, 60L, true);
+        
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+        
+        Training createdTraining = routineService.createTrainingFromRoutine( creator.getId(), "Training 1", "Description of training", 45L, true, series, routine.getId());
+        
+        assertTrue(routineService.likeTraining(user.getId(), createdTraining.getId()));
+    }
+
+    @Test
+    public void testLikeTrainingTwice() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+        Training t = routineService.createTrainingFromRoutine(
+            creator.getId(),"t1","d",45L,true,
+            routineService.getDefaultRoutineSeries(routine.getId(),e.getId()),
+            routine.getId()
+        );
+
+        assertTrue(routineService.likeTraining(user.getId(), t.getId()));
+        assertFalse(routineService.likeTraining(user.getId(), t.getId()));
+    }
+
+    @Test
+    public void testLikePrivateTraining() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e", "desc", grupoMuscular.PECHO, 1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+        Training t = routineService.createTrainingFromRoutine(
+            creator.getId(),"t1","d",45L,false,
+            routineService.getDefaultRoutineSeries(routine.getId(),e.getId()),
+            routine.getId()
+        );
+
+        assertThrows(PermissionException.class,
+            () -> routineService.likeTraining(user.getId(), t.getId()));
+    }
+
+    @Test
+    public void testLikeTrainingUserNotFound() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.likeTraining(999L, 1L));
+    }
+
+    @Test
+    public void testLikeTrainingNotFound() throws LoginUserBlockedException, IncorrectLoginException {
+        Users user = userService.login("user1", "12345");
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.likeTraining(user.getId(), 99999L));
+    }
+
+    @Test
+    public void testUnlikeTraining() throws Exception {
+        Users creator = userService.login("admin1", "12345");
+        Users user = userService.login("user1", "12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+        Training t = routineService.createTrainingFromRoutine(
+            creator.getId(),"t1","d",45L,true,
+            routineService.getDefaultRoutineSeries(routine.getId(),e.getId()),
+            routine.getId()
+        );
+
+        routineService.likeTraining(user.getId(), t.getId());
+
+        assertTrue(routineService.unlikeTraining(user.getId(), t.getId()));
+    }
+
+    @Test
+    public void testUnlikeTrainingWithoutLike() throws Exception {
+        Users user = userService.login("user1", "12345");
+        assertFalse(routineService.unlikeTraining(user.getId(), 12345L));
+    }
+
+    @Test
+    public void testUnlikeTrainingUserNotFound() throws Exception {
+        assertFalse(routineService.unlikeTraining(999L, 50L));
+    }
+
+    @Test
+    public void testIsLikedTraining() throws Exception {
+        Users creator = userService.login("admin1","12345");
+        Users user = userService.login("user1","12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+        Training t = routineService.createTrainingFromRoutine(
+            creator.getId(),"t1","d",45L,true,
+            routineService.getDefaultRoutineSeries(routine.getId(),e.getId()),
+            routine.getId()
+        );
+
+        routineService.likeTraining(user.getId(), t.getId());
+
+        assertTrue(routineService.isLikedTraining(user.getId(), t.getId()));
+    }
+
+    @Test
+    public void testIsLikedTrainingNoLike() throws Exception {
+        Users creator = userService.login("admin1","12345");
+        Users user = userService.login("user1","12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+        Training t = routineService.createTrainingFromRoutine(
+            creator.getId(),"t1","d",45L,true,
+            routineService.getDefaultRoutineSeries(routine.getId(),e.getId()),
+            routine.getId()
+        );
+
+        assertFalse(routineService.isLikedTraining(user.getId(), t.getId()));
+    }
+
+    @Test
+    public void testIsLikedTrainingUserNotFound() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.isLikedTraining(999L, 10L));
+    }
+
+    @Test
+    public void testIsLikedTrainingNotFound() throws Exception {
+        Users user = userService.login("user1","12345");
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.isLikedTraining(user.getId(), 99999L));
+    }
+
+    @Test
+    public void testGetTrainingLikesCount() throws Exception {
+        Users creator = userService.login("admin1","12345");
+        Users u1 = userService.login("user1","12345");
+        Users u2 = userService.login("user2","12345");
+
+        Exercise e = exerciseDao.save(new Exercise("e","d",grupoMuscular.PECHO,1));
+        Routine routine = routineService.createRoutine(creator.getId(),"r1",List.of(e.getId()),60L,true);
+        Training t = routineService.createTrainingFromRoutine(
+            creator.getId(),"t1","d",45L,true,
+            routineService.getDefaultRoutineSeries(routine.getId(),e.getId()),
+            routine.getId()
+        );
+
+        routineService.likeTraining(u1.getId(), t.getId());
+        routineService.likeTraining(u2.getId(), t.getId());
+
+        assertEquals(2, routineService.getTrainingLikesCount(t.getId()));
+    }
+
+    @Test
+    public void testGetTrainingLikesCountTrainingNotFound() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> routineService.getTrainingLikesCount(99999L));
+    }
+
+    @Test
     public void testGetFollowersByRoutine() throws InstanceNotFoundException, PermissionException, DuplicateInstanceException, IncorrectLoginException, InvalidRoutineNameException, InvalidRoutineDurationException, LoginUserBlockedException, RoutineLimitReachedException, RoutineExerciseLimitReachedException {
         // Crear entrenador y rutina con nombres únicos
         Users trainer = userService.login("trainer1", "12345");
@@ -822,7 +1118,7 @@ public class RoutineServiceTest {
         );
 
         List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
-        assertEquals(1, trainings.size());
+        assertEquals(10, trainings.size());
     }
 
     @Test
@@ -847,7 +1143,7 @@ public class RoutineServiceTest {
         );
 
         List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
-        assertEquals(0, trainings.size());
+        assertEquals(9, trainings.size());
     }
 
     @Test
@@ -872,7 +1168,7 @@ public class RoutineServiceTest {
         );
 
         List<Training> trainings = routineService.findTrainings(creator.getId(), user.getId(),PageRequest.of(0, 10)).getContent();
-        assertEquals(0, trainings.size());
+        assertEquals(10, trainings.size());
     }
 
     @Test

@@ -68,6 +68,9 @@ public class RoutineServiceImpl implements RoutineService {
     private RoutineLikeDao routineLikeDao;
 
     @Autowired
+    private TrainingLikeDao trainingLikeDao;
+
+    @Autowired
     private NotificationService notificationService;
 
     @Autowired
@@ -458,6 +461,59 @@ public class RoutineServiceImpl implements RoutineService {
             throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
         }
         return routineLikeDao.countByRoutineId(routineId);
+    }
+
+    @Override
+    public boolean likeTraining(Long userId, Long trainingId) throws InstanceNotFoundException, PermissionException {
+
+        Users user = permissionChecker.checkUser(userId);
+        Training training = trainingDao.findById(trainingId)
+            .orElseThrow(() -> new InstanceNotFoundException("project.entities.training", trainingId));
+
+        if (Boolean.FALSE.equals(training.getIsPublic())) {
+            throw new PermissionException("project.entities.training", trainingId);
+        }
+
+        // Evitar dar like dos veces
+        if (trainingLikeDao.existsByIdUserIdAndIdTrainingId(userId, trainingId)) {
+            return false;
+        }
+
+        trainingLikeDao.save(new TrainingLike(user, training));
+        
+        notificationService.notifyTrainingLike(userId, training);
+        
+        return true;
+    }
+
+    @Override
+    public boolean unlikeTraining(Long userId, Long trainingId) throws InstanceNotFoundException {
+
+        if (!trainingLikeDao.existsByIdUserIdAndIdTrainingId(userId, trainingId)) {
+            return false;
+        }
+
+        trainingLikeDao.deleteByIdUserIdAndIdTrainingId(userId, trainingId);
+        return true;
+    }
+
+    @Override 
+    public boolean isLikedTraining(Long userId, Long trainingId) throws InstanceNotFoundException {
+        permissionChecker.checkUser(userId);
+
+        if (!trainingDao.existsById(trainingId)) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+
+        return trainingLikeDao.existsByIdUserIdAndIdTrainingId(userId, trainingId);
+    }   
+
+    @Override
+    public long getTrainingLikesCount(Long trainingId) throws InstanceNotFoundException {
+        if (!trainingDao.existsById(trainingId)) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+        return trainingLikeDao.countByIdTrainingId(trainingId);
     }
 
     @Override

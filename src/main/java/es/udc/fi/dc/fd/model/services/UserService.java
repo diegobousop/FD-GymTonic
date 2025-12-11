@@ -1,11 +1,14 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.FollowRequest;
+import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
@@ -176,5 +179,8 @@ public interface UserService {
 
 	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException;
 
+	public Map<Serie, LocalDate> getExerciseStats(Long userProfileId, Long userId, int numReps, String period) throws InstanceNotFoundException, PermissionException;
+
 	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException;
+
 }
