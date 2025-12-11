@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -566,4 +567,40 @@ public class UserServiceTest {
 		assertThrows(InstanceNotFoundException.class, () ->{userService.getFollowRequests(receiver.getId());});
 
 	}
+
+	@Test
+	public void testGetFollowingIds_filtersBlockedUsers() throws Exception {
+
+		Users user = createUser("userMain" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+		userService.blockUser(user.getId(), userFollow2.getId());
+
+		List<Long> result = userService.getFollowingIds(user.getId());
+
+		assertEquals(1, result.size());
+		assertTrue(result.contains(userFollow1.getId()));
+		assertFalse(result.contains(userFollow2.getId()));
+	}
+
+	@Test
+	public void testGetFollowingIds_emptyWhenNoFollowing() throws Exception {
+
+		Users user = createUser("userEmpty" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user, Users.RoleType.USER);
+
+		List<Long> result = userService.getFollowingIds(user.getId());
+
+		assertNotNull(result);
+		assertTrue(result.isEmpty());
+	}
+
 }

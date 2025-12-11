@@ -6,21 +6,21 @@ import es.udc.fi.dc.fd.model.entities.Routine;
 import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
 import es.udc.fi.dc.fd.model.entities.Training;
 
-
 public class RoutineConversor {
 
     // Método adaptado al nuevo modelo con RoutineExercise
     public static RoutineDto toRoutineDto(Routine routine) {
         return new RoutineDto(
-            routine.getId(), 
+            routine.getId(),
             routine.getName(),
             // Convertimos cada RoutineExercise a ExerciseDto
             ExerciseConversor.toExerciseDtosFromRoutineExercises(routine.getRoutineExercises()),
-            routine.getCreator().getUserName(), 
+            routine.getCreator().getUserName(),
             routine.getCreator().getAvatar() != null ? routine.getCreator().getAvatar().getAvatarBase64() : null,
             routine.getDuration(),
-            routine.getModificationDate(), 
-            routine.getIsPublic());
+            routine.getModificationDate(),
+            routine.getIsPublic()
+        );
     }
 
     // Nuevo método para incluir info de "isFollowing" para un usuario concreto
@@ -47,30 +47,38 @@ public class RoutineConversor {
     }
 
     public static List<RoutineDto> toRoutineDtos(List<Routine> routines) {
-        return routines.stream().map(r -> toRoutineDto(r)).toList();
+        return routines.stream().map(RoutineConversor::toRoutineDto).toList();
     }
 
-    // Lista de RoutineDto con isFollowing
     public static List<RoutineDto> toRoutineDtos(List<Routine> routines, Long currentUserId, RoutineFollowDao routineFollowDao) {
         return routines.stream()
                 .map(r -> toRoutineDto(r, currentUserId, routineFollowDao))
                 .toList();
     }
 
-    public static TrainingDetailsDto toTrainingDetailsDto(Training training, List<ExerciseRoutineDto> exercises, Routine routine) {
-        return new TrainingDetailsDto(
-            training.getId(),
-            training.getName(),
-            training.getDescription(),
-            training.getDuration(),
-            training.getCreationDate(),
-            training.getUser().getId(),
-            training.getUser().getUserName(),
-            routine.getId(),
-            routine.getName(),
-            exercises,
-            training.getIsPublic()
+    public static TrainingDetailsDto toTrainingDetailsDto(
+            Training training,
+            List<ExerciseRoutineDto> exercises,
+            Routine routine) {
+
+        TrainingDetailsDto dto = new TrainingDetailsDto();
+
+        dto.setId(training.getId());
+        dto.setName(training.getName());
+        dto.setDescription(training.getDescription());
+        dto.setDuration(training.getDuration());
+        dto.setCreationDate(training.getCreationDate());
+        dto.setCreatorId(training.getUser().getId());
+        dto.setCreatorUserName(training.getUser().getUserName());
+        dto.setCreatorAvatarBase64(
+            training.getUser().getAvatar() != null ? training.getUser().getAvatar().getAvatarBase64() : null
         );
+        dto.setRoutineId(routine.getId());
+        dto.setRoutineName(routine.getName());
+        dto.setExercises(exercises);
+        dto.setPublic(training.getIsPublic());
+
+        return dto;
     }
 
     public static CalendarTrainingDto toCalendarStatDto(Training training) {

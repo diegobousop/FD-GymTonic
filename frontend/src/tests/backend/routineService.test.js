@@ -339,5 +339,40 @@ describe('routineService', () => {
       );
     });
   });
+
+  describe('viewFeed', () => {
+    it('llama appFetch con paginación', () => {
+      const mockOnSuccess = jest.fn();
+      const mockOnErrors = jest.fn();
+
+      routineService.viewFeed(0, 10, mockOnSuccess, mockOnErrors);
+
+      expect(appFetch).toHaveBeenCalledWith(
+        '/routines/feed?page=0&size=10',
+        expect.objectContaining({ method: 'GET' }),
+        mockOnSuccess,
+        mockOnErrors
+      );
+    });
+
+    it('llama onSuccess con los datos del feed', () => {
+      const mockFeed = {
+        items: [
+          { id: 1, name: 'Training 1' },
+          { id: 2, name: 'Training 2' }
+        ],
+        existMoreItems: false
+      };
+      const mockOnSuccess = jest.fn();
+
+      appFetch.mockImplementation((path, config, onSuccess) => {
+        onSuccess(mockFeed);
+      });
+
+      routineService.viewFeed(0, 10, mockOnSuccess, jest.fn());
+
+      expect(mockOnSuccess).toHaveBeenCalledWith(mockFeed);
+    });
+  });
 });
 

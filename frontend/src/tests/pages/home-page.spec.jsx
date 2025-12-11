@@ -4,12 +4,18 @@ import React from "react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import ViewAllRoutinespage from "../../modules/app/pages/view-all-routines-page";
+import HomePage from "../../modules/app/pages/home-page";
 import { UserContext } from "../../modules/app/components/common/user-provider";
+import backend from "../../backend";
 
 jest.mock("../../backend/routineService", () => ({
-  viewAllRoutines: (params, onSuccess, onError) => {
-    console.log("✅ mock searchRoutines llamado con:", { params });
-    mockImplementation(params, onSuccess, onError);
+  viewAllRoutines: jest.fn(),
+}));
+
+jest.mock("../../backend", () => ({
+  routineService: {
+    viewAllRoutines: jest.fn(),
+    viewFeed: jest.fn(),
   },
 }));
 
@@ -21,13 +27,15 @@ jest.mock("react-router-dom", () => ({
 
 let mockImplementation;
 
-describe("ViewRoutines", () => {
+describe("ViewAllRoutinespage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("muestra mensaje si no hay rutinas", async () => {
-    mockImplementation = (params, onSuccess) => onSuccess({ items: [], existMoreItems: false });
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: [], existMoreItems: false });
+    });
 
     render(
       <MemoryRouter>
@@ -43,7 +51,7 @@ describe("ViewRoutines", () => {
   });
 
   it("muestra una rutina", async () => {
-    mockImplementation = (params, onSuccess) =>
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) =>
       onSuccess({
         items: [
           {
@@ -58,7 +66,8 @@ describe("ViewRoutines", () => {
           },
         ],
         existMoreItems: false,
-      });
+      })
+    );
 
     render(
       <MemoryRouter>
@@ -75,9 +84,8 @@ describe("ViewRoutines", () => {
     });
   });
 
-
-    it("muestra varias rutinas", async () => {
-    mockImplementation = (params, onSuccess) =>
+  it("muestra varias rutinas", async () => {
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) =>
       onSuccess({
         items: [
           {
@@ -102,7 +110,8 @@ describe("ViewRoutines", () => {
           },
         ],
         existMoreItems: false,
-      });
+      })
+    );
 
     render(
       <MemoryRouter>
@@ -119,65 +128,177 @@ describe("ViewRoutines", () => {
       expect(screen.getByText(/RUTINA 2/i)).toBeInTheDocument();
       expect(screen.getByText(/EJERCICIO 3/i)).toBeInTheDocument();
       expect(screen.getByText(/EJERCICIO 4/i)).toBeInTheDocument();
-    }); 
+    });
+  });
+
+  it("muestra 'No hay ejercicios' cuando la rutina no tiene ejercicios", async () => {
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) =>
+      onSuccess({
+        items: [
+          {
+            id: 3,
+            name: "RUTINA VACÍA",
+            duration: 30,
+            exercises: [],
+            creator: "ENTRENADOR",
+          },
+        ],
+        existMoreItems: false,
+      })
+    );
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+          <ViewAllRoutinespage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/RUTINA VACÍA/i)).toBeInTheDocument();
+      expect(screen.getByText(/No hay ejercicios/i)).toBeInTheDocument();
+    });
+  });
+
+  it("navega a la página de detalles al hacer click en el boton", async () => {
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) =>
+      onSuccess({
+        items: [
+          {
+            id: 5,
+            name: "RUTINA",
+            duration: 60,
+            exercises: [],
+            creator: "ENTRENADOR",
+          },
+        ],
+        existMoreItems: false,
+      })
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/routines"]}>
+        <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
+          <ViewAllRoutinespage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    const button = await screen.findByRole("button", { name: /ver detalles de rutina/i });
+    userEvent.click(button);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/routines/5");
+  });
+});
+
+describe("HomePage - Feed tab", () => {
+  const user = { id: 1, role: "USER" };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("carga el feed al cambiar de pestaña y muestra actividades", async () => {
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: [], existMoreItems: false });
     });
 
+    const mockFeedItems = [
+      {
+        id: 101,
+        name: "Training Feed 1",
+        description: "Desc feed",
+        duration: 50,
+        exercises: [{ id: 1 }, { id: 2 }],
+        creatorId: 5,
+        creatorUserName: "trainer5",
+        creatorAvatarBase64: null,
+        routineId: 20,
+        creationDate: "2025-12-10T12:00:00",
+      },
+    ];
 
-    it("muestra 'No hay ejercicios' cuando la rutina no tiene ejercicios", async () => {
-        mockImplementation = (params, onSuccess) =>
-        onSuccess({
-            items: [
-            {
-                id: 3,
-                name: "RUTINA VACÍA",
-                duration: 30,
-                exercises: [],
-                creator: "ENTRENADOR",
-            },
-            ],
-            existMoreItems: false,
-        });
-
-        render(
-        <MemoryRouter>
-            <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-            <ViewAllRoutinespage />
-            </UserContext.Provider>
-        </MemoryRouter>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText(/RUTINA VACÍA/i)).toBeInTheDocument();
-            expect(screen.getByText(/No hay ejercicios/i)).toBeInTheDocument();
-        });
+    backend.routineService.viewFeed.mockImplementation((page, size, onSuccess) => {
+      onSuccess({ items: mockFeedItems, existMoreItems: false });
     });
 
-    it("navega a la página de detalles al hacer click en el boton", async () => {
-        mockImplementation = (params, onSuccess) =>
-        onSuccess({
-            items: [
-            {
-                id: 5,
-                name: "RUTINA",
-                duration: 60,
-                exercises: [],
-                creator: "ENTRENADOR",
-            },
-            ],
-            existMoreItems: false,
-        });
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user }}>
+          <HomePage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
 
-        render(
-        <MemoryRouter initialEntries={["/routines"]}>
-            <UserContext.Provider value={{ user: { id: 1, role: "TRAINER" } }}>
-            <ViewAllRoutinespage />
-            </UserContext.Provider>
-        </MemoryRouter>
-        );
+    await waitFor(() => {
+      expect(screen.getByText(/Todavía no hay rutinas disponibles/i)).toBeInTheDocument();
+    });
 
-        const button = await screen.findByRole("button", { name: /ver detalles de rutina/i });
-        await userEvent.click(button);
+    const feedButton = screen.getByRole("button", { name: /Siguiendo/i });
+    userEvent.click(feedButton);
 
-        expect(mockNavigate).toHaveBeenCalledWith("/routines/5");
-      });
+    expect(backend.routineService.viewFeed).toHaveBeenCalledWith(
+      0,
+      4,
+      expect.any(Function),
+      expect.any(Function)
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Training Feed 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/Desc feed/i)).toBeInTheDocument();
+      expect(screen.getByText(/50 min · 2 ejercicios/i)).toBeInTheDocument();
+    });
+  });
+
+  it("muestra mensaje si no hay actividades en el feed", async () => {
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: [], existMoreItems: false });
+    });
+
+    backend.routineService.viewFeed.mockImplementation((page, size, onSuccess) => {
+      onSuccess({ items: [], existMoreItems: false });
+    });
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user }}>
+          <HomePage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    const feedButton = screen.getByRole("button", { name: /Siguiendo/i });
+    userEvent.click(feedButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No hay actividades de tus seguidos/i)).toBeInTheDocument();
+    });
+  });
+
+  it("muestra error si falla la carga del feed", async () => {
+    backend.routineService.viewAllRoutines.mockImplementation((params, onSuccess) => {
+      onSuccess({ items: [], existMoreItems: false });
+    });
+
+    backend.routineService.viewFeed.mockImplementation((page, size, onSuccess, onError) => {
+      onError("Error en feed");
+    });
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user }}>
+          <HomePage />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    const feedButton = screen.getByRole("button", { name: /Siguiendo/i });
+    userEvent.click(feedButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Error en feed/i)).toBeInTheDocument();
+    });
+  });
 });

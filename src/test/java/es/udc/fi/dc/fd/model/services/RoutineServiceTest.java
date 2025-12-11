@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -1018,4 +1019,69 @@ public class RoutineServiceTest {
         Routine foundRoutine = routineService.getRoutineByTraining(training.getId());
         assertEquals(routine.getId(), foundRoutine.getId());
     }
+
+    @Test
+    public void testFindFollowedUsersTrainingsFeedSuccess() throws Exception {
+
+        Users follower = createUser("followerUser" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+        Users creator = createUser("creatorUser" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+        userService.signUp(follower, Users.RoleType.USER);
+        userService.signUp(creator, Users.RoleType.USER);
+
+        Exercise exercise1 = exerciseDao.save(
+            new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1)
+        );
+
+        Routine routine = routineService.createRoutine(
+            creator.getId(),
+            "routineFeed",
+            new ArrayList<Long>() {{ add(exercise1.getId()); }},
+            60L,
+            true
+        );
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(
+            routine.getId(),
+            exercise1.getId()
+        );
+
+        Training training = routineService.createTrainingFromRoutine(
+            creator.getId(),
+            "Training feed",
+            "Desc feed",
+            45L,
+            true,
+            series,
+            routine.getId()
+        );
+
+        userService.followUser(follower.getId(), creator.getId());
+
+        Page<Training> result = routineService.findFollowedUsersTrainingsFeed(
+            follower.getId(),
+            0,
+            10
+        );
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(training.getId(), result.getContent().get(0).getId());
+    }
+
+
+    @Test
+    public void testFindFollowedUsersTrainingsFeedEmpty() throws Exception {
+
+        Users user = userService.login("user1", "12345");
+
+        Page<Training> result = routineService.findFollowedUsersTrainingsFeed(
+            user.getId(),
+            0,
+            10
+        );
+
+        assertEquals(0, result.getContent().size());
+        assertFalse(result.hasNext());
+    }
+
 }

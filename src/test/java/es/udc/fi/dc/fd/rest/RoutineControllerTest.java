@@ -32,6 +32,7 @@ import es.udc.fi.dc.fd.model.services.RoutineService;
 import es.udc.fi.dc.fd.model.services.UserService;
 
 import es.udc.fi.dc.fd.model.entities.Exercise.grupoMuscular;
+import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
@@ -978,7 +979,57 @@ public class RoutineControllerTest {
 
     }
 
+    @Test
+    public void testGetFollowedUsersFeedSuccess() throws Exception {
+        AuthenticatedUserDto follower = createAuthenticatedUser("userFollower" + System.currentTimeMillis(), RoleType.USER, true);
+        AuthenticatedUserDto creator = createAuthenticatedUser("userCreator" + System.currentTimeMillis(), RoleType.USER, true);
 
+        Icon icon = new Icon("iconName", "iconPath");
+        iconDao.save(icon);
 
+        Exercise exercise1 = exerciseDao.save(new Exercise("exercise1", "description1", grupoMuscular.PECHO, 1, icon));
+
+        Routine routine = routineService.createRoutine(creator.getUserDto().getId(), "routine1",
+                new ArrayList<Long>() {{ add(exercise1.getId()); }}, 60L, true);
+
+        List<Serie> series = routineService.getDefaultRoutineSeries(routine.getId(), exercise1.getId());
+
+        Training training = routineService.createTrainingFromRoutine(
+                creator.getUserDto().getId(),
+                "Training feed",
+                "Description feed",
+                45L,
+                true,
+                series,
+                routine.getId()
+        );
+
+        userService.followUser(follower.getUserDto().getId(), creator.getUserDto().getId());
+
+        mockMvc.perform(get("/api/routines/feed")
+                .requestAttr("userId", follower.getUserDto().getId())
+                .param("page", "0")
+                .param("size", "10")
+                .header("Authorization", "Bearer " + follower.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(1)))
+            .andExpect(jsonPath("$.items[0].name").value(training.getName()))
+            .andExpect(jsonPath("$.items[0].description").value(training.getDescription()));
+    }
+
+    @Test
+    public void testGetFollowedUsersFeedEmpty() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("trainer", RoleType.TRAINER, true);
+
+        mockMvc.perform(get("/api/routines/feed")
+                .requestAttr("userId", user.getUserDto().getId())
+                .param("page", "0")
+                .param("size", "10")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(0)));
+    }
 
 }
