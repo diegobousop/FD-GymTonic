@@ -341,14 +341,14 @@ describe('routineService', () => {
   });
 
   describe('viewFeed', () => {
-    it('llama appFetch con paginación', () => {
+    it('llama appFetch sin paginación', () => {
       const mockOnSuccess = jest.fn();
       const mockOnErrors = jest.fn();
 
-      routineService.viewFeed(0, 10, mockOnSuccess, mockOnErrors);
+      routineService.viewFeed(mockOnSuccess, mockOnErrors);
 
       expect(appFetch).toHaveBeenCalledWith(
-        '/routines/feed?page=0&size=10',
+        '/routines/feed',
         expect.objectContaining({ method: 'GET' }),
         mockOnSuccess,
         mockOnErrors
@@ -369,10 +369,9 @@ describe('routineService', () => {
         onSuccess(mockFeed);
       });
 
-      routineService.viewFeed(0, 10, mockOnSuccess, jest.fn());
+      routineService.viewFeed(mockOnSuccess, jest.fn());
 
       expect(mockOnSuccess).toHaveBeenCalledWith(mockFeed);
     });
   });
 });
-

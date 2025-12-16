@@ -2,7 +2,9 @@ package es.udc.fi.dc.fd.rest.dtos;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,8 +22,6 @@ import es.udc.fi.dc.fd.rest.dtos.user.PeriodExerciseStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.PeriodMuscularGroupStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.UserStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.UserStatsParamsDto;
-import java.util.Map;
-import java.util.HashMap;
 
 
 public class DtosTest {
@@ -240,7 +240,7 @@ public class DtosTest {
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
             java.time.LocalDateTime creationDate = java.time.LocalDateTime.now();
 
-            TrainingDetailsDto dto = new TrainingDetailsDto(Long.valueOf(10), "Entrenamiento", "desc", Long.valueOf(90), creationDate, Long.valueOf(5), "user", null, Long.valueOf(6), "rutina", exercises, false);
+            TrainingDetailsDto dto = new TrainingDetailsDto(Long.valueOf(10), "Entrenamiento", "desc", Long.valueOf(90), creationDate, Long.valueOf(5), "user", null, Long.valueOf(6), "rutina", exercises, false, true);
 
             assertEquals(Long.valueOf(10L), dto.getId());
             assertEquals("Entrenamiento", dto.getName());
@@ -253,6 +253,7 @@ public class DtosTest {
             assertEquals(Long.valueOf(6L), dto.getRoutineId());
             assertEquals("rutina", dto.getRoutineName());
             assertFalse(dto.isPublic());
+            assertTrue(dto.isRoutineIsPublic());
             assertNull(dto.getCreatorAvatarBase64());
         }
 

@@ -425,19 +425,16 @@ public class RoutineController {
      * @throws InstanceNotFoundException si algún entrenamiento no existe
      */
     @GetMapping("/feed")
-    public BlockDto<TrainingDetailsDto> getFollowedUsersFeed(
-            @RequestAttribute Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) throws InstanceNotFoundException {
+    public List<TrainingDetailsDto> getFollowedUsersFeed(
+            @RequestAttribute Long userId) throws InstanceNotFoundException {
 
-        Page<Training> trainingsPage = routineService.findFollowedUsersTrainingsFeed(userId, page, size);
+        List<Training> trainings = routineService.findFollowedUsersTrainingsFeed(userId);
 
         List<TrainingDetailsDto> feedItems = new ArrayList<>();
 
-        for (Training t : trainingsPage.getContent()) {
+        for (Training t : trainings) {
 
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
-
             Routine routine = routineService.getRoutineByTraining(t.getId());
 
             for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
@@ -448,7 +445,7 @@ public class RoutineController {
             feedItems.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
         }
 
-        return new BlockDto<>(feedItems, trainingsPage.hasNext());
+        return feedItems; // devolvemos directamente la lista completa
     }
 
 }

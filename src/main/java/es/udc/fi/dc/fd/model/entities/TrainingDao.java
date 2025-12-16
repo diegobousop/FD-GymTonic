@@ -19,5 +19,5 @@ public interface TrainingDao extends JpaRepository<Training, Long> {
 
     Training findTopByUserIdOrderByCreationDateDesc(Long userId);
 
-    Page<Training> findByUserIdInAndIsPublicTrueOrderByCreationDateDesc(List<Long> userIds, Pageable pageable);
+    List<Training> findByUserIdInAndIsPublicTrueOrderByCreationDateDesc(List<Long> userIds);
 }

@@ -1354,16 +1354,11 @@ public class RoutineServiceTest {
 
         userService.followUser(follower.getId(), creator.getId());
 
-        Page<Training> result = routineService.findFollowedUsersTrainingsFeed(
-            follower.getId(),
-            0,
-            10
-        );
+        List<Training> result = routineService.findFollowedUsersTrainingsFeed(follower.getId());
 
-        assertEquals(1, result.getContent().size());
-        assertEquals(training.getId(), result.getContent().get(0).getId());
+        assertEquals(1, result.size());
+        assertEquals(training.getId(), result.get(0).getId());
     }
-
 
     @Test
     @Transactional
@@ -1373,14 +1368,9 @@ public class RoutineServiceTest {
         userService.signUp(user, Users.RoleType.USER);
 
         // No sigue a nadie -> feed vacío
-        Page<Training> result = routineService.findFollowedUsersTrainingsFeed(
-                user.getId(),
-                0,
-                10
-        );
+        List<Training> result = routineService.findFollowedUsersTrainingsFeed(user.getId());
 
-        assertEquals(0, result.getContent().size());
-        assertFalse(result.hasNext());
+        assertTrue(result.isEmpty());
     }
 
 }

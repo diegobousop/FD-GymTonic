@@ -17,12 +17,14 @@ public class TrainingDetailsDto {
     private Long routineId;
     private String routineName;
     private boolean isPublic;
+    private boolean routineIsPublic; // <-- nuevo campo
 
     public TrainingDetailsDto() {}
 
     public TrainingDetailsDto(Long id, String name, String description, Long duration,
         LocalDateTime creationDate, Long creatorId, String creatorUserName, String creatorAvatarBase64,
-        Long routineId, String routineName, List<ExerciseRoutineDto> exercises, boolean isPublic) {
+        Long routineId, String routineName, List<ExerciseRoutineDto> exercises, boolean isPublic,
+        boolean routineIsPublic) {
 
         this.id = id;
         this.name = name;
@@ -36,6 +38,7 @@ public class TrainingDetailsDto {
         this.routineName = routineName;
         this.exercises = exercises;
         this.isPublic = isPublic;
+        this.routineIsPublic = routineIsPublic;
     }
 
     public Long getId() {
@@ -133,5 +136,12 @@ public class TrainingDetailsDto {
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
-}
 
+    public boolean isRoutineIsPublic() {
+        return routineIsPublic;
+    }
+
+    public void setRoutineIsPublic(boolean routineIsPublic) {
+        this.routineIsPublic = routineIsPublic;
+    }
+}

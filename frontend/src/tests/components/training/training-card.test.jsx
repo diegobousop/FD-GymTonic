@@ -15,6 +15,8 @@ describe("TrainingCard", () => {
       duration: 45,
       exercises: [{ id: 1 }, { id: 2 }],
       routineId: 10,
+      isPublic: true,
+      routineIsPublic: true
     },
   };
 
@@ -24,12 +26,11 @@ describe("TrainingCard", () => {
         <TrainingCard {...baseProps} />
       </MemoryRouter>
     );
-
     expect(screen.getByText("user1")).toBeInTheDocument();
     expect(screen.getByText("Training 1")).toBeInTheDocument();
     expect(screen.getByText("Desc training")).toBeInTheDocument();
     expect(screen.getByText(/45 min · 2 ejercicios/i)).toBeInTheDocument();
-    expect(screen.getByText("?")).toBeInTheDocument(); // avatar nulo muestra placeholder
+    expect(screen.getByText("?")).toBeInTheDocument();
   });
 
   it("muestra la imagen si creatorAvatarBase64 existe", () => {
@@ -37,38 +38,49 @@ describe("TrainingCard", () => {
       ...baseProps,
       training: { ...baseProps.training, creatorAvatarBase64: "data:image/png;base64,abc" },
     };
-
     render(
       <MemoryRouter>
         <TrainingCard {...props} />
       </MemoryRouter>
     );
-
     const img = screen.getByAltText("avatar");
     expect(img).toBeInTheDocument();
     expect(img.src).toContain("data:image/png;base64,abc");
   });
 
-  it("muestra el nombre como link si hay rutina asociada", () => {
+  it("muestra el nombre como link si hay rutina asociada y es pública", () => {
     render(
       <MemoryRouter>
         <TrainingCard {...baseProps} />
       </MemoryRouter>
     );
-
     const link = screen.getByText("Training 1");
     expect(link.closest("a")).toHaveAttribute("href", "/routines/10");
   });
 
   it("muestra el nombre como texto si no hay rutina asociada", () => {
-    const props = { ...baseProps, training: { ...baseProps.training, routineId: null } };
-
+    const props = { 
+      ...baseProps, 
+      training: { ...baseProps.training, routineId: null } 
+    };
     render(
       <MemoryRouter>
         <TrainingCard {...props} />
       </MemoryRouter>
     );
+    expect(screen.getByText("Training 1").closest("a")).toBeNull();
+  });
 
+  it("muestra el nombre como texto si la rutina no es pública", () => {
+    const props = { 
+      ...baseProps, 
+      training: { ...baseProps.training, routineIsPublic: false } 
+    };
+    render(
+      <MemoryRouter>
+        <TrainingCard {...props} />
+      </MemoryRouter>
+    );
     expect(screen.getByText("Training 1").closest("a")).toBeNull();
   });
 });

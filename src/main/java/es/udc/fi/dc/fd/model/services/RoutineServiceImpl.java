@@ -3,6 +3,7 @@ package es.udc.fi.dc.fd.model.services;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,7 +11,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -680,18 +680,16 @@ public class RoutineServiceImpl implements RoutineService {
     }
 
     @Override
-    public Page<Training> findFollowedUsersTrainingsFeed(Long userId, int page, int size) throws InstanceNotFoundException {
+    public List<Training> findFollowedUsersTrainingsFeed(Long userId) throws InstanceNotFoundException {
         // Obtener IDs de usuarios seguidos ya filtrados por bloqueos
         List<Long> followingIds = userService.getFollowingIds(userId);
 
         if (followingIds.isEmpty()) {
-            return Page.empty();
+            return Collections.emptyList();
         }
 
-        Pageable pageable = PageRequest.of(page, size);
-
-        // Obtener entrenamientos públicos de los usuarios seguidos
-        return trainingDao.findByUserIdInAndIsPublicTrueOrderByCreationDateDesc(followingIds, pageable);
+        // Obtener entrenamientos públicos de los usuarios seguidos, ordenados por fecha descendente
+        return trainingDao.findByUserIdInAndIsPublicTrueOrderByCreationDateDesc(followingIds);
     }
 
 }
