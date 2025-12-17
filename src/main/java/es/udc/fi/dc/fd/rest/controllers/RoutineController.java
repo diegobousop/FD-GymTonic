@@ -413,4 +413,39 @@ public class RoutineController {
 
         return new BlockDto<>(items, trainingsPage.hasNext());
     }
+
+    /**
+     * Obtener el feed de entrenamientos de los usuarios que sigo.
+     * Incluye solo entrenamientos visibles y de usuarios no bloqueados.
+     *
+     * @param userId ID del usuario autenticado (obtenido del request attribute)
+     * @param page número de página para paginación
+     * @param size tamaño de página
+     * @return DTO con los entrenamientos de los usuarios seguidos
+     * @throws InstanceNotFoundException si algún entrenamiento no existe
+     */
+    @GetMapping("/feed")
+    public List<TrainingDetailsDto> getFollowedUsersFeed(
+            @RequestAttribute Long userId) throws InstanceNotFoundException {
+
+        List<Training> trainings = routineService.findFollowedUsersTrainingsFeed(userId);
+
+        List<TrainingDetailsDto> feedItems = new ArrayList<>();
+
+        for (Training t : trainings) {
+
+            List<ExerciseRoutineDto> exercises = new ArrayList<>();
+            Routine routine = routineService.getRoutineByTraining(t.getId());
+
+            for (Exercise exercise : routineService.findTrainingExercises(t.getId())) {
+                List<Serie> series = exerciseService.findExerciseSeriesInTraining(t.getId(), exercise.getId());
+                exercises.add(ExerciseConversor.toExerciseRoutineDto(exercise, series, null));
+            }
+
+            feedItems.add(RoutineConversor.toTrainingDetailsDto(t, exercises, routine));
+        }
+
+        return feedItems; // devolvemos directamente la lista completa
+    }
+
 }

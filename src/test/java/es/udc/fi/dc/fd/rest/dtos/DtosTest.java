@@ -2,7 +2,9 @@ package es.udc.fi.dc.fd.rest.dtos;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,6 +14,7 @@ import org.junit.Test;
 
 import es.udc.fi.dc.fd.model.entities.Avatar;
 import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.Training;
 import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.rest.dtos.user.ExercisesStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.MuscularGroupsStatsDto;
@@ -19,8 +22,6 @@ import es.udc.fi.dc.fd.rest.dtos.user.PeriodExerciseStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.PeriodMuscularGroupStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.UserStatsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.UserStatsParamsDto;
-import java.util.Map;
-import java.util.HashMap;
 
 
 public class DtosTest {
@@ -205,15 +206,21 @@ public class DtosTest {
             dto.setName("Training");
             dto.setDuration(30L);
             dto.setDescription("desc");
+
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
             dto.setExercises(exercises);
+
             java.time.LocalDateTime creationDate = java.time.LocalDateTime.now();
             dto.setCreationDate(creationDate);
+
             dto.setCreatorId(2L);
             dto.setCreatorUserName("user");
+            dto.setCreatorAvatarBase64("base64avatar");
+
             dto.setRoutineId(3L);
             dto.setRoutineName("routineName");
             dto.setPublic(true);
+
             assertEquals(Long.valueOf(1L), dto.getId());
             assertEquals("Training", dto.getName());
             assertEquals(Long.valueOf(30L), dto.getDuration());
@@ -222,6 +229,7 @@ public class DtosTest {
             assertEquals(creationDate, dto.getCreationDate());
             assertEquals(Long.valueOf(2L), dto.getCreatorId());
             assertEquals("user", dto.getCreatorUserName());
+            assertEquals("base64avatar", dto.getCreatorAvatarBase64());
             assertEquals(Long.valueOf(3L), dto.getRoutineId());
             assertEquals("routineName", dto.getRoutineName());
             assertTrue(dto.isPublic());
@@ -231,7 +239,9 @@ public class DtosTest {
         public void testTrainingDetailsDto_Constructor() {
             List<ExerciseRoutineDto> exercises = new ArrayList<>();
             java.time.LocalDateTime creationDate = java.time.LocalDateTime.now();
-            TrainingDetailsDto dto = new TrainingDetailsDto(10L, "Entrenamiento", "desc", 90L, creationDate, 5L, "user", 6L, "rutina", exercises, false);
+
+            TrainingDetailsDto dto = new TrainingDetailsDto(Long.valueOf(10), "Entrenamiento", "desc", Long.valueOf(90), creationDate, Long.valueOf(5), "user", null, Long.valueOf(6), "rutina", exercises, false, true);
+
             assertEquals(Long.valueOf(10L), dto.getId());
             assertEquals("Entrenamiento", dto.getName());
             assertEquals(Long.valueOf(90L), dto.getDuration());
@@ -243,6 +253,8 @@ public class DtosTest {
             assertEquals(Long.valueOf(6L), dto.getRoutineId());
             assertEquals("rutina", dto.getRoutineName());
             assertFalse(dto.isPublic());
+            assertTrue(dto.isRoutineIsPublic());
+            assertNull(dto.getCreatorAvatarBase64());
         }
 
         @Test
@@ -756,6 +768,88 @@ public class DtosTest {
 
         UserStatsParamsDto emptyDto = new UserStatsParamsDto();
         assertNull(emptyDto.getUserProfileId());
+    }
+
+    @Test
+    public void testToTrainingDetailsDto() {
+        // Creator
+        Users user = new Users();
+        user.setId(5L);
+        user.setUserName("creator");
+
+        Avatar avatar = new Avatar();
+        avatar.setAvatarBase64("avatarBase64");
+        user.setAvatar(avatar);
+
+        // Training
+        Training training = new Training();
+        training.setId(10L);
+        training.setName("Training test");
+        training.setDescription("desc");
+        training.setDuration(45L);
+        java.time.LocalDateTime creationDate = java.time.LocalDateTime.now();
+        training.setCreationDate(creationDate);
+        training.setUser(user);
+        training.setIsPublic(true);
+
+        // Routine
+        Routine routine = new Routine();
+        routine.setId(20L);
+        routine.setName("Routine test");
+
+        // Exercises
+        List<ExerciseRoutineDto> exercises = new ArrayList<>();
+
+        TrainingDetailsDto dto = RoutineConversor.toTrainingDetailsDto(
+            training, exercises, routine
+        );
+
+        assertEquals(Long.valueOf(10L), dto.getId());
+        assertEquals("Training test", dto.getName());
+        assertEquals("desc", dto.getDescription());
+        assertEquals(Long.valueOf(45L), dto.getDuration());
+        assertEquals(creationDate, dto.getCreationDate());
+
+        assertEquals(Long.valueOf(5L), dto.getCreatorId());
+        assertEquals("creator", dto.getCreatorUserName());
+        assertEquals("avatarBase64", dto.getCreatorAvatarBase64());
+
+        assertEquals(Long.valueOf(20L), dto.getRoutineId());
+        assertEquals("Routine test", dto.getRoutineName());
+
+        assertEquals(exercises, dto.getExercises());
+        assertTrue(dto.isPublic());
+    }
+
+    @Test
+    public void testToTrainingDetailsDto_withoutAvatar() {
+        Users user = new Users();
+        user.setId(6L);
+        user.setUserName("creator2");
+        user.setAvatar(null);
+
+        Training training = new Training();
+        training.setId(11L);
+        training.setName("Training no avatar");
+        training.setDescription("desc");
+        training.setDuration(30L);
+        java.time.LocalDateTime creationDate = java.time.LocalDateTime.now();
+        training.setCreationDate(creationDate);
+        training.setUser(user);
+        training.setIsPublic(false);
+
+        Routine routine = new Routine();
+        routine.setId(21L);
+        routine.setName("Routine no avatar");
+
+        List<ExerciseRoutineDto> exercises = new ArrayList<>();
+
+        TrainingDetailsDto dto = RoutineConversor.toTrainingDetailsDto(
+            training, exercises, routine
+        );
+
+        assertNull(dto.getCreatorAvatarBase64());
+        assertFalse(dto.isPublic());
     }
 
 }

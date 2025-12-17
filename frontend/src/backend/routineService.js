@@ -220,4 +220,12 @@ export const getTrainingCalendarStatsForUser = (userId, year, onSuccess, onError
   );
 };
 
+export const viewFeed = (onSuccess, onErrors) => {
+  appFetch(
+    `/routines/feed`,
+    fetchConfig("GET"),
+    onSuccess,
+    onErrors
+  );
+};
 

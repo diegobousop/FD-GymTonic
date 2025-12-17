@@ -74,4 +74,6 @@ public interface RoutineService {
 
     Training findTrainingById(Long trainingId) throws InstanceNotFoundException;
 
+    List<Training> findFollowedUsersTrainingsFeed(Long userId) throws InstanceNotFoundException;
+
 }

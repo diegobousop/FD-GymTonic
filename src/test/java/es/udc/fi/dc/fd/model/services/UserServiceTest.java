@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -717,4 +718,31 @@ public class UserServiceTest {
 		assertTrue(stats.containsKey(serieHighReps));
 		assertFalse(stats.containsKey(serieLowReps));
 	}
+
+	@Test
+	public void testGetFollowingIds_filtersBlockedUsers() throws Exception {
+
+		Users user = createUser("userMain" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		// user sigue a ambos
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+		// user bloquea a follow2
+		userService.blockUser(user.getId(), userFollow2.getId());
+
+		// obtenemos following filtrados
+		List<Long> result = userService.getFollowingIds(user.getId());
+
+		assertEquals(1, result.size());
+		assertTrue(result.contains(userFollow1.getId()));
+		assertFalse(result.contains(userFollow2.getId()));
+	}
+
 }
