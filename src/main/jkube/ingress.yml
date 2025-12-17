@@ -12,6 +12,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: gym-tonic
+                name: gymtonic
                 port:
                   number: 8080
