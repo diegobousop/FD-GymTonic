@@ -1,5 +1,5 @@
 export const config = {
-    BASE_PATH: "/gym-tonic/api",
+  BASE_PATH: "/gymtonic/api",
     SERVICE_TOKEN_NAME: "serviceToken"
 }
 

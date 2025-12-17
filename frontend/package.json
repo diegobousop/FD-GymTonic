@@ -1,7 +1,7 @@
 {
-  "name": "gym-tonic",
+  "name": "gymtonic",
   "version": "1.0.0",
-  "homepage": "/gym-tonic/",
+  "homepage": "/gymtonic/",
   "private": true,
   "dependencies": {
     "@react-three/drei": "^10.7.7",

@@ -46,7 +46,7 @@ _Note: both frontend and backend are configured to start on path /projectname. M
   yarn start
   ```
 
-Now you can test your app in http://localhost:3000/gym-tonic
+Now you can test your app in http://localhost:3000/gymtonic
 
 **2. Access frontend in port 8080**
 
@@ -58,7 +58,7 @@ Now you can test your app in http://localhost:3000/gym-tonic
   ```
   mvn spring-boot:run
   ```
-  Thanks to the provided plugin configuration you can access your React app directly on http://localhost:8080/gym-tonic
+  Thanks to the provided plugin configuration you can access your React app directly on http://localhost:8080/gymtonic
 
 ## Deployment 📦
 Production deploy will be made via Jenkins to Kubernetes.
