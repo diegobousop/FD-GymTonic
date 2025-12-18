@@ -4,6 +4,7 @@ import BubbleButton from '../components/common/bubble-button'
 import CalendarCard from '../components/profile/calendar-card'
 import UserStatsPanel from '../components/profile/user-stats-panel'
 import BadgesList from '../components/profile/BadgesList'
+import YearSummaryWrapper from '../components/profile/year-summary-wrapper'
 
 import { getProfile, getFollowersCount, getFollowingCount, getStats } from "../../../backend/userService"
 import { UserContext } from '../components/common/user-provider';
@@ -155,6 +156,21 @@ const MyProfilePage = () => {
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
               />
+            );
+          }
+          if (activeTab === 'yearSummary') {
+            return (
+              <div className="flex flex-col w-full px-5 py-5">
+                <button
+                  onClick={() => setActiveTab('userStats')}
+                  className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors mb-4 w-fit"
+                  aria-label="Volver a estadísticas"
+                >
+                  <svgIcons.BackIcon className="w-6 h-6" />
+                  <span className="text-sm">Volver</span>
+                </button>
+                <YearSummaryWrapper year={new Date().getFullYear()} />
+              </div>
             );
           }
           return (

@@ -7,6 +7,7 @@ const MyProfileTabSelector = ({activeTab, setActiveTab, selectedReps, setSelecte
   const isTrainingActive = activeTab === 'trainingHistory';
   const isStatsActive = activeTab === 'userStats';
   const isBadgesActive = activeTab === 'badges';
+  const isYearSummaryActive = activeTab === 'yearSummary';
   const activeSize = 'px-3 py-1.5 text-sm';
   const inactiveSize = 'px-2.5 py-1 text-xs';
   return (
@@ -39,6 +40,16 @@ const MyProfileTabSelector = ({activeTab, setActiveTab, selectedReps, setSelecte
           >
           <svgIcons.StatsIcon className={`${isBadgesActive ? 'h-8' : 'h-6'} mr-2`} />
           <p className={`text-white ${isBadgesActive ? 'text-sm' : 'text-xs'}`}>Medallas</p>
+        </button>
+      </div>
+
+      <div className={`inline-block p-[2px] rounded-full ${isYearSummaryActive ? 'bg-gradient-to-r from-[#2F2828] to-[#602B2B] ' : ''} `}>
+        <button 
+          className={`flex flex-row items-center ${isYearSummaryActive ? activeSize : inactiveSize} bg-[#161616] text-white rounded-full hover:bg-[#ff0000e1]`}
+          onClick={() => setActiveTab('yearSummary')}
+          >
+          <svgIcons.StatsIcon className={`${isYearSummaryActive ? 'h-8' : 'h-6'} mr-2`} />
+          <p className={`text-white ${isYearSummaryActive ? 'text-sm' : 'text-xs'}`}>Resumen Anual</p>
         </button>
       </div>
       
