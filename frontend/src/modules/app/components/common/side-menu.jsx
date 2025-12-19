@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import { svgIcons } from '../../../../config/constants'
 import MenuItem from './menu-item'
 import { UserContext } from "./user-provider"
+import leaderboardExercise from "../../pages/leaderboard-exercise";
 
-const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon } = svgIcons
+const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon, leaderBoardIcon} = svgIcons
 
 const SideMenu = ({ activePage, setActivePage }) => {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ const SideMenu = ({ activePage, setActivePage }) => {
       <MenuItem title="Inicio" activePage={isActive} page={'home'} onClick={() => go('home', '/home')} icon={HomeIcon} />
       <MenuItem title="Ver perfil" activePage={isActive} page={'profile'} onClick={() => go('profile', '/profile')} icon={ProfileIcon} />
       <MenuItem title="Crear Entrenamiento" activePage={isActive} page={'createTraining'} onClick={() => go('createTraining', '/trainings/create-training')} icon={TrainingIcon} />
+      <MenuItem title="Ver Rankings" activePage={isActive} page={'leaderboardsPage'} onClick={()=>go ('leaderboardsPage', '/leaderboard')} icon={ProfileIcon} />
       { user && (user.role === 'USER') &&
       <MenuItem title="Solicitudes" activePage={isActive} page={'ViewFollowRequestsPage'} onClick={() => go('ViewFollowRequestsPage', '/profile/follow-request')} icon={ProfileIcon} />
       }

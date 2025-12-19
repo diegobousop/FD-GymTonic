@@ -35,4 +35,14 @@ public interface SerieDao extends JpaRepository<Serie, Long> {
                 + "AND t.creationDate >= :cutoff "
                 + "ORDER BY t.creationDate DESC")
     List<Serie> findSeriesByYearWithReps(Long userId, int numReps, java.time.LocalDateTime cutoff);
+
+    @Query("""
+    SELECT s
+    FROM Serie s
+    WHERE s.training.user.id = :userId
+      AND s.exercise.id = :exerciseId
+""")
+    List<Serie> findByUserIdAndExerciseId(
+             Long userId,
+             Long exerciseId);
 }

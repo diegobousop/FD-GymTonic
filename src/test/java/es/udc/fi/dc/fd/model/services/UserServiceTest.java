@@ -745,4 +745,53 @@ public class UserServiceTest {
 		assertFalse(result.contains(userFollow2.getId()));
 	}
 
+	@Test
+	public void TestGetLeaderboardExerciseOk() throws Exception {
+		Users user = createUser("userMain" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		// user sigue a ambos
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+
+		Exercise exercise = new Exercise("Bench Press", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training 1", "Desc", now, true, user, 60L);
+		trainingDao.save(training);
+
+		Serie serie = new Serie(10, 300, 1);
+		serie.setExercise(exercise);
+		serie.setTraining(training);
+		serieDao.save(serie);
+
+		Training training2 = new Training("Training 2", "Desc", now, true, userFollow1, 60L);
+		trainingDao.save(training2);
+
+		Serie serie2 = new Serie(10, 200, 1);
+		serie2.setExercise(exercise);
+		serie2.setTraining(training2);
+		serieDao.save(serie2);
+
+		Map<Long,Integer> leaderboardExercise =userService.getLeaderboardExercise(user.getId(),exercise.getId());
+
+		assertEquals(2,leaderboardExercise.size());
+		assertEquals(Integer.valueOf(300),leaderboardExercise.get(user.getId()));
+		assertEquals(Integer.valueOf(200),leaderboardExercise.get(userFollow1.getId()));
+        assertNull(leaderboardExercise.get(userFollow2.getId()));
+		Map.Entry<Long, Integer> firstEntry =
+				leaderboardExercise.entrySet().iterator().next();
+
+		assertEquals(user.getId(), firstEntry.getKey());
+
+	}
+
 }

@@ -183,4 +183,6 @@ public interface UserService {
 
 	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException;
 
+	public Map<Long,Integer> getLeaderboardExercise(Long userId, Long exerciseId) throws InstanceNotFoundException;
+
 }

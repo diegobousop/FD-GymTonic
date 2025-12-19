@@ -1,6 +1,7 @@
 package es.udc.fi.dc.fd.rest;
 
 import java.time.LocalDate;
+
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -695,14 +696,14 @@ public class UserControllerTest {
 						.requestAttr("senderId", userId)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(3L))
+				.andExpect(jsonPath("$.id").value(4L))
 				.andExpect(jsonPath("$.senderId").value(userId))
 				.andExpect(jsonPath("$.receiverId").value(userId2))
 				.andExpect(jsonPath("$.accepted").value(false))
 				.andExpect(jsonPath("$.senderUserName").value("testuser"))
 				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
 
-		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",3L)
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",4L)
 						.header("Authorization", "Bearer " + user.getServiceToken())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
@@ -935,5 +936,70 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.PECHO").exists())
 				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.ESPALDA").exists());
 	}
-	
+
+	@Test
+	public void getLeaderboardOk() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("userMain" , Users.RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto userFollow1 = createAuthenticatedUser("userFollow1", Users.RoleType.USER);
+		Long userFollowId = userFollow1.getUserDto().getId();
+
+
+		// user sigue a ambos
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userFollowId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",3L)
+						.header("Authorization", "Bearer " + userFollow1.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+
+
+		Exercise exercise = new Exercise("Bench Press", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training 1", "Desc", now, true, userDao.findById(user.getUserDto().getId()).get(), 60L);
+		trainingDao.save(training);
+
+		Serie serie = new Serie(10, 300, 1);
+		serie.setExercise(exercise);
+		serie.setTraining(training);
+		serieDao.save(serie);
+
+		Training training2 = new Training("Training 2", "Desc", now, true, userDao.findById(userFollow1.getUserDto().getId()).get(), 60L);
+		trainingDao.save(training2);
+
+		Serie serie2 = new Serie(10, 200, 1);
+		serie2.setExercise(exercise);
+		serie2.setTraining(training2);
+		serieDao.save(serie2);
+
+
+
+
+		mockMvc.perform(get("/api/users/leaderboards")
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.param("exerciseId", String.valueOf(exercise.getId()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(2))
+
+				// Primer puesto: user (300)
+				.andExpect(jsonPath("$[0].userId").value(userId))
+				.andExpect(jsonPath("$[0].score").value(300))
+
+				// Segundo puesto: userFollow1 (200)
+				.andExpect(jsonPath("$[1].userId").value(userFollowId))
+				.andExpect(jsonPath("$[1].score").value(200));
+	}
+
 }

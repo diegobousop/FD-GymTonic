@@ -1,14 +1,9 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
+import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,16 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.BlockUser;
-import es.udc.fi.dc.fd.model.entities.BlockUserDao;
-import es.udc.fi.dc.fd.model.entities.FollowRequest;
-import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -71,6 +56,10 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private SerieDao serieDao;
+    @Autowired
+    private ExerciseDao exerciseDao;
+    @Autowired
+    private TrainingDao trainingDao;
 
 	/**
 	 * Sign up.
@@ -668,4 +657,43 @@ public class UserServiceImpl implements UserService {
 				.toList();
 	}
 
+	@Override
+	public Map<Long,Integer> getLeaderboardExercise(Long userId, Long exerciseId) throws InstanceNotFoundException{
+
+		Users user = permissionChecker.checkUser(userId);
+
+		List<Users> users = new ArrayList<>(user.getFollowing());
+		users.add(user);
+
+		Map<Long, Integer> leaderboard = new HashMap<>();
+
+		for (Users u : users) {
+
+			List<Serie> series = serieDao.findByUserIdAndExerciseId(
+					u.getId(), exerciseId);
+
+			// Si no tiene el ejercicio, se excluye
+			if (series.isEmpty()) {
+				continue;
+			}
+
+			// Mayor peso levantado
+			Integer maxPeso = series.stream()
+					.map(Serie::getPeso)
+					.max(Integer::compareTo)
+					.orElse(null);
+
+			leaderboard.put(u.getId(), maxPeso);
+		}
+
+		// Ordenar por peso descendente
+		return leaderboard.entrySet()
+				.stream()
+				.sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
+				.collect(
+						LinkedHashMap::new,
+						(m, e) -> m.put(e.getKey(), e.getValue()),
+						Map::putAll
+				);
+	}
 }

@@ -225,4 +225,10 @@ export const getStats = ({ userProfileId, numReps, period }, onSuccess, onErrors
     onErrors
   );
 };
+export const getLeaderboard=({exerciseId}, onSuccess, onErrors) =>
+    appFetch(`/users/leaderboards?exerciseId=${exerciseId}`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
 
