@@ -45,6 +45,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(antMatcher("/*")).permitAll()
+                .requestMatchers(antMatcher("/actuator/**")).permitAll()
                 .requestMatchers(antMatcher("/static/**")).permitAll()
                 .requestMatchers(antMatcher("/assets/**")).permitAll()
                 .requestMatchers(antMatcher("/api/hello")).permitAll()
@@ -76,8 +77,7 @@ public class SecurityConfig {
                 .requestMatchers(antMatcher("/api/badges/**")).hasAnyRole(USER_STRING, TRAINER_STRING, ADMIN_STRING)
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers(headers -> headers.frameOptions().disable());
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         // @formatter:on
 
         return http.build();

@@ -32,7 +32,7 @@
 		<java.version>17</java.version>
 
 		<!--  Global properties -->
-		<project.contextPath>/gym-tonic</project.contextPath>
+		<project.contextPath>/gymtonic</project.contextPath>
 
 		<!--  Dependencies versions  -->
 		<jjwt.version>0.11.5</jjwt.version>
@@ -63,10 +63,10 @@
 	<!-- ************ RESOURCES AND SERVICES ********** -->
 	<!-- ********************************************** -->
 	<scm>
-		<connection>scm:git:https://gitlab.fic.udc.es/ferramentas.2025/”ferramentas.2025”/gym-tonic.git</connection>
-		<developerConnection>scm:git:https://gitlab.fic.udc.es/ferramentas.2025/gym-tonic.git</developerConnection>
+		<connection>scm:git:https://gitlab.fic.udc.es/ferramentas.2025/”ferramentas.2025”/gymtonic.git</connection>
+		<developerConnection>scm:git:https://gitlab.fic.udc.es/ferramentas.2025/gymtonic.git</developerConnection>
 		<tag>head</tag>
-		<url>https://gitlab.fic.udc.es/ferramentas.2025/gym-tonic</url>
+		<url>https://gitlab.fic.udc.es/ferramentas.2025/gymtonic</url>
 	</scm>
 
 	<issueManagement>
