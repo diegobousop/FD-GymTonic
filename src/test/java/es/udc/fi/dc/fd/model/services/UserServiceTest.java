@@ -2,6 +2,7 @@ package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +12,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,18 +26,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.BlockUserDao;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.FollowRequest;
-import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
-import es.udc.fi.dc.fd.model.entities.Training;
-import es.udc.fi.dc.fd.model.entities.TrainingDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -77,7 +68,12 @@ public class UserServiceTest {
 	@Autowired
 	private ExerciseDao exerciseDao;
 
+
 	private static final String PASSWORD = "12345";
+    @Autowired
+    private RoutineDao routineDao;
+    @Autowired
+    private RoutineExerciseDao routineExerciseDao;
 
 	/**
 	 * Creates the user.
@@ -792,6 +788,120 @@ public class UserServiceTest {
 
 		assertEquals(user.getId(), firstEntry.getKey());
 
+	}
+	@Test
+	public void TestGetLeaderboardRoutineOk() throws Exception {
+
+		// ===== Usuarios =====
+		Users user = createUser("userMain" + System.currentTimeMillis(),
+				Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(),
+				Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(),
+				Users.RoleType.USER, Gender.OTHER);
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+		// ===== Ejercicios =====
+		Exercise exercise1 = exerciseDao.save(
+				new Exercise("exercise1", "desc1",
+						Exercise.grupoMuscular.PECHO, 1));
+
+		Exercise exercise2 = exerciseDao.save(
+				new Exercise("exercise2", "desc2",
+						Exercise.grupoMuscular.PIERNA, 1));
+
+
+
+
+		// ===== Rutina =====
+		LocalDateTime now = LocalDateTime.now();
+
+		Routine routine = new Routine(
+				"routineTest",
+				null,
+				user,
+				90L,
+				now,
+				true
+		);
+
+		// ===== RoutineExercises =====
+		RoutineExerciseId reId1 = new RoutineExerciseId();
+		reId1.setRoutineId(routine.getId());
+		reId1.setExerciseId(exercise1.getId());
+
+		RoutineExercise re1 = new RoutineExercise();
+		re1.setId(reId1);
+		re1.setRoutine(routine);
+		re1.setExercise(exercise1);
+
+		RoutineExerciseId reId2 = new RoutineExerciseId();
+		reId2.setRoutineId(routine.getId());
+		reId2.setExerciseId(exercise2.getId());
+
+		RoutineExercise re2 = new RoutineExercise();
+		re2.setId(reId2);
+		re2.setRoutine(routine);
+		re2.setExercise(exercise2);
+		List<RoutineExercise> routineExercises = new ArrayList<>();
+		routineExercises.add(re1);
+		routineExercises.add(re2);
+
+		routine.setRoutineExercises(routineExercises);
+		routineDao.save(routine);
+
+
+
+		// ===== USER =====
+		Training trainingUser = new Training("trainingUser", "desc",
+				now, true, user, 60L);
+		trainingDao.save(trainingUser);
+
+		Serie userSerie1 = new Serie(10, 100, 1); // 1000
+		userSerie1.setExercise(exercise1);
+		userSerie1.setTraining(trainingUser);
+		serieDao.save(userSerie1);
+
+		Serie userSerie2 = new Serie(5, 200, 1); // 1000
+		userSerie2.setExercise(exercise2);
+		userSerie2.setTraining(trainingUser);
+		serieDao.save(userSerie2);
+
+		// Total user = 2000
+
+		// ===== FOLLOW 1 =====
+		Training trainingFollow1 = new Training("trainingFollow1", "desc",
+				now, true, userFollow1, 60L);
+		trainingDao.save(trainingFollow1);
+
+		Serie followSerie1 = new Serie(10, 50, 1); // 500
+		followSerie1.setExercise(exercise1);
+		followSerie1.setTraining(trainingFollow1);
+		serieDao.save(followSerie1);
+
+		// FOLLOW 2 no tiene series → excluido
+
+		// ===== Leaderboard =====
+		Map<Long, Integer> leaderboard =
+				userService.getLeaderboardRoutine(user.getId(), routine.getId());
+
+		assertEquals(2, leaderboard.size());
+
+		assertEquals(Integer.valueOf(2000), leaderboard.get(user.getId()));
+		assertEquals(Integer.valueOf(500), leaderboard.get(userFollow1.getId()));
+		assertNull(leaderboard.get(userFollow2.getId()));
+
+		// Verificar orden
+		Map.Entry<Long, Integer> firstEntry =
+				leaderboard.entrySet().iterator().next();
+
+		assertEquals(user.getId(), firstEntry.getKey());
 	}
 
 }

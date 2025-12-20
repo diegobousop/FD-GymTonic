@@ -231,4 +231,8 @@ export const getLeaderboard=({exerciseId}, onSuccess, onErrors) =>
         onSuccess,
         onErrors
     );
-
+export const getLeaderboardRoutine=({routineId}, onSuccess, onErrors) =>
+    appFetch(`/users/leaderboards/routine?routineId=${routineId}`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors);

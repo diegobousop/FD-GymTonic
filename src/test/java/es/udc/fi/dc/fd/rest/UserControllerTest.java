@@ -2,11 +2,14 @@ package es.udc.fi.dc.fd.rest;
 
 import java.time.LocalDate;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+
+import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
@@ -44,12 +42,7 @@ import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 import es.udc.fi.dc.fd.rest.dtos.user.UserStatsParamsDto;
-import es.udc.fi.dc.fd.model.entities.Exercise;
-import es.udc.fi.dc.fd.model.entities.ExerciseDao;
-import es.udc.fi.dc.fd.model.entities.Training;
-import es.udc.fi.dc.fd.model.entities.TrainingDao;
-import es.udc.fi.dc.fd.model.entities.Serie;
-import es.udc.fi.dc.fd.model.entities.SerieDao;
+
 import java.time.LocalDateTime;
 
 /**
@@ -98,9 +91,11 @@ public class UserControllerTest {
 	/** The user controller. */
 	@Autowired
 	private UserController userController;
+    @Autowired
+    private RoutineDao routineDao;
+    @Autowired
+    private RoutineExerciseDao routineExerciseDao;
 
-
-	
 
 	/**
 	 * Creates the authenticated user.
@@ -696,14 +691,14 @@ public class UserControllerTest {
 						.requestAttr("senderId", userId)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(4L))
+				.andExpect(jsonPath("$.id").value(5L))
 				.andExpect(jsonPath("$.senderId").value(userId))
 				.andExpect(jsonPath("$.receiverId").value(userId2))
 				.andExpect(jsonPath("$.accepted").value(false))
 				.andExpect(jsonPath("$.senderUserName").value("testuser"))
 				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
 
-		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",4L)
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",5L)
 						.header("Authorization", "Bearer " + user.getServiceToken())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
@@ -721,14 +716,14 @@ public class UserControllerTest {
 						.requestAttr("senderId", userId)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(2L))
+				.andExpect(jsonPath("$.id").value(3L))
 				.andExpect(jsonPath("$.senderId").value(userId))
 				.andExpect(jsonPath("$.receiverId").value(userId2))
 				.andExpect(jsonPath("$.accepted").value(false))
 				.andExpect(jsonPath("$.senderUserName").value("testuser"))
 				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
 
-		mockMvc.perform(delete("/api/users/rejectFollowRequest/{id}",2L)
+		mockMvc.perform(delete("/api/users/rejectFollowRequest/{id}",3L)
 						.header("Authorization", "Bearer " + user.getServiceToken())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
@@ -954,7 +949,7 @@ public class UserControllerTest {
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
-		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",3L)
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",4L)
 						.header("Authorization", "Bearer " + userFollow1.getServiceToken())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
@@ -1000,6 +995,132 @@ public class UserControllerTest {
 				// Segundo puesto: userFollow1 (200)
 				.andExpect(jsonPath("$[1].userId").value(userFollowId))
 				.andExpect(jsonPath("$[1].score").value(200));
+	}
+
+
+	@Test
+	public void getLeaderboardRoutineOk() throws Exception {
+
+		// ===== Usuarios autenticados =====
+		AuthenticatedUserDto user =
+				createAuthenticatedUser("userMain", Users.RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto userFollow1 =
+				createAuthenticatedUser("userFollow1", Users.RoleType.USER);
+		Long userFollowId = userFollow1.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userFollowId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}", 1L)
+						.header("Authorization", "Bearer " + userFollow1.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+		// ===== Ejercicios =====
+		Exercise exercise1 = exerciseDao.save(
+				new Exercise("Bench Press", "Chest exercise",
+						Exercise.grupoMuscular.PECHO, 3));
+
+		Exercise exercise2 = exerciseDao.save(
+				new Exercise("Squat", "Leg exercise",
+						Exercise.grupoMuscular.PIERNA, 3));
+
+
+		Users creator = userDao.findById(userId).orElse(null);
+		LocalDateTime now = LocalDateTime.now();
+
+		Routine routine = new Routine(
+				"Routine Test",
+				new ArrayList<>(),
+				creator,
+				90L,
+				now,
+				true
+		);
+
+
+		// Crear RoutineExercise 1
+		RoutineExerciseId reId1 = new RoutineExerciseId();
+		reId1.setRoutineId(routine.getId());
+		reId1.setExerciseId(exercise1.getId());
+
+		RoutineExercise re1 = new RoutineExercise();
+		re1.setId(reId1);
+		re1.setRoutine(routine);
+		re1.setExercise(exercise1);
+
+// Crear RoutineExercise 2
+		RoutineExerciseId reId2 = new RoutineExerciseId();
+		reId2.setRoutineId(routine.getId());
+		reId2.setExerciseId(exercise2.getId());
+
+		RoutineExercise re2 = new RoutineExercise();
+		re2.setId(reId2);
+		re2.setRoutine(routine);
+		re2.setExercise(exercise2);
+
+
+		routine.getRoutineExercises().add(re1);
+		routine.getRoutineExercises().add(re2);
+
+
+		routineDao.save(routine);
+
+		routineExerciseDao.save(re1);
+		routineExerciseDao.save(re2);
+
+		// ===== USER =====
+		Training trainingUser = new Training("Training 1", "Desc",
+				now, true, creator, 60L);
+		trainingDao.save(trainingUser);
+
+		Serie userSerie1 = new Serie(10, 100, 1); // 1000
+		userSerie1.setExercise(exercise1);
+		userSerie1.setTraining(trainingUser);
+		serieDao.save(userSerie1);
+
+		Serie userSerie2 = new Serie(5, 200, 1); // 1000
+		userSerie2.setExercise(exercise2);
+		userSerie2.setTraining(trainingUser);
+		serieDao.save(userSerie2);
+
+		// Total user = 2000
+
+		// ===== FOLLOW 1 =====
+		Users followUser = userDao.findById(userFollowId).orElse(null);
+
+		Training trainingFollow = new Training("Training 2", "Desc",
+				now, true, followUser, 60L);
+		trainingDao.save(trainingFollow);
+
+		Serie followSerie = new Serie(10, 50, 1); // 500
+		followSerie.setExercise(exercise1);
+		followSerie.setTraining(trainingFollow);
+		serieDao.save(followSerie);
+
+		// ===== Request =====
+		mockMvc.perform(get("/api/users/leaderboards/routine")
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.param("routineId", String.valueOf(routine.getId()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(2))
+
+				// Primer puesto: user (2000)
+				.andExpect(jsonPath("$[0].userId").value(userId))
+				.andExpect(jsonPath("$[0].score").value(2000))
+
+				// Segundo puesto: userFollow1 (500)
+				.andExpect(jsonPath("$[1].userId").value(userFollowId))
+				.andExpect(jsonPath("$[1].score").value(500));
 	}
 
 }
