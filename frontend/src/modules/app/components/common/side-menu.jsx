@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { svgIcons } from '../../../../config/constants'
 import MenuItem from './menu-item'
 import { UserContext } from "./user-provider"
-import leaderboardExercise from "../../pages/leaderboard-exercise";
+
 
 const { HomeIcon, ProfileIcon, CreateRoutineIcon, CreateExerciseIcon, TrainingIcon, leaderBoardIcon} = svgIcons
 
