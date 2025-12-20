@@ -29,6 +29,7 @@ import MyRoutineFollowersPage from "../pages/my-routine-followers-page";
 import ViewFollowRequestsPage from "../pages/view-follow-requests-page";
 import TrainingDetailsPage from "../pages/training-details-page";
 import { EXACT_ROUTE_TO_PAGE, PREFIX_ROUTE_TO_PAGE, DEFAULT_ACTIVE_PAGE } from '../../../config/constants';
+import LeaderboardExercise from "../pages/leaderboard-exercise";
 
 const Body = () => {
 
@@ -100,6 +101,7 @@ const Body = () => {
             <Route path="/profile/following" element={<ProtectedPath path={<UserFollowingPage />} />} />
             <Route path="/profile/follow-request" element={<ProtectedPath path={<ViewFollowRequestsPage />} />} />
             <Route path="/trainings/:id/details" element={<ProtectedPath path={<TrainingDetailsPage />} />} />
+            <Route path="/leaderboard" element={<ProtectedPath path={<LeaderboardExercise/>}/> }/>
           </Routes>
         </div>
       </div>

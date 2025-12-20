@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Map;
 
+import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -43,24 +44,12 @@ import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.common.JwtGenerator;
 import es.udc.fi.dc.fd.rest.common.JwtInfo;
-import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockedByUserDto;
-import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.FollowRequestConversor;
-import es.udc.fi.dc.fd.rest.dtos.FollowRequestDto;
-import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
 import es.udc.fi.dc.fd.rest.dtos.user.*;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toAuthenticatedUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUser;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
-
-
 
 
 /**
@@ -408,6 +397,11 @@ public class UserController {
 		return StatsConversor.toUserStatsDto(raw, params.getPeriod());
 	}
 
+	@GetMapping("/leaderboards")
+	public List<LeaderboardDto> getLeaderboardsExercise(@RequestAttribute Long userId, @RequestParam Long exerciseId) throws InstanceNotFoundException {
+		Map<Long,Integer> aux= userService.getLeaderboardExercise(userId,exerciseId);
+		return LeaderboardConversor.toLeaderboardConversor(aux);
+	}
 
 	/**
 	 * Generate service token.

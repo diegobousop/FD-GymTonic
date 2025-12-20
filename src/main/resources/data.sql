@@ -62,7 +62,13 @@ INSERT INTO Serie (repeticiones, peso, numeroSerie, exerciseId, routineId) VALUE
 (8,28,1,8,2),
 (8,28,2,8,2),
 (8,32.5,3,8,2),
-(8,32.5,4,8,2);
+(8,32.5,4,8,2),
+(8,20,1,9,3),
+(8,20,2,9,3),
+(8,20,3,9,3),
+(8,20,1,10,3),
+(8,20,2,10,3),
+(8,20,3,10,3);
 
 INSERT INTO Training (name, description, creationDate, isPublic, userId, duration) VALUES
 ('Lunes de pecho', 'Entrenamiento de pecho volviendo a la rutina, fácil de completar', TIMESTAMP '2025-01-02 10:00:00', true, 1, 75),
