@@ -185,4 +185,6 @@ public interface UserService {
 
 	public Map<Long,Integer> getLeaderboardExercise(Long userId, Long exerciseId) throws InstanceNotFoundException;
 
+	public Map<Long,Integer> getLeaderboardRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
+
 }

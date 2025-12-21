@@ -402,6 +402,11 @@ public class UserController {
 		Map<Long,Integer> aux= userService.getLeaderboardExercise(userId,exerciseId);
 		return LeaderboardConversor.toLeaderboardConversor(aux);
 	}
+	@GetMapping("/leaderboards/routine")
+	public List<LeaderboardDto> getLeaderboardRoutine(@RequestAttribute Long userId, @RequestParam Long routineId) throws InstanceNotFoundException {
+		Map<Long,Integer> aux= userService.getLeaderboardRoutine(userId,routineId);
+		return LeaderboardConversor.toLeaderboardConversor(aux);
+	}
 
 	/**
 	 * Generate service token.
