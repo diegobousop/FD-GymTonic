@@ -1,20 +1,16 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
@@ -34,15 +30,21 @@ import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-	/** The permission checker. */
+	/**
+	 * The permission checker.
+	 */
 	@Autowired
 	private PermissionChecker permissionChecker;
 
-	/** The password encoder. */
+	/**
+	 * The password encoder.
+	 */
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
-	/** The user dao. */
+	/**
+	 * The user dao.
+	 */
 	@Autowired
 	private UserDao userDao;
 
@@ -55,12 +57,24 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private FollowRequestDao followRequestDao;
 
+	@Autowired
+	private NotificationService notificationService;
+
+	@Autowired
+	private SerieDao serieDao;
+	@Autowired
+	private ExerciseDao exerciseDao;
+	@Autowired
+	private TrainingDao trainingDao;
+	@Autowired
+	private RoutineDao routineDao;
+
 	/**
 	 * Sign up.
 	 *
 	 * @param user the user
 	 * @throws DuplicateInstanceException the duplicate instance exception
-	 * @throws InstanceNotFoundException 
+	 * @throws InstanceNotFoundException
 	 */
 	@Override
 	public void signUp(Users user, Users.RoleType roleType) throws DuplicateInstanceException, InstanceNotFoundException {
@@ -80,11 +94,12 @@ public class UserServiceImpl implements UserService {
 		user.setFollowing(new ArrayList<>());
 		user.setBlockedUsers(new ArrayList<>());
 		user.setWhoBlockUs(new ArrayList<>());
+		user.setPremium(false);
 		Optional<Avatar> avatar = avatarDao.findByName("default");
-		if(!avatar.isPresent()) {
+		if (!avatar.isPresent()) {
 			throw new InstanceNotFoundException("project.entities.avatar", "default");
 		}
-		if(user.getAvatar() == null) user.setAvatar(avatar.get());
+		if (user.getAvatar() == null) user.setAvatar(avatar.get());
 
 		userDao.save(user);
 
@@ -100,7 +115,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@Transactional(readOnly = true)
-	public Users login(String userName, String password) throws LoginUserBlockedException ,IncorrectLoginException {
+	public Users login(String userName, String password) throws LoginUserBlockedException, IncorrectLoginException {
 
 		Optional<Users> user = userDao.findByUserName(userName);
 
@@ -108,7 +123,7 @@ public class UserServiceImpl implements UserService {
 			throw new IncorrectLoginException(userName, password);
 		}
 
-		if(Boolean.TRUE.equals(user.get().getBanned()))
+		if (Boolean.TRUE.equals(user.get().getBanned()))
 			throw new LoginUserBlockedException();
 
 		if (!passwordEncoder.matches(password, user.get().getPassword())) {
@@ -135,10 +150,10 @@ public class UserServiceImpl implements UserService {
 	/**
 	 * Update profile.
 	 *
-	 * @param id        the id
-	 * @param firstName the first name
-	 * @param lastName  the last name
-	 * @param email     the email
+	 * @param id         the id
+	 * @param firstName  the first name
+	 * @param lastName   the last name
+	 * @param email      the email
 	 * @param avatarName the avatar name
 	 * @param cardNumber the card number
 	 * @return the user
@@ -146,7 +161,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	public Users updateProfile(Long id, String firstName, String lastName, String email, String avatarName, String cardNumber,
-		 int height, float weight, String gender, String birthDate)
+							   int height, float weight, String gender, String birthDate)
 			throws InstanceNotFoundException {
 
 		Users user = permissionChecker.checkUser(id);
@@ -156,15 +171,14 @@ public class UserServiceImpl implements UserService {
 		user.setEmail(email);
 		user.setHeight(height);
 		user.setWeight(weight);
-		if(gender != null && !gender.isEmpty()) user.setGender(Users.Gender.valueOf(gender));
-		if(birthDate != null && !birthDate.isEmpty()) user.setBirthDate(toLocalDate(birthDate));
+		if (gender != null && !gender.isEmpty()) user.setGender(Users.Gender.valueOf(gender));
+		if (birthDate != null && !birthDate.isEmpty()) user.setBirthDate(toLocalDate(birthDate));
 
 		// Actualizar premium y tarjeta
-		if(cardNumber != null && !cardNumber.isEmpty()) {
+		if (cardNumber != null && !cardNumber.isEmpty()) {
 			user.setBankCard(cardNumber);
 			user.setPremium(true);
-		} 
-		else {
+		} else {
 			user.setBankCard(null);
 			user.setPremium(false);
 		}
@@ -175,8 +189,8 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (user.getAvatar() == null || !user.getAvatar().getId().equals(avatar.get().getId())) {
-            user.setAvatar(avatar.get());
-        }
+			user.setAvatar(avatar.get());
+		}
 
 		userDao.save(user);
 
@@ -201,7 +215,7 @@ public class UserServiceImpl implements UserService {
 		if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
 			throw new IncorrectPasswordException();
 		}
-		
+
 		user.setPassword(passwordEncoder.encode(newPassword));
 		userDao.save(user);
 
@@ -209,34 +223,35 @@ public class UserServiceImpl implements UserService {
 
 	/**
 	 * Block a User
+	 *
 	 * @param idBlocker id who blocks
 	 * @param idBlocked id of user being blocked
 	 * @throws AlreadyBlockException the user was already blocked
-	 * @throws SelfBlockException the user cant block him self
+	 * @throws SelfBlockException    the user cant block him self
 	 */
 	@Override
-	public void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException{
+	public void banUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, PermissionException, InstanceNotFoundException, SelfBlockException {
 
-		if (!userDao.existsById(idBlocked)) 
+		if (!userDao.existsById(idBlocked))
 			throw new InstanceNotFoundException("project.entities.users", idBlocked);
 
-		if (!userDao.existsById(idBlocker)) 
+		if (!userDao.existsById(idBlocker))
 			throw new InstanceNotFoundException("project.entities.users", idBlocker);
-			
+
 		Optional<Users> user = userDao.findById(idBlocked);
-		if(user.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
+		if (user.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
 		Optional<Users> blocker = userDao.findById(idBlocker);
-		if(blocker.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocker);
+		if (blocker.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocker);
 		Users userEnt = user.get();
 		Users blockerEnt = blocker.get();
 		if (Boolean.TRUE.equals(userEnt.getBanned()))
 			throw new AlreadyBlockException();
 
-		
+
 		if (blockerEnt.getRole() != RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocker);
 
-		if(Objects.equals(idBlocker, idBlocked))
+		if (Objects.equals(idBlocker, idBlocked))
 			throw new SelfBlockException();
 
 		// Remove blocked user from all users who have them as a follower
@@ -254,35 +269,35 @@ public class UserServiceImpl implements UserService {
 			userEnt.getFollowing().clear();
 			userDao.save(userEnt);
 		}
-		
+
 		userEnt.setBanned(Boolean.valueOf(true));
-		
+
 		userDao.save(userEnt);
 	}
 
 	@Override
-	public BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException{
-		if (!userDao.existsById(idBlocked)) 
+	public BlockUser blockUser(Long idBlocker, Long idBlocked) throws AlreadyBlockException, SelfBlockException, PermissionException, InstanceNotFoundException {
+		if (!userDao.existsById(idBlocked))
 			throw new InstanceNotFoundException("project.entities.users", idBlocked);
 
-		if (!userDao.existsById(idBlocker)) 
+		if (!userDao.existsById(idBlocker))
 			throw new InstanceNotFoundException("project.entities.users", idBlocker);
 
-		if(blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked)){
+		if (blockUserDao.existsByIdBlockerAndIdBlocked(idBlocker, idBlocked)) {
 			throw new AlreadyBlockException();
 		}
 
 		Optional<Users> user = userDao.findById(idBlocked);
-		if(user.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
+		if (user.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
 
 		Optional<Users> blockedOptional = userDao.findById(idBlocked);
 
-		if(blockedOptional.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
+		if (blockedOptional.isEmpty()) throw new InstanceNotFoundException("project.entities.users", idBlocked);
 
-		if(blockedOptional.get().getRole() == RoleType.ADMIN)
+		if (blockedOptional.get().getRole() == RoleType.ADMIN)
 			throw new PermissionException("project.entities.BlockUser", idBlocked);
 
-		if(Objects.equals(idBlocker, idBlocked))
+		if (Objects.equals(idBlocker, idBlocked))
 			throw new SelfBlockException();
 
 
@@ -292,17 +307,17 @@ public class UserServiceImpl implements UserService {
 		//los admins no pueden ser bloqueados ni bloquear
 		if (blocked.getRole() == RoleType.ADMIN)
 			throw new PermissionException("project.entites.BlockUser", idBlocked);
-		
+
 		if (blocker.getRole() == RoleType.ADMIN)
 			throw new PermissionException("project.entites.BlockUser", idBlocker);
 
-		if(blocker.getFollowers().contains(blocked)){
+		if (blocker.getFollowers().contains(blocked)) {
 			//el usuario que bloqueado sigue al que le bloquea
-			blocker.getFollowers().remove(blocked); 
+			blocker.getFollowers().remove(blocked);
 			blocked.getFollowing().remove(blocker);
 		}
 
-		if(blocked.getFollowers().contains(blocker)){
+		if (blocked.getFollowers().contains(blocker)) {
 			//el usuario que bloquea sigue al bloqueado
 			blocked.getFollowers().remove(blocker);
 			blocker.getFollowing().remove(blocked);
@@ -326,12 +341,11 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<Users> getBlocked(Long id) throws InstanceNotFoundException{
+	public List<Users> getBlocked(Long id) throws InstanceNotFoundException {
 		Users user = permissionChecker.checkUser(id);
 
 		return user.getBlockedUsers();
 	}
-
 
 
 	@Override
@@ -342,7 +356,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public Block<Users> getAllUser(int page, int size){
+	public Block<Users> getAllUser(int page, int size) {
 
 		Pageable pageable = PageRequest.of(page, size);
 
@@ -366,10 +380,10 @@ public class UserServiceImpl implements UserService {
 			throw new PermissionException("project.entities.users", followedId);
 		}
 
-		if(followed.getFollowers()==null) {
+		if (followed.getFollowers() == null) {
 			followed.setFollowers(new ArrayList<>());
 		}
-		if(newFollower.getFollowing()==null) {
+		if (newFollower.getFollowing() == null) {
 			newFollower.setFollowing(new ArrayList<>());
 		}
 
@@ -377,12 +391,16 @@ public class UserServiceImpl implements UserService {
 			return false; // Already following or trying to follow myself
 		}
 
-		if((blockUserDao.existsByIdBlockerAndIdBlocked(followerId, followedId)) || (blockUserDao.existsByIdBlockerAndIdBlocked(followedId, followerId)))
+		if ((blockUserDao.existsByIdBlockerAndIdBlocked(followerId, followedId)) || (blockUserDao.existsByIdBlockerAndIdBlocked(followedId, followerId)))
 			return false; //si bloqueas a un usuario no lo puedes seguir, si un usuario te bloquea no lo puedes seguir
 
 		followed.getFollowers().add(newFollower);
 		newFollower.getFollowing().add(followed);
 		userDao.save(followed);
+
+		// Notificar al usuario seguido sobre el nuevo seguidor
+		notificationService.notifyNewFollower(followerId, followedId);
+
 		return true;
 	}
 
@@ -405,7 +423,8 @@ public class UserServiceImpl implements UserService {
 
 	/**
 	 * Get followers of a user
-	 * @param id the userId 
+	 *
+	 * @param id the userId
 	 * @return list of followers
 	 * @throws InstanceNotFoundException the instance not found exception
 	 */
@@ -415,12 +434,12 @@ public class UserServiceImpl implements UserService {
 		Pageable pageable = PageRequest.of(page, size);
 
 		//Si no tiene seguidores se devuelve una lista vacía
-		if(user.getFollowers() == null) {
+		if (user.getFollowers() == null) {
 			return new Block<>(new ArrayList<>(), false);
 		}
 
 		Slice<Users> slice = user.getFollowers().stream()
-				.skip(page * (long)size)
+				.skip(page * (long) size)
 				.limit(size)
 				.collect(java.util.stream.Collectors.collectingAndThen(
 						java.util.stream.Collectors.toList(),
@@ -428,8 +447,10 @@ public class UserServiceImpl implements UserService {
 				));
 		return new Block<>(slice.getContent(), slice.hasNext());
 	}
+
 	/**
 	 * Get following of a user
+	 *
 	 * @param userId the userId
 	 * @return list of following
 	 * @throws InstanceNotFoundException the instance not found exception
@@ -440,12 +461,12 @@ public class UserServiceImpl implements UserService {
 		Pageable pageable = PageRequest.of(page, size);
 
 		//Si no tiene seguidos se devuelve una lista vacía
-		if(user.getFollowing() == null) {
+		if (user.getFollowing() == null) {
 			return new Block<>(new ArrayList<>(), false);
 		}
 
 		Slice<Users> slice = user.getFollowing().stream()
-				.skip(page * (long)size)
+				.skip(page * (long) size)
 				.limit(size)
 				.collect(java.util.stream.Collectors.collectingAndThen(
 						java.util.stream.Collectors.toList(),
@@ -457,7 +478,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public int getFollowersCount(Long userId) throws InstanceNotFoundException {
 		Users user = permissionChecker.checkUser(userId);
-		if(user.getFollowers() == null) {
+		if (user.getFollowers() == null) {
 			return 0;
 		}
 		return user.getFollowers().size();
@@ -466,7 +487,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public int getFollowingCount(Long userId) throws InstanceNotFoundException {
 		Users user = permissionChecker.checkUser(userId);
-		if(user.getFollowing() == null) {
+		if (user.getFollowing() == null) {
 			return 0;
 		}
 		return user.getFollowing().size();
@@ -474,7 +495,7 @@ public class UserServiceImpl implements UserService {
 
 	// Pasa de un String con formato "dd-MM-yyyy" a LocalDate
 	private LocalDate toLocalDate(String birthDate) {
-		String [] parts = birthDate.split("-");
+		String[] parts = birthDate.split("-");
 		int day = Integer.parseInt(parts[0]);
 		int month = Integer.parseInt(parts[1]);
 		int year = Integer.parseInt(parts[2]);
@@ -496,7 +517,12 @@ public class UserServiceImpl implements UserService {
 		Users sender = permissionChecker.checkUser(senderId);
 		Users receiver = permissionChecker.checkUser(receiverId);
 
-		if (receiver.getFollowers()==null){
+		//si hemos bloqueado a alguien no lo podemos
+		if (sender.getBlockedUsers() != null && sender.getBlockedUsers().contains(receiver)) {
+			throw new PermissionException("project.entities.followRequest", senderId);
+		}
+
+		if (receiver.getFollowers() == null) {
 			receiver.setFollowers(new ArrayList<>());
 		}
 		if (sender.equals(receiver)) {
@@ -504,18 +530,23 @@ public class UserServiceImpl implements UserService {
 		}
 
 		// si ya hay una solicitud pendiente o ya lo sigue, no repetir
-		if (followRequestDao.existsBySenderIdAndReceiverId(senderId, receiverId)){
+		if (followRequestDao.existsBySenderIdAndReceiverId(senderId, receiverId)) {
 			return null;
 		}
 
 		FollowRequest request = new FollowRequest(sender, receiver);
-		return followRequestDao.save(request);
+		FollowRequest savedRequest = followRequestDao.save(request);
+
+		// Notificar al receptor sobre la nueva solicitud de seguimiento
+		notificationService.notifyFollowRequest(senderId, receiverId);
+
+		return savedRequest;
 	}
 
 
 	@Override
 	public boolean acceptFollowRequest(Long requestId)
-			throws InstanceNotFoundException,PermissionException {
+			throws InstanceNotFoundException, PermissionException {
 
 		FollowRequest request = followRequestDao.findById(requestId)
 				.orElseThrow(() -> new InstanceNotFoundException("project.entities.followRequest", requestId));
@@ -535,11 +566,202 @@ public class UserServiceImpl implements UserService {
 			throw new InstanceNotFoundException("project.entities.followRequest", requestId);
 		followRequestDao.deleteById(requestId);
 	}
+
+
 	@Override
-	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException{
-		if(followRequestDao.findByReceiverIdAndAcceptedFalse(userId).isEmpty()) {
+	public List<FollowRequest> getFollowRequests(Long userId) throws InstanceNotFoundException {
+		if (followRequestDao.findByReceiverIdAndAcceptedFalse(userId).isEmpty()) {
 			throw new InstanceNotFoundException("project.entities.followRequest", userId);
 		}
 		return followRequestDao.findByReceiverIdAndAcceptedFalse(userId);
 	}
+
+	//solicitudes que hemos enviado
+	@Override
+	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException {
+		return followRequestDao.findBySenderIdAndAcceptedFalse(userId);
+	}
+
+	@Override
+	public Map<Serie, LocalDate> getExerciseStats(Long userProfileId, Long userId, int numReps, String period)
+			throws InstanceNotFoundException, PermissionException {
+
+		Users requester = permissionChecker.checkUser(userId);
+		Users profileUser = permissionChecker.checkUser(userProfileId);
+
+		if (!userProfileId.equals(userId) && (profileUser.getFollowers() == null
+				|| !profileUser.getFollowers().contains(requester))) {
+			throw new PermissionException("project.entities.user.stats", userId);
+		}
+
+		String p = period == null ? "YEAR" : period.toUpperCase();
+		java.time.LocalDateTime cutoff;
+		switch (p) {
+			case "WEEK":
+				cutoff = java.time.LocalDateTime.now().minusWeeks(1);
+				break;
+			case "MONTH":
+				cutoff = java.time.LocalDateTime.now().minusMonths(1);
+				break;
+			case "YEAR":
+				cutoff = java.time.LocalDateTime.now().minusYears(1);
+				break;
+			case "ALL":
+				cutoff = java.time.LocalDateTime.MIN.plusYears(1);
+				break;
+			default:
+				cutoff = java.time.LocalDateTime.now().minusYears(1);
+		}
+
+		List<Serie> series;
+		if (numReps <= 0) {
+			series = serieDao.findSeriesByYear(profileUser.getId(), cutoff);
+
+		} else {
+			series = serieDao.findSeriesByYearWithReps(profileUser.getId(), numReps, cutoff);
+		}
+
+		if (series == null || series.isEmpty()) {
+			return java.util.Collections.emptyMap();
+		}
+
+		return series.stream()
+				.filter(s -> s.getTraining() != null && s.getTraining().getCreationDate() != null)
+				.collect(java.util.stream.Collectors.toMap(
+						s -> s,
+						s -> s.getTraining().getCreationDate().toLocalDate()
+				));
+	}
+
+	@Override
+	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException {
+		Users user = permissionChecker.checkUser(userId);
+
+		if (user.getFollowing() == null) {
+			return Collections.emptyList();
+		}
+
+		// IDs de usuarios bloqueados
+		List<Long> blockedIds = new ArrayList<>();
+
+		if (user.getBlockedUsers() != null) {
+			blockedIds.addAll(
+					user.getBlockedUsers().stream()
+							.map(Users::getId)
+							.toList()
+			);
+		}
+
+		if (user.getWhoBlockUs() != null) {
+			blockedIds.addAll(
+					user.getWhoBlockUs().stream()
+							.map(Users::getId)
+							.toList()
+			);
+		}
+
+		return user.getFollowing().stream()
+				.map(Users::getId)
+				.filter(id -> !blockedIds.contains(id))
+				.toList();
+	}
+
+	@Override
+	public Map<Long, Integer> getLeaderboardExercise(Long userId, Long exerciseId) throws InstanceNotFoundException {
+
+		Users user = permissionChecker.checkUser(userId);
+
+		List<Users> users = new ArrayList<>(user.getFollowing());
+		users.add(user);
+
+		Map<Long, Integer> leaderboard = new HashMap<>();
+
+		for (Users u : users) {
+
+			List<Serie> series = serieDao.findByUserIdAndExerciseId(
+					u.getId(), exerciseId);
+
+			// Si no tiene el ejercicio, se excluye
+			if (series.isEmpty()) {
+				continue;
+			}
+
+			// Mayor peso levantado
+			Integer maxPeso = series.stream()
+					.map(Serie::getPeso)
+					.max(Integer::compareTo)
+					.orElse(null);
+
+			leaderboard.put(u.getId(), maxPeso);
+		}
+
+		// Ordenar por peso descendente
+		return leaderboard.entrySet()
+				.stream()
+				.sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
+				.collect(
+						LinkedHashMap::new,
+						(m, e) -> m.put(e.getKey(), e.getValue()),
+						Map::putAll
+				);
+	}
+
+	@Override
+	public Map<Long, Integer> getLeaderboardRoutine(Long userId, Long routineId)
+			throws InstanceNotFoundException {
+
+		Users user = permissionChecker.checkUser(userId);
+
+		List<Users> users = new ArrayList<>(user.getFollowing());
+		users.add(user);
+
+		Map<Long, Integer> leaderboard = new HashMap<>();
+
+		// Obtener la rutina y sus ejercicios
+		Routine routine = routineDao.findById(routineId).orElse(null);
+        assert routine != null;
+        List<RoutineExercise> exercises = routine.getRoutineExercises();
+
+		for (Users u : users) {
+
+			int totalScore = 0;
+			boolean hasAnySeries = false;
+
+			for (RoutineExercise exercise : exercises) {
+
+				List<Serie> series = serieDao.findByUserIdAndExerciseId(
+						u.getId(), exercise.getExercise().getId());
+
+				if (series.isEmpty()) {
+					continue;
+				}
+
+				hasAnySeries = true;
+
+				int exerciseScore = series.stream()
+						.mapToInt(s -> s.getPeso() * s.getRepeticiones())
+						.sum();
+
+				totalScore += exerciseScore;
+			}
+
+			// Si no tiene ninguna serie en la rutina, se excluye
+			if (!hasAnySeries) {
+				continue;
+			}
+
+			leaderboard.put(u.getId(), totalScore);
+		}
+
+		// Ordenar por score descendente
+		return leaderboard.entrySet()
+				.stream()
+				.sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
+				.collect(
+						LinkedHashMap::new,
+						(m, e) -> m.put(e.getKey(), e.getValue()),
+						Map::putAll
+				);
+	}
+
 }

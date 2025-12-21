@@ -5,9 +5,10 @@ import * as exerciseService from "./exerciseService";
 import * as imageService from "./imageService";
 import * as notificationService from "./notificationService";
 import * as searchService from "./searchService";
+import * as badgeService from "./badgeService";
 
 export { default as NetworkError } from "./NetworkError";
 
-const backend = { init, userService, routineService, exerciseService, imageService, notificationService, searchService };
+const backend = { init, userService, routineService, exerciseService, imageService, notificationService, searchService, badgeService };
 
 export default backend;

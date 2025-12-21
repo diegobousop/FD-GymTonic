@@ -25,7 +25,7 @@ public class SearchDaoImpl implements SearchDao {
                 Object[].class
         );
         query.setParameter("text", text);
-        query.setMaxResults(limit);
+        query.setMaxResults(limit + 10);
         return query.getResultList();
     }
 

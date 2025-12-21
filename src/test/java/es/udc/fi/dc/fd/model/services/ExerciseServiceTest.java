@@ -331,7 +331,7 @@ public class ExerciseServiceTest {
     public void createSerieTestFailExercise() {
 
 
-        assertThrows(InstanceNotFoundException.class,()->exerciseService.createSerie(10L, 1L));
+        assertThrows(InstanceNotFoundException.class,()->exerciseService.createSerie(9999L, 1L));
 
     }
 
@@ -349,7 +349,7 @@ public class ExerciseServiceTest {
 
     @Test
     public void removeSerieTestFail() {
-        assertThrows(InstanceNotFoundException.class, ()->exerciseService.removeSerie(100L));
+        assertThrows(InstanceNotFoundException.class, ()->exerciseService.removeSerie(9999L));
     }
 
     @Test

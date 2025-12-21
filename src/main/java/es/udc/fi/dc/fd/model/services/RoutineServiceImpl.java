@@ -3,11 +3,11 @@ package es.udc.fi.dc.fd.model.services;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import es.udc.fi.dc.fd.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +18,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
+import es.udc.fi.dc.fd.model.entities.Exercise;
+import es.udc.fi.dc.fd.model.entities.ExerciseDao;
+import es.udc.fi.dc.fd.model.entities.Routine;
+import es.udc.fi.dc.fd.model.entities.RoutineDao;
+import es.udc.fi.dc.fd.model.entities.RoutineExercise;
+import es.udc.fi.dc.fd.model.entities.RoutineExerciseId;
+import es.udc.fi.dc.fd.model.entities.RoutineFollow;
+import es.udc.fi.dc.fd.model.entities.RoutineFollowDao;
+import es.udc.fi.dc.fd.model.entities.RoutineLike;
+import es.udc.fi.dc.fd.model.entities.RoutineLikeDao;
+import es.udc.fi.dc.fd.model.entities.Serie;
+import es.udc.fi.dc.fd.model.entities.SerieDao;
+import es.udc.fi.dc.fd.model.entities.Training;
+import es.udc.fi.dc.fd.model.entities.TrainingDao;
+import es.udc.fi.dc.fd.model.entities.TrainingLike;
+import es.udc.fi.dc.fd.model.entities.TrainingLikeDao;
+import es.udc.fi.dc.fd.model.entities.UserDao;
+import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineDurationException;
 import es.udc.fi.dc.fd.model.services.exceptions.InvalidRoutineNameException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
@@ -49,7 +67,16 @@ public class RoutineServiceImpl implements RoutineService {
     private RoutineFollowDao routineFollowDao;
 
     @Autowired
+    private RoutineLikeDao routineLikeDao;
+
+    @Autowired
+    private TrainingLikeDao trainingLikeDao;
+
+    @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private UserService userService;
 
     private static final String TRAINER_STRING = "TRAINER";
     private static final String CREATOR_STRING = "creator";
@@ -365,6 +392,10 @@ public class RoutineServiceImpl implements RoutineService {
         }
 
         routineFollowDao.save(new RoutineFollow(user, routine));
+        
+        // Notificar al entrenador sobre el nuevo seguidor de la rutina
+        notificationService.notifyRoutineFollow(userId, routine);
+        
         return true;
     }
 
@@ -378,6 +409,113 @@ public class RoutineServiceImpl implements RoutineService {
 
         routineFollowDao.deleteByUserIdAndRoutineId(userId, routineId);
         return true;
+    }
+
+    @Override
+    public boolean likeRoutine(Long userId, Long routineId) throws InstanceNotFoundException, PermissionException {
+
+        Users user = permissionChecker.checkUser(userId);
+        Routine routine = routineDao.findById(routineId)
+            .orElseThrow(() -> new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId));
+
+        if (Boolean.FALSE.equals(routine.getIsPublic())) {
+            throw new PermissionException(ROUTINE_EXCEPTION, routineId);
+        }
+
+        // Evitar dar like dos veces
+        if (routineLikeDao.existsByUserIdAndRoutineId(userId, routineId)) {
+            return false;
+        }
+
+        routineLikeDao.save(new RoutineLike(user, routine));
+        
+        // Notificar al entrenador sobre el like
+        notificationService.notifyRoutineLike(userId, routine);
+        
+        return true;
+    }
+
+    @Override
+    public boolean unlikeRoutine(Long userId, Long routineId) throws InstanceNotFoundException {
+
+        if (!routineLikeDao.existsByUserIdAndRoutineId(userId, routineId)) {
+            return false;
+        }
+
+        routineLikeDao.deleteByUserIdAndRoutineId(userId, routineId);
+        return true;
+    }
+
+    @Override 
+    public boolean isLikedRoutine(Long userId, Long routineId) throws InstanceNotFoundException {
+        permissionChecker.checkUser(userId);
+
+        if (!routineDao.existsById(routineId)) {
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
+        }
+
+        return routineLikeDao.existsByUserIdAndRoutineId(userId, routineId);
+    }   
+
+    @Override
+    public long getLikesCount(Long routineId) throws InstanceNotFoundException {
+        if (!routineDao.existsById(routineId)) {
+            throw new InstanceNotFoundException(ROUTINE_EXCEPTION, routineId);
+        }
+        return routineLikeDao.countByRoutineId(routineId);
+    }
+
+    @Override
+    public boolean likeTraining(Long userId, Long trainingId) throws InstanceNotFoundException, PermissionException {
+
+        Users user = permissionChecker.checkUser(userId);
+        Training training = trainingDao.findById(trainingId)
+            .orElseThrow(() -> new InstanceNotFoundException("project.entities.training", trainingId));
+
+        if (Boolean.FALSE.equals(training.getIsPublic())) {
+            throw new PermissionException("project.entities.training", trainingId);
+        }
+
+        // Evitar dar like dos veces
+        if (trainingLikeDao.existsByIdUserIdAndIdTrainingId(userId, trainingId)) {
+            return false;
+        }
+
+        trainingLikeDao.save(new TrainingLike(user, training));
+        
+        notificationService.notifyTrainingLike(userId, training);
+        
+        return true;
+    }
+
+    @Override
+    public boolean unlikeTraining(Long userId, Long trainingId) throws InstanceNotFoundException {
+
+        if (!trainingLikeDao.existsByIdUserIdAndIdTrainingId(userId, trainingId)) {
+            return false;
+        }
+
+        trainingLikeDao.deleteByIdUserIdAndIdTrainingId(userId, trainingId);
+        return true;
+    }
+
+    @Override 
+    public boolean isLikedTraining(Long userId, Long trainingId) throws InstanceNotFoundException {
+        permissionChecker.checkUser(userId);
+
+        if (!trainingDao.existsById(trainingId)) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+
+        return trainingLikeDao.existsByIdUserIdAndIdTrainingId(userId, trainingId);
+    }   
+
+    @Override
+    public long getTrainingLikesCount(Long trainingId) throws InstanceNotFoundException {
+        if (!trainingDao.existsById(trainingId)) {
+            throw new InstanceNotFoundException("project.entities.training", trainingId);
+        }
+        return trainingLikeDao.countByIdTrainingId(trainingId);
     }
 
     @Override
@@ -539,6 +677,19 @@ public class RoutineServiceImpl implements RoutineService {
                 serieDao.save(serie);
             }
         }
+    }
+
+    @Override
+    public List<Training> findFollowedUsersTrainingsFeed(Long userId) throws InstanceNotFoundException {
+        // Obtener IDs de usuarios seguidos ya filtrados por bloqueos
+        List<Long> followingIds = userService.getFollowingIds(userId);
+
+        if (followingIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Obtener entrenamientos públicos de los usuarios seguidos, ordenados por fecha descendente
+        return trainingDao.findByUserIdInAndIsPublicTrueOrderByCreationDateDesc(followingIds);
     }
 
 }

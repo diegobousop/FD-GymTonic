@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +55,10 @@ public class SearchServiceImpl implements SearchService {
                     }
                     return true;
                 })
-                .limit(limitPerType)
+                .limit(limitPerType + 10L)
                 .map(r -> new SearchSuggestionDto((Long) r[0], "user", (String) r[1]))
-                .toList();
+                .collect(Collectors.toList());
+
 
         List<SearchSuggestionDto> routines = searchDao.findRoutineSuggestions(text, limitPerType).stream()
                 .map(r -> new SearchSuggestionDto((Long) r[0], "routine", (String) r[1]))
@@ -67,6 +69,27 @@ public class SearchServiceImpl implements SearchService {
                 .toList();
 
         List<SearchSuggestionDto> combined = new java.util.ArrayList<>();
+        
+        if(searcherUserId != null){
+            Optional<Users> searcherOp = userDao.findById(searcherUserId);
+            if(searcherOp.isPresent()){
+                Users searcher = searcherOp.get();
+                List<Users> blocked = searcher.getBlockedUsers();
+                if (blocked != null) {
+                    List<SearchSuggestionDto> blockedDtos = blocked.stream()
+                            .map(u -> new SearchSuggestionDto(
+                                    u.getId(),
+                                    "user",         // type
+                                    u.getUserName() // name
+                            ))
+                            .toList();
+                    
+                    users.removeAll(blockedDtos);
+                }
+            }
+        }
+        users = users.subList(0, Math.min(limitPerType, users.size()));
+
         combined.addAll(users);
         combined.addAll(routines);
         combined.addAll(exercises);

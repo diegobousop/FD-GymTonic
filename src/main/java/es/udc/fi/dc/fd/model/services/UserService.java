@@ -1,18 +1,21 @@
 package es.udc.fi.dc.fd.model.services;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.FollowRequest;
+import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectPasswordException;
 import es.udc.fi.dc.fd.model.services.exceptions.LoginUserBlockedException;
 import es.udc.fi.dc.fd.model.services.exceptions.PermissionException;
 import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
-import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
 
 /**
  * The Interface UserService.
@@ -173,5 +176,15 @@ public interface UserService {
 	public void rejectFollowRequest(Long requestId) throws InstanceNotFoundException;
 
 	public List<FollowRequest>getFollowRequests(Long userId) throws InstanceNotFoundException;
+
+	public List<FollowRequest> getRequestsSended(Long userId) throws InstanceNotFoundException;
+
+	public Map<Serie, LocalDate> getExerciseStats(Long userProfileId, Long userId, int numReps, String period) throws InstanceNotFoundException, PermissionException;
+
+	public List<Long> getFollowingIds(Long userId) throws InstanceNotFoundException;
+
+	public Map<Long,Integer> getLeaderboardExercise(Long userId, Long exerciseId) throws InstanceNotFoundException;
+
+	public Map<Long,Integer> getLeaderboardRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
 
 }

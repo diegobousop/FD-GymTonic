@@ -6,7 +6,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Map;
 
+import es.udc.fi.dc.fd.rest.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -30,6 +32,7 @@ import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
 import es.udc.fi.dc.fd.model.entities.BlockUser;
 import es.udc.fi.dc.fd.model.entities.Users;
+import es.udc.fi.dc.fd.model.entities.Serie;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.services.UserService;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -41,21 +44,12 @@ import es.udc.fi.dc.fd.model.services.exceptions.SelfBlockException;
 import es.udc.fi.dc.fd.rest.common.ErrorsDto;
 import es.udc.fi.dc.fd.rest.common.JwtGenerator;
 import es.udc.fi.dc.fd.rest.common.JwtInfo;
-import es.udc.fi.dc.fd.rest.dtos.AuthenticatedUserDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockDto;
-import es.udc.fi.dc.fd.rest.dtos.BlockedByUserDto;
-import es.udc.fi.dc.fd.rest.dtos.ChangePasswordParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.FollowRequestConversor;
-import es.udc.fi.dc.fd.rest.dtos.FollowRequestDto;
-import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
-import es.udc.fi.dc.fd.rest.dtos.ResumeUserDto;
+import es.udc.fi.dc.fd.rest.dtos.user.*;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toAuthenticatedUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockResumeUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toBlockUserDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUser;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserDto;
-import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
 
 
 /**
@@ -392,6 +386,27 @@ public class UserController {
 		return FollowRequestConversor.toFollowRequestDtos(userService.getFollowRequests(userId));
 	}
 
+	@GetMapping("/requestSended")
+	public List<FollowRequestDto> getRequestedSended(@RequestAttribute Long userId) throws InstanceNotFoundException{
+		return FollowRequestConversor.toFollowRequestDtos(userService.getRequestsSended(userId));
+	}
+	
+	@PostMapping("/stats")
+	public List<UserStatsDto> getStats(@RequestAttribute Long userId, @RequestBody UserStatsParamsDto params) throws InstanceNotFoundException, PermissionException {
+		Map<Serie, LocalDate> raw = userService.getExerciseStats(params.getUserProfileId(), userId, params.getNumReps(), params.getPeriod());
+		return StatsConversor.toUserStatsDto(raw, params.getPeriod());
+	}
+
+	@GetMapping("/leaderboards")
+	public List<LeaderboardDto> getLeaderboardsExercise(@RequestAttribute Long userId, @RequestParam Long exerciseId) throws InstanceNotFoundException {
+		Map<Long,Integer> aux= userService.getLeaderboardExercise(userId,exerciseId);
+		return LeaderboardConversor.toLeaderboardConversor(aux);
+	}
+	@GetMapping("/leaderboards/routine")
+	public List<LeaderboardDto> getLeaderboardRoutine(@RequestAttribute Long userId, @RequestParam Long routineId) throws InstanceNotFoundException {
+		Map<Long,Integer> aux= userService.getLeaderboardRoutine(userId,routineId);
+		return LeaderboardConversor.toLeaderboardConversor(aux);
+	}
 
 	/**
 	 * Generate service token.

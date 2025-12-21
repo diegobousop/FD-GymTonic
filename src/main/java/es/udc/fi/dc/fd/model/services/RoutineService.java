@@ -44,6 +44,22 @@ public interface RoutineService {
 
     boolean unfollowRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
 
+    boolean likeRoutine(Long userId, Long routineId) throws InstanceNotFoundException, PermissionException;
+
+    boolean unlikeRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
+
+    boolean isLikedRoutine(Long userId, Long routineId) throws InstanceNotFoundException;
+
+    long getLikesCount(Long routineId) throws InstanceNotFoundException;
+
+    boolean likeTraining(Long userId, Long trainingid) throws InstanceNotFoundException, PermissionException;
+
+    boolean unlikeTraining(Long userId, Long trainingid) throws InstanceNotFoundException;
+
+    boolean isLikedTraining(Long userId, Long trainingid) throws InstanceNotFoundException;
+
+    long getTrainingLikesCount(Long trainingid) throws InstanceNotFoundException;
+
     Block<Users> getFollowersByRoutine(Long routineId, Long trainerId, Pageable pageable) throws InstanceNotFoundException, PermissionException;
 
     Page<Training> findTrainings(Long userId, Long id, Pageable pageable) throws InstanceNotFoundException, PermissionException;
@@ -57,4 +73,7 @@ public interface RoutineService {
     Routine getRoutineByTraining(Long trainingId) throws InstanceNotFoundException;
 
     Training findTrainingById(Long trainingId) throws InstanceNotFoundException;
+
+    List<Training> findFollowedUsersTrainingsFeed(Long userId) throws InstanceNotFoundException;
+
 }

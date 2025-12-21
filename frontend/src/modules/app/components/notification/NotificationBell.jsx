@@ -19,14 +19,12 @@ const NotificationBell = () => {
   }, [user]);
 
   const loadUnreadCount = () => {
-    backend.notificationService.getNotifications(
-      { page: 0, size: 5 }, 
+    backend.notificationService.getUnreadCount(
       (data) => {
-        const unread = data.items?.filter(n => !n.read).length || 0;
-        setUnreadCount(unread);
+        setUnreadCount(data);
       },
       (error) => console.error('Error al cargar contador:', error)
-    );
+    )
   };
 
   // Cerrar el panel si se hace click fuera
@@ -57,9 +55,10 @@ const NotificationBell = () => {
       backend.notificationService.readNotification(
         notification.id,
         () => {
-          setUnreadCount(prev => Math.max(0, prev - 1));
-          //solo navegamos a la rutina si la notificación no estaba leida
-          navigate(`/routines/${notification.routineId}`);
+          setUnreadCount(prev => Math.max(prev - 1, 0));
+          //solo navegamos a la rutina o entrenamiento si la notificación no estaba leida
+          if(notification.routineId!=null) navigate(`/routines/${notification.routineId}`)
+          else if(notification.trainingId!=null) navigate(`/trainings/${notification.trainingId}/details`);
         },
         (error) => console.error('Error al marcar notificación:', error)
       );

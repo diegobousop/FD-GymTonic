@@ -58,6 +58,8 @@ public class UserDto {
 	/** List of blocked users */
 	private List<Long> idBlocked;
 
+	private List<Long> followingList;
+
 	/** The height. */
 	private int height;
 
@@ -98,7 +100,7 @@ public class UserDto {
 	 * @param birthDate the birth date
 	 */
 
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList) {
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList, List<Long> followingList) {
 
 		this.id = id;
 		this.userName = userName != null ? userName.trim() : null;
@@ -111,9 +113,15 @@ public class UserDto {
 		this.cardNumber = cardNumber;
 		this.premium = premium;
 		this.idBlocked = idBlockedList;
+		this.followingList = followingList;
+		this.height = 0;
+		this.weight = 0.0f;
+		this.gender = null;
+		this.birthDate = null;
+		this.imc = 0.0f;
 	} 
 
-	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList,
+	public UserDto(Long id, String userName, String firstName, String lastName, String email, String role, AvatarDto avatar, Boolean banned, String cardNumber, Boolean premium, List<Long> idBlockedList, List<Long> followList,
 	int height, float weight, String gender, String birthDate) {
 
 		this.id = id;
@@ -132,6 +140,7 @@ public class UserDto {
 		this.birthDate = birthDate;
 		this.imc = weight / ((height / 100f) * (height / 100f));
 		this.idBlocked = idBlockedList;
+		this.followingList = followList;
 	} 	
 
 
@@ -376,6 +385,9 @@ public class UserDto {
 
 	public List<Long> getIdBlocked(){return idBlocked;}
 	public void setIdBlocked(List<Long> idBlocked){this.idBlocked = idBlocked; }
+
+	public List<Long> getFollowingList(){return followingList;}
+	public void setFollowingList(List<Long> followList){this.followingList = followList; }
 
 
 	/**

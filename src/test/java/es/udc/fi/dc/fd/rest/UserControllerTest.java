@@ -1,11 +1,15 @@
 package es.udc.fi.dc.fd.rest;
 
 import java.time.LocalDate;
+
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+
+import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
-import es.udc.fi.dc.fd.model.entities.UserDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.IncorrectLoginException;
@@ -42,6 +41,9 @@ import es.udc.fi.dc.fd.rest.dtos.LoginParamsDto;
 import static es.udc.fi.dc.fd.rest.dtos.UserConversor.toUserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserDto;
 import es.udc.fi.dc.fd.rest.dtos.UserRegisterParamsDto;
+import es.udc.fi.dc.fd.rest.dtos.user.UserStatsParamsDto;
+
+import java.time.LocalDateTime;
 
 /**
  * The Class UserControllerTest.
@@ -77,12 +79,23 @@ public class UserControllerTest {
 	@Autowired
 	private AvatarDao avatarDao;
 
+    @Autowired
+    private ExerciseDao exerciseDao;
+
+    @Autowired
+    private TrainingDao trainingDao;
+
+    @Autowired
+    private SerieDao serieDao;
+
 	/** The user controller. */
 	@Autowired
 	private UserController userController;
+    @Autowired
+    private RoutineDao routineDao;
+    @Autowired
+    private RoutineExerciseDao routineExerciseDao;
 
-
-	
 
 	/**
 	 * Creates the authenticated user.
@@ -678,14 +691,14 @@ public class UserControllerTest {
 						.requestAttr("senderId", userId)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(3L))
+				.andExpect(jsonPath("$.id").value(5L))
 				.andExpect(jsonPath("$.senderId").value(userId))
 				.andExpect(jsonPath("$.receiverId").value(userId2))
 				.andExpect(jsonPath("$.accepted").value(false))
 				.andExpect(jsonPath("$.senderUserName").value("testuser"))
 				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
 
-		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",3L)
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",5L)
 						.header("Authorization", "Bearer " + user.getServiceToken())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
@@ -703,14 +716,14 @@ public class UserControllerTest {
 						.requestAttr("senderId", userId)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(2L))
+				.andExpect(jsonPath("$.id").value(3L))
 				.andExpect(jsonPath("$.senderId").value(userId))
 				.andExpect(jsonPath("$.receiverId").value(userId2))
 				.andExpect(jsonPath("$.accepted").value(false))
 				.andExpect(jsonPath("$.senderUserName").value("testuser"))
 				.andExpect(jsonPath("$.receiverUserName").value("testuser2"));
 
-		mockMvc.perform(delete("/api/users/rejectFollowRequest/{id}",2L)
+		mockMvc.perform(delete("/api/users/rejectFollowRequest/{id}",3L)
 						.header("Authorization", "Bearer " + user.getServiceToken())
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
@@ -796,5 +809,318 @@ public class UserControllerTest {
 	    }
 	}
 
-	
+    @Test
+    public void testGetStats() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("userStats", RoleType.USER);
+        LoginParamsDto loginParams = new LoginParamsDto();
+        loginParams.setUserName("userStats");
+        loginParams.setPassword(PASSWORD);
+        AuthenticatedUserDto authenticatedUser = userController.login(loginParams);
+
+        Users userEntity = userDao.findById(user.getUserDto().getId()).get();
+        
+        Exercise exercise = new Exercise("Push Up", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+        exerciseDao.save(exercise);
+
+        Training training = new Training("Training Stats", "Desc", LocalDateTime.now(), true, userEntity, 60L);
+        trainingDao.save(training);
+
+        Serie serie = new Serie(10, 0, 1);
+        serie.setExercise(exercise);
+        serie.setTraining(training);
+        serieDao.save(serie);
+
+        UserStatsParamsDto params = new UserStatsParamsDto(user.getUserDto().getId(), 0, "YEAR");
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/users/stats")
+                .header("Authorization", "Bearer " + authenticatedUser.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].userId").value(user.getUserDto().getId()));
+    }
+
+    @Test
+    public void testGetStatsInstanceNotFound() throws Exception {
+        AuthenticatedUserDto user = createAuthenticatedUser("userStatsNotFound", RoleType.USER);
+        UserStatsParamsDto params = new UserStatsParamsDto(user.getUserDto().getId() + 999, 0, "YEAR");
+
+        ObjectMapper mapper = new ObjectMapper();
+        mockMvc.perform(post("/api/users/stats")
+                .header("Authorization", "Bearer " + user.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(params)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetStatsPermissionException() throws Exception {
+        AuthenticatedUserDto requester = createAuthenticatedUser("requesterStats", RoleType.USER);
+        AuthenticatedUserDto target = createAuthenticatedUser("targetStats", RoleType.USER);
+        UserStatsParamsDto params = new UserStatsParamsDto(target.getUserDto().getId(), 0, "YEAR");
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        mockMvc.perform(post("/api/users/stats")
+                .header("Authorization", "Bearer " + requester.getServiceToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(params)))
+                .andExpect(status().isForbidden());
+    }
+
+	@Test
+	public void testGetStats_RichData() throws Exception {
+		AuthenticatedUserDto user = createAuthenticatedUser("userStatsRich", RoleType.USER);
+		Users userEntity = userDao.findById(user.getUserDto().getId()).get();
+
+		Exercise squat = new Exercise("Sentadilla", "Pierna", Exercise.grupoMuscular.PIERNA, 3);
+		Exercise bench = new Exercise("Press banca", "Pecho", Exercise.grupoMuscular.PECHO, 3);
+		Exercise row = new Exercise("Remo", "Espalda", Exercise.grupoMuscular.ESPALDA, 3);
+		exerciseDao.save(squat);
+		exerciseDao.save(bench);
+		exerciseDao.save(row);
+
+		Training t1 = new Training("T1", "", LocalDateTime.now().minusDays(3), true, userEntity, 45L);
+		Training t2 = new Training("T2", "", LocalDateTime.now().minusDays(2), true, userEntity, 50L);
+		Training t3 = new Training("T3", "", LocalDateTime.now().minusDays(1), true, userEntity, 60L);
+		trainingDao.save(t1);
+		trainingDao.save(t2);
+		trainingDao.save(t3);
+
+		Serie s1 = new Serie(5, 0, 1); s1.setExercise(squat); s1.setTraining(t1); s1.setPeso(100); // base
+		Serie s2 = new Serie(5, 0, 1); s2.setExercise(bench); s2.setTraining(t1); s2.setPeso(80);
+		Serie s3 = new Serie(5, 0, 1); s3.setExercise(row);   s3.setTraining(t1); s3.setPeso(60);
+
+		Serie s4 = new Serie(5, 0, 1); s4.setExercise(squat); s4.setTraining(t2); s4.setPeso(110); // PR
+		Serie s5 = new Serie(5, 0, 1); s5.setExercise(bench); s5.setTraining(t2); s5.setPeso(75);  // lower
+		Serie s6 = new Serie(5, 0, 1); s6.setExercise(row);   s6.setTraining(t2); s6.setPeso(70);  // PR
+
+		Serie s7 = new Serie(5, 0, 1); s7.setExercise(squat); s7.setTraining(t3); s7.setPeso(105);
+		Serie s8 = new Serie(5, 0, 1); s8.setExercise(bench); s8.setTraining(t3); s8.setPeso(85);  // PR
+
+		serieDao.save(s1); serieDao.save(s2); serieDao.save(s3);
+		serieDao.save(s4); serieDao.save(s5); serieDao.save(s6);
+		serieDao.save(s7); serieDao.save(s8);
+
+		UserStatsParamsDto params = new UserStatsParamsDto(user.getUserDto().getId(), 0, "YEAR");
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		mockMvc.perform(post("/api/users/stats")
+				.header("Authorization", "Bearer " + user.getServiceToken())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(params)))
+				.andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[0].userId").value(user.getUserDto().getId()))
+				.andExpect(jsonPath("$[0].period").value("YEAR"))
+
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats").isArray())
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[0].exerciseWeightsKg.Sentadilla").exists())
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[1].exerciseWeightsKg.Sentadilla").exists())
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[2].exerciseWeightsKg.Sentadilla").exists())
+
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[1].isPR.Sentadilla").value(true))
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[2].isPR['Press banca']").value(true))
+				.andExpect(jsonPath("$[0].periodExerciseStats[0].exerciseStats[1].isPR.Remo").value(true))
+
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats").isArray())
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.PIERNA").exists())
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.PECHO").exists())
+				.andExpect(jsonPath("$[0].periodMuscularGroupStats[0].muscularGroupStats[0].exerciseCount.ESPALDA").exists());
+	}
+
+	@Test
+	public void getLeaderboardOk() throws Exception {
+
+		AuthenticatedUserDto user = createAuthenticatedUser("userMain" , Users.RoleType.USER);
+		Long userId = user.getUserDto().getId();
+		AuthenticatedUserDto userFollow1 = createAuthenticatedUser("userFollow1", Users.RoleType.USER);
+		Long userFollowId = userFollow1.getUserDto().getId();
+
+
+		// user sigue a ambos
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userFollowId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}",4L)
+						.header("Authorization", "Bearer " + userFollow1.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+
+
+		Exercise exercise = new Exercise("Bench Press", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training 1", "Desc", now, true, userDao.findById(user.getUserDto().getId()).get(), 60L);
+		trainingDao.save(training);
+
+		Serie serie = new Serie(10, 300, 1);
+		serie.setExercise(exercise);
+		serie.setTraining(training);
+		serieDao.save(serie);
+
+		Training training2 = new Training("Training 2", "Desc", now, true, userDao.findById(userFollow1.getUserDto().getId()).get(), 60L);
+		trainingDao.save(training2);
+
+		Serie serie2 = new Serie(10, 200, 1);
+		serie2.setExercise(exercise);
+		serie2.setTraining(training2);
+		serieDao.save(serie2);
+
+
+
+
+		mockMvc.perform(get("/api/users/leaderboards")
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.param("exerciseId", String.valueOf(exercise.getId()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(2))
+
+				// Primer puesto: user (300)
+				.andExpect(jsonPath("$[0].userId").value(userId))
+				.andExpect(jsonPath("$[0].score").value(300))
+
+				// Segundo puesto: userFollow1 (200)
+				.andExpect(jsonPath("$[1].userId").value(userFollowId))
+				.andExpect(jsonPath("$[1].score").value(200));
+	}
+
+
+	@Test
+	public void getLeaderboardRoutineOk() throws Exception {
+
+		// ===== Usuarios autenticados =====
+		AuthenticatedUserDto user =
+				createAuthenticatedUser("userMain", Users.RoleType.USER);
+		Long userId = user.getUserDto().getId();
+
+		AuthenticatedUserDto userFollow1 =
+				createAuthenticatedUser("userFollow1", Users.RoleType.USER);
+		Long userFollowId = userFollow1.getUserDto().getId();
+
+
+		mockMvc.perform(post("/api/users/sendFollowRequest/{receiverId}", userFollowId)
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("senderId", userId)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/users/acceptFollowRequest/{id}", 1L)
+						.header("Authorization", "Bearer " + userFollow1.getServiceToken())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+		// ===== Ejercicios =====
+		Exercise exercise1 = exerciseDao.save(
+				new Exercise("Bench Press", "Chest exercise",
+						Exercise.grupoMuscular.PECHO, 3));
+
+		Exercise exercise2 = exerciseDao.save(
+				new Exercise("Squat", "Leg exercise",
+						Exercise.grupoMuscular.PIERNA, 3));
+
+
+		Users creator = userDao.findById(userId).orElse(null);
+		LocalDateTime now = LocalDateTime.now();
+
+		Routine routine = new Routine(
+				"Routine Test",
+				new ArrayList<>(),
+				creator,
+				90L,
+				now,
+				true
+		);
+
+
+		// Crear RoutineExercise 1
+		RoutineExerciseId reId1 = new RoutineExerciseId();
+		reId1.setRoutineId(routine.getId());
+		reId1.setExerciseId(exercise1.getId());
+
+		RoutineExercise re1 = new RoutineExercise();
+		re1.setId(reId1);
+		re1.setRoutine(routine);
+		re1.setExercise(exercise1);
+
+// Crear RoutineExercise 2
+		RoutineExerciseId reId2 = new RoutineExerciseId();
+		reId2.setRoutineId(routine.getId());
+		reId2.setExerciseId(exercise2.getId());
+
+		RoutineExercise re2 = new RoutineExercise();
+		re2.setId(reId2);
+		re2.setRoutine(routine);
+		re2.setExercise(exercise2);
+
+
+		routine.getRoutineExercises().add(re1);
+		routine.getRoutineExercises().add(re2);
+
+
+		routineDao.save(routine);
+
+		routineExerciseDao.save(re1);
+		routineExerciseDao.save(re2);
+
+		// ===== USER =====
+		Training trainingUser = new Training("Training 1", "Desc",
+				now, true, creator, 60L);
+		trainingDao.save(trainingUser);
+
+		Serie userSerie1 = new Serie(10, 100, 1); // 1000
+		userSerie1.setExercise(exercise1);
+		userSerie1.setTraining(trainingUser);
+		serieDao.save(userSerie1);
+
+		Serie userSerie2 = new Serie(5, 200, 1); // 1000
+		userSerie2.setExercise(exercise2);
+		userSerie2.setTraining(trainingUser);
+		serieDao.save(userSerie2);
+
+		// Total user = 2000
+
+		// ===== FOLLOW 1 =====
+		Users followUser = userDao.findById(userFollowId).orElse(null);
+
+		Training trainingFollow = new Training("Training 2", "Desc",
+				now, true, followUser, 60L);
+		trainingDao.save(trainingFollow);
+
+		Serie followSerie = new Serie(10, 50, 1); // 500
+		followSerie.setExercise(exercise1);
+		followSerie.setTraining(trainingFollow);
+		serieDao.save(followSerie);
+
+		// ===== Request =====
+		mockMvc.perform(get("/api/users/leaderboards/routine")
+						.header("Authorization", "Bearer " + user.getServiceToken())
+						.requestAttr("userId", userId)
+						.param("routineId", String.valueOf(routine.getId()))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(2))
+
+				// Primer puesto: user (2000)
+				.andExpect(jsonPath("$[0].userId").value(userId))
+				.andExpect(jsonPath("$[0].score").value(2000))
+
+				// Segundo puesto: userFollow1 (500)
+				.andExpect(jsonPath("$[1].userId").value(userFollowId))
+				.andExpect(jsonPath("$[1].score").value(500));
+	}
+
 }

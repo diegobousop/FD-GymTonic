@@ -5,6 +5,8 @@ import backend from "../../../backend";
 import Exercise from "../components/exercise/exercise";
 import RoutineEditForm from "../components/routine/routine-edit-form";
 import RoutineActions from "../components/routine/routine-actions";
+import {svgIcons} from "../../../config/constants";
+import BubbleButton from "../components/common/bubble-button";
 
 const RoutineDetailsPage = () => {
   const { id } = useParams();
@@ -17,6 +19,7 @@ const RoutineDetailsPage = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [isFollowing, setIsFollowing] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   const loadRoutineDetails = () => {
     setLoading(true);
@@ -40,8 +43,21 @@ const RoutineDetailsPage = () => {
     );
   };
 
+  const loadIsLikedStatus = () => {
+    backend.routineService.isLikedRoutine(
+      id,
+      (data) => {
+        setIsLiked(data);
+      },
+      (err) => {
+        console.error("Error al verificar si la rutina está marcada como me gusta", err);
+      }
+    );
+  }
+
   useEffect(() => {
     loadRoutineDetails();
+    loadIsLikedStatus();
   }, [id]);
 
   const handleRoutineUpdated = (updatedRoutine, msg) => {
@@ -52,6 +68,26 @@ const RoutineDetailsPage = () => {
     loadRoutineDetails();
   };
 
+  const handleLikeRoutine = () => {
+    const action = isLiked
+      ? backend.routineService.unlikeRoutine
+      : backend.routineService.likeRoutine;
+    
+      setUpdating(true);
+
+    action(
+      id,
+      () => {
+        setIsLiked(!isLiked);
+        setUpdating(false);
+      },
+      (err) => {
+        console.error("Error al actualizar like", err);
+        setUpdating(false);
+      }
+    );
+
+  };
   const handleError = (msg) => {
     setMessage({ type: "error", text: msg });
     setTimeout(() => setMessage({ type: "", text: "" }), 3000);
@@ -117,13 +153,21 @@ const handleExerciseUpdated = () => {
       </div>
 
       <div className="flex flex-row items-center self-start mt-5 mb-5 flex-wrap">
-        <img src={routine.creatorAvatarBase64} className="w-[40px] h-[40px]"/>
+        <img src={routine.creatorAvatarBase64} alt="Creator Avatar" className="w-[40px] h-[40px]"/>
         <p className="mx-3">{routine.creator}</p>
         <span className="text-white">•</span>
         <p className="mx-3">{routine.duration} minutos</p>
         <span className="text-white">•</span>
         <p className="mx-3">{routine.modificationDate.slice(0, 10)}</p>
-      </div>
+        <BubbleButton 
+          icon={<svgIcons.LikeIcon
+          className={isLiked ? "text-[#FF0000]" : "text-[#000000]"}
+          />}
+          ariaLabel="Like Routine"
+          size = {45}
+          onClick={() => handleLikeRoutine()}
+          />      
+        </div>
 
       {!editing ? (
         <>

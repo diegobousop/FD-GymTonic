@@ -1,6 +1,10 @@
 package es.udc.fi.dc.fd.model.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -8,6 +12,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import es.udc.fi.dc.fd.model.entities.*;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,12 +26,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import es.udc.fi.dc.fd.model.common.exceptions.DuplicateInstanceException;
 import es.udc.fi.dc.fd.model.common.exceptions.InstanceNotFoundException;
-import es.udc.fi.dc.fd.model.entities.Avatar;
-import es.udc.fi.dc.fd.model.entities.AvatarDao;
-import es.udc.fi.dc.fd.model.entities.BlockUserDao;
-import es.udc.fi.dc.fd.model.entities.FollowRequest;
-import es.udc.fi.dc.fd.model.entities.FollowRequestDao;
-import es.udc.fi.dc.fd.model.entities.Users;
 import es.udc.fi.dc.fd.model.entities.Users.Gender;
 import es.udc.fi.dc.fd.model.entities.Users.RoleType;
 import es.udc.fi.dc.fd.model.services.exceptions.AlreadyBlockException;
@@ -59,7 +59,21 @@ public class UserServiceTest {
 	@Autowired
 	private FollowRequestDao followRequestDao;
 
+	@Autowired
+	private TrainingDao trainingDao;
+
+	@Autowired
+	private SerieDao serieDao;
+
+	@Autowired
+	private ExerciseDao exerciseDao;
+
+
 	private static final String PASSWORD = "12345";
+    @Autowired
+    private RoutineDao routineDao;
+    @Autowired
+    private RoutineExerciseDao routineExerciseDao;
 
 	/**
 	 * Creates the user.
@@ -243,7 +257,7 @@ public class UserServiceTest {
 		Block<Users> result = userService.getAllUser(0, 5);
 
 		assertNotNull(result);
-        assertEquals(4, result.getItems().size());
+        assertEquals(5, result.getItems().size());
         assertEquals("admin1", result.getItems().get(0).getUserName());
         assertEquals(RoleType.ADMIN, result.getItems().get(0).getRole());
         assertEquals("trainer1", result.getItems().get(1).getUserName());
@@ -382,9 +396,9 @@ public class UserServiceTest {
 		assertEquals(1, userService.getFollowersCount(user2.getId()));
 
 		// Agregar otro seguidor
-		Users user3 = createUser("user3", Users.RoleType.USER, Gender.OTHER);
-		userService.signUp(user3, Users.RoleType.USER);
-		assertTrue(userService.followUser(user3.getId(), user2.getId()));
+		Users user99 = createUser("user99", Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(user99, Users.RoleType.USER);
+		assertTrue(userService.followUser(user99.getId(), user2.getId()));
 		assertEquals(2, userService.getFollowersCount(user2.getId()));
 
 	}
@@ -566,4 +580,328 @@ public class UserServiceTest {
 		assertThrows(InstanceNotFoundException.class, () ->{userService.getFollowRequests(receiver.getId());});
 
 	}
+
+	@Test
+	public void testGetExerciseStats() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users profileUser = createUser("profileUser" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users requesterUser = createUser("requesterUser" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(profileUser, Users.RoleType.USER);
+		userService.signUp(requesterUser, Users.RoleType.USER);
+
+		userService.followUser(requesterUser.getId(), profileUser.getId());
+
+		Exercise exercise = new Exercise("Bench Press", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training 1", "Desc", now, true, profileUser, 60L);
+		trainingDao.save(training);
+
+		Serie serie = new Serie(10, 100, 1);
+		serie.setExercise(exercise);
+		serie.setTraining(training);
+		serieDao.save(serie);
+
+		Map<Serie, LocalDate> stats = userService.getExerciseStats(profileUser.getId(), requesterUser.getId(), 0, "YEAR");
+
+		assertNotNull(stats);
+		assertFalse(stats.isEmpty());
+		assertTrue(stats.containsKey(serie));
+		assertEquals(now.toLocalDate(), stats.get(serie));
+	}
+
+	@Test
+	public void testGetExerciseStatsPermissionDenied() throws DuplicateInstanceException, InstanceNotFoundException {
+		Users profileUser = createUser("profileUser2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users requesterUser = createUser("requesterUser2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(profileUser, Users.RoleType.USER);
+		userService.signUp(requesterUser, Users.RoleType.USER);
+
+		assertThrows(PermissionException.class, () -> {
+			userService.getExerciseStats(profileUser.getId(), requesterUser.getId(), 0, "YEAR");
+		});
+	}
+
+	@Test
+	public void testGetExerciseStatsWithPeriod() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users profileUser = createUser("profileUser3" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(profileUser, Users.RoleType.USER);
+
+		Exercise exercise = new Exercise("Squat", "Leg exercise", Exercise.grupoMuscular.PIERNA, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training 2", "Desc", now, true, profileUser, 60L);
+		trainingDao.save(training);
+
+		Serie serie = new Serie(12, 120, 1);
+		serie.setExercise(exercise);
+		serie.setTraining(training);
+		serieDao.save(serie);
+
+		Map<Serie, LocalDate> stats = userService.getExerciseStats(profileUser.getId(), profileUser.getId(), 0, "MONTH");
+
+		assertNotNull(stats);
+		assertFalse(stats.isEmpty());
+		assertTrue(stats.containsKey(serie));
+	}
+
+	@Test
+	public void testGetExerciseStatsWeek() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users profileUser = createUser("profileUserWeek" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(profileUser, Users.RoleType.USER);
+
+		Exercise exercise = new Exercise("Deadlift", "Back exercise", Exercise.grupoMuscular.ESPALDA, 3);
+		exerciseDao.save(exercise);
+
+		// Training within the week
+		LocalDateTime now = LocalDateTime.now();
+		Training trainingRecent = new Training("Training Recent", "Desc", now, true, profileUser, 60L);
+		trainingDao.save(trainingRecent);
+
+		Serie serieRecent = new Serie(5, 150, 1);
+		serieRecent.setExercise(exercise);
+		serieRecent.setTraining(trainingRecent);
+		serieDao.save(serieRecent);
+
+		// Training older than a week (e.g., 2 weeks ago)
+		LocalDateTime oldDate = now.minusWeeks(2);
+		Training trainingOld = new Training("Training Old", "Desc", oldDate, true, profileUser, 60L);
+		trainingDao.save(trainingOld);
+
+		Serie serieOld = new Serie(5, 150, 1);
+		serieOld.setExercise(exercise);
+		serieOld.setTraining(trainingOld);
+		serieDao.save(serieOld);
+
+		Map<Serie, LocalDate> stats = userService.getExerciseStats(profileUser.getId(), profileUser.getId(), 0, "WEEK");
+
+		assertNotNull(stats);
+		assertEquals(1, stats.size());
+		assertTrue(stats.containsKey(serieRecent));
+		assertFalse(stats.containsKey(serieOld));
+	}
+
+	@Test
+	public void testGetExerciseStatsSignificantData() throws DuplicateInstanceException, InstanceNotFoundException, PermissionException {
+		Users profileUser = createUser("profileUserSig" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		userService.signUp(profileUser, Users.RoleType.USER);
+
+		Exercise exercise = new Exercise("Pull Up", "Back exercise", Exercise.grupoMuscular.ESPALDA, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training Sig", "Desc", now, true, profileUser, 60L);
+		trainingDao.save(training);
+
+		// Serie with enough reps (e.g., 10)
+		Serie serieHighReps = new Serie(10, 0, 1);
+		serieHighReps.setExercise(exercise);
+		serieHighReps.setTraining(training);
+		serieDao.save(serieHighReps);
+
+		// Serie with low reps (e.g., 5)
+		Serie serieLowReps = new Serie(5, 0, 2);
+		serieLowReps.setExercise(exercise);
+		serieLowReps.setTraining(training);
+		serieDao.save(serieLowReps);
+
+		// Request stats with numReps = 10
+		Map<Serie, LocalDate> stats = userService.getExerciseStats(profileUser.getId(), profileUser.getId(), 10, "YEAR");
+
+		assertNotNull(stats);
+		assertEquals(1, stats.size());
+		assertTrue(stats.containsKey(serieHighReps));
+		assertFalse(stats.containsKey(serieLowReps));
+	}
+
+	@Test
+	public void testGetFollowingIds_filtersBlockedUsers() throws Exception {
+
+		Users user = createUser("userMain" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		// user sigue a ambos
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+		// user bloquea a follow2
+		userService.blockUser(user.getId(), userFollow2.getId());
+
+		// obtenemos following filtrados
+		List<Long> result = userService.getFollowingIds(user.getId());
+
+		assertEquals(1, result.size());
+		assertTrue(result.contains(userFollow1.getId()));
+		assertFalse(result.contains(userFollow2.getId()));
+	}
+
+	@Test
+	public void TestGetLeaderboardExerciseOk() throws Exception {
+		Users user = createUser("userMain" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(), Users.RoleType.USER, Gender.OTHER);
+
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		// user sigue a ambos
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+
+		Exercise exercise = new Exercise("Bench Press", "Chest exercise", Exercise.grupoMuscular.PECHO, 3);
+		exerciseDao.save(exercise);
+
+		LocalDateTime now = LocalDateTime.now();
+		Training training = new Training("Training 1", "Desc", now, true, user, 60L);
+		trainingDao.save(training);
+
+		Serie serie = new Serie(10, 300, 1);
+		serie.setExercise(exercise);
+		serie.setTraining(training);
+		serieDao.save(serie);
+
+		Training training2 = new Training("Training 2", "Desc", now, true, userFollow1, 60L);
+		trainingDao.save(training2);
+
+		Serie serie2 = new Serie(10, 200, 1);
+		serie2.setExercise(exercise);
+		serie2.setTraining(training2);
+		serieDao.save(serie2);
+
+		Map<Long,Integer> leaderboardExercise =userService.getLeaderboardExercise(user.getId(),exercise.getId());
+
+		assertEquals(2,leaderboardExercise.size());
+		assertEquals(Integer.valueOf(300),leaderboardExercise.get(user.getId()));
+		assertEquals(Integer.valueOf(200),leaderboardExercise.get(userFollow1.getId()));
+        assertNull(leaderboardExercise.get(userFollow2.getId()));
+		Map.Entry<Long, Integer> firstEntry =
+				leaderboardExercise.entrySet().iterator().next();
+
+		assertEquals(user.getId(), firstEntry.getKey());
+
+	}
+	@Test
+	public void TestGetLeaderboardRoutineOk() throws Exception {
+
+		// ===== Usuarios =====
+		Users user = createUser("userMain" + System.currentTimeMillis(),
+				Users.RoleType.USER, Gender.OTHER);
+		Users userFollow1 = createUser("userFollow1" + System.currentTimeMillis(),
+				Users.RoleType.USER, Gender.OTHER);
+		Users userFollow2 = createUser("userFollow2" + System.currentTimeMillis(),
+				Users.RoleType.USER, Gender.OTHER);
+
+		userService.signUp(user, Users.RoleType.USER);
+		userService.signUp(userFollow1, Users.RoleType.USER);
+		userService.signUp(userFollow2, Users.RoleType.USER);
+
+		userService.followUser(user.getId(), userFollow1.getId());
+		userService.followUser(user.getId(), userFollow2.getId());
+
+		// ===== Ejercicios =====
+		Exercise exercise1 = exerciseDao.save(
+				new Exercise("exercise1", "desc1",
+						Exercise.grupoMuscular.PECHO, 1));
+
+		Exercise exercise2 = exerciseDao.save(
+				new Exercise("exercise2", "desc2",
+						Exercise.grupoMuscular.PIERNA, 1));
+
+
+
+
+		// ===== Rutina =====
+		LocalDateTime now = LocalDateTime.now();
+
+		Routine routine = new Routine(
+				"routineTest",
+				null,
+				user,
+				90L,
+				now,
+				true
+		);
+
+		// ===== RoutineExercises =====
+		RoutineExerciseId reId1 = new RoutineExerciseId();
+		reId1.setRoutineId(routine.getId());
+		reId1.setExerciseId(exercise1.getId());
+
+		RoutineExercise re1 = new RoutineExercise();
+		re1.setId(reId1);
+		re1.setRoutine(routine);
+		re1.setExercise(exercise1);
+
+		RoutineExerciseId reId2 = new RoutineExerciseId();
+		reId2.setRoutineId(routine.getId());
+		reId2.setExerciseId(exercise2.getId());
+
+		RoutineExercise re2 = new RoutineExercise();
+		re2.setId(reId2);
+		re2.setRoutine(routine);
+		re2.setExercise(exercise2);
+		List<RoutineExercise> routineExercises = new ArrayList<>();
+		routineExercises.add(re1);
+		routineExercises.add(re2);
+
+		routine.setRoutineExercises(routineExercises);
+		routineDao.save(routine);
+
+
+
+		// ===== USER =====
+		Training trainingUser = new Training("trainingUser", "desc",
+				now, true, user, 60L);
+		trainingDao.save(trainingUser);
+
+		Serie userSerie1 = new Serie(10, 100, 1); // 1000
+		userSerie1.setExercise(exercise1);
+		userSerie1.setTraining(trainingUser);
+		serieDao.save(userSerie1);
+
+		Serie userSerie2 = new Serie(5, 200, 1); // 1000
+		userSerie2.setExercise(exercise2);
+		userSerie2.setTraining(trainingUser);
+		serieDao.save(userSerie2);
+
+		// Total user = 2000
+
+		// ===== FOLLOW 1 =====
+		Training trainingFollow1 = new Training("trainingFollow1", "desc",
+				now, true, userFollow1, 60L);
+		trainingDao.save(trainingFollow1);
+
+		Serie followSerie1 = new Serie(10, 50, 1); // 500
+		followSerie1.setExercise(exercise1);
+		followSerie1.setTraining(trainingFollow1);
+		serieDao.save(followSerie1);
+
+		// FOLLOW 2 no tiene series → excluido
+
+		// ===== Leaderboard =====
+		Map<Long, Integer> leaderboard =
+				userService.getLeaderboardRoutine(user.getId(), routine.getId());
+
+		assertEquals(2, leaderboard.size());
+
+		assertEquals(Integer.valueOf(2000), leaderboard.get(user.getId()));
+		assertEquals(Integer.valueOf(500), leaderboard.get(userFollow1.getId()));
+		assertNull(leaderboard.get(userFollow2.getId()));
+
+		// Verificar orden
+		Map.Entry<Long, Integer> firstEntry =
+				leaderboard.entrySet().iterator().next();
+
+		assertEquals(user.getId(), firstEntry.getKey());
+	}
+
 }

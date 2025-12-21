@@ -68,7 +68,7 @@ const LoginPage = () => {
           };
           setUser(userToSet);
           localStorage.setItem("user", JSON.stringify(userToSet));
-          window.location.href = "/gym-tonic/#/home";
+          window.location.href = "/gymtonic/#/home";
         },
         (err) => {
           setUserNameErrors('\u00A0')

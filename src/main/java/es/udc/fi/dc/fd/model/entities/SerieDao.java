@@ -22,4 +22,27 @@ public interface SerieDao extends JpaRepository<Serie, Long> {
     List<Serie> findByExerciseIdAndTrainingId(Long exerciseId, Long trainingId);
 
     List<Serie> findByRoutineId(Long routineId);
+
+    @Query("SELECT s FROM Serie s JOIN s.training t "
+                + "WHERE t.user.id = :userId "
+                + "AND t.creationDate >= :cutoff "
+                + "ORDER BY t.creationDate DESC")
+    List<Serie> findSeriesByYear(Long userId, java.time.LocalDateTime cutoff);
+
+    @Query("SELECT s FROM Serie s JOIN s.training t "
+                + "WHERE t.user.id = :userId "
+                + "AND s.repeticiones = :numReps "
+                + "AND t.creationDate >= :cutoff "
+                + "ORDER BY t.creationDate DESC")
+    List<Serie> findSeriesByYearWithReps(Long userId, int numReps, java.time.LocalDateTime cutoff);
+
+    @Query("""
+    SELECT s
+    FROM Serie s
+    WHERE s.training.user.id = :userId
+      AND s.exercise.id = :exerciseId
+""")
+    List<Serie> findByUserIdAndExerciseId(
+             Long userId,
+             Long exerciseId);
 }

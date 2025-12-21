@@ -90,6 +90,9 @@ export const signUp = (user, onSuccess, onErrors, reauthenticationCallback) => {
 export const getProfile = (user, onSuccess, onErrors) =>
   appFetch(`/users/${user.id}`, fetchConfig("GET"), onSuccess, onErrors);
 
+export const getProfileById = (userId, onSuccess, onErrors) =>
+  appFetch(`/users/${userId}`, fetchConfig("GET"), onSuccess, onErrors);
+
 export const logout = () => removeServiceToken();
 
 export const updateProfile = (user, onSuccess, onErrors) =>
@@ -205,3 +208,31 @@ export const getFollowRequests = (onSuccess, onErrors) =>
         onErrors
     );
 
+export const getRequestSended = (onSuccess, onErrors) => 
+    appFetch(
+      `/users/requestSended`,
+      fetchConfig("GET"),
+      onSuccess,
+      onErrors
+    );
+
+export const getStats = ({ userProfileId, numReps, period }, onSuccess, onErrors) => {
+
+  return appFetch(
+    `/users/stats`,
+    fetchConfig("POST", { userProfileId, numReps, period }),
+    onSuccess,
+    onErrors
+  );
+};
+export const getLeaderboard=({exerciseId}, onSuccess, onErrors) =>
+    appFetch(`/users/leaderboards?exerciseId=${exerciseId}`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors
+    );
+export const getLeaderboardRoutine=({routineId}, onSuccess, onErrors) =>
+    appFetch(`/users/leaderboards/routine?routineId=${routineId}`,
+        fetchConfig("GET"),
+        onSuccess,
+        onErrors);
